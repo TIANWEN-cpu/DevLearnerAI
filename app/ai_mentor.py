@@ -1,10 +1,13 @@
 import json
+import logging
+import re
 import ssl
 import threading
 import urllib.error
 import urllib.request
 from datetime import datetime
 from html import escape
+from html.parser import HTMLParser
 from pathlib import Path
 
 from PyQt5.QtCore import QSize, Qt, pyqtSignal
@@ -62,6 +65,132 @@ def _card_style(radius: int = 20) -> str:
     )
 
 
+_ALLOWED_TAGS = frozenset({
+    "p", "br", "h1", "h2", "h3", "h4", "h5", "h6",
+    "ul", "ol", "li", "code", "pre", "strong", "em", "b", "i",
+    "a", "blockquote", "table", "tr", "td", "th", "thead", "tbody",
+    "hr", "span",
+})
+
+_STRIP_TAGS = frozenset({"script", "style", "iframe", "object", "embed"})
+
+# Pattern matches on* event handlers, javascript: href, and data: URI payloads.
+_RE_EVENT_ATTR = re.compile(r"^on", re.IGNORECASE)
+_RE_JAVASCRIPT_URI = re.compile(r"^\s*javascript\s*:", re.IGNORECASE)
+_RE_DATA_URI = re.compile(r"^\s*data\s*:", re.IGNORECASE)
+_RE_VBSCRIPT_URI = re.compile(r"^\s*vbscript\s*:", re.IGNORECASE)
+
+
+class _HTMLSanitizer(HTMLParser):
+    """Whitelist-based HTML sanitizer using the standard-library html.parser."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self._result: list[str] = []
+        self._skip_depth = 0
+
+    # -- helpers ----------------------------------------------------------
+
+    def _safe_attrs(self, tag: str, attrs: list[tuple[str, str | None]]) -> str:
+        """Return a string of sanitized attributes for *tag*."""
+        safe_parts: list[str] = []
+        for name, value in attrs:
+            name_lower = name.lower()
+            # Strip all on* event handler attributes (onclick, onerror, onload, etc.)
+            if _RE_EVENT_ATTR.match(name_lower):
+                continue
+            # For <a> tags, only keep href and only if it is a safe scheme.
+            if tag == "a":
+                if name_lower == "href":
+                    val = (value or "").strip()
+                    if _RE_JAVASCRIPT_URI.match(val):
+                        continue
+                    if _RE_DATA_URI.match(val):
+                        continue
+                    if _RE_VBSCRIPT_URI.match(val):
+                        continue
+                    # Only allow http/https/relative (relative paths are harmless in QTextBrowser)
+                    if val and not val.startswith(("http://", "https://", "/")):
+                        continue
+                    safe_parts.append(f' href="{escape(val, quote=True)}"')
+                # Drop all other attributes on <a> tags.
+                continue
+            # For <span>, allow class (for code-highlighting) but nothing else dangerous.
+            if tag == "span" and name_lower not in ("class",):
+                continue
+            # For table-related tags and others, drop all attributes to be safe.
+        return "".join(safe_parts)
+
+    # -- parser callbacks -------------------------------------------------
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]):
+        tag_lower = tag.lower()
+        if tag_lower in _STRIP_TAGS:
+            self._skip_depth += 1
+            return
+        if self._skip_depth > 0:
+            return
+        if tag_lower in _ALLOWED_TAGS:
+            self._result.append(f"<{tag_lower}{self._safe_attrs(tag_lower, attrs)}>")
+
+    def handle_endtag(self, tag: str):
+        tag_lower = tag.lower()
+        if tag_lower in _STRIP_TAGS:
+            self._skip_depth = max(0, self._skip_depth - 1)
+            return
+        if self._skip_depth > 0:
+            return
+        if tag_lower in _ALLOWED_TAGS:
+            self._result.append(f"</{tag_lower}>")
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]):
+        tag_lower = tag.lower()
+        if tag_lower in _STRIP_TAGS or self._skip_depth > 0:
+            return
+        if tag_lower in _ALLOWED_TAGS:
+            self._result.append(f"<{tag_lower}{self._safe_attrs(tag_lower, attrs)} />")
+
+    def handle_data(self, data: str):
+        if self._skip_depth > 0:
+            return
+        self._result.append(data)
+
+    def handle_entityref(self, name: str):
+        if self._skip_depth > 0:
+            return
+        self._result.append(f"&{name};")
+
+    def handle_charref(self, name: str):
+        if self._skip_depth > 0:
+            return
+        self._result.append(f"&#{name};")
+
+    def handle_comment(self, data: str):
+        # Strip all HTML comments (can contain conditional IE exploits, etc.)
+        pass
+
+    def handle_decl(self, decl: str):
+        pass
+
+    def unknown_decl(self, data: str):
+        pass
+
+    # -- public API -------------------------------------------------------
+
+    def sanitize(self, html: str) -> str:
+        self._result = []
+        self._skip_depth = 0
+        self.feed(html)
+        self.close()
+        return "".join(self._result)
+
+
+def _sanitize_html(html: str) -> str:
+    """Strip dangerous HTML while keeping a safe whitelist of tags/attributes."""
+    sanitizer = _HTMLSanitizer()
+    return sanitizer.sanitize(html)
+
+
 def _render_message_html(content: str, allow_markdown: bool = True) -> str:
     text = (content or "").strip()
     if not text:
@@ -69,7 +198,8 @@ def _render_message_html(content: str, allow_markdown: bool = True) -> str:
     if allow_markdown and mistune is not None:
         try:
             rendered = mistune.html(text)
-            return rendered.replace("<table>", "<table cellspacing='0' cellpadding='6'>")
+            rendered = rendered.replace("<table>", "<table cellspacing='0' cellpadding='6'>")
+            return _sanitize_html(rendered)
         except Exception:
             pass
     return escape(text).replace("\n", "<br>")
@@ -765,11 +895,13 @@ class AIMentorPanel(QWidget):
 
     def _fetch_models_worker(self, host: str, api_key: str) -> None:
         try:
+            self._require_https(host)
+            ctx = self._create_ssl_context()
             request = urllib.request.Request(
                 self._build_models_url(host),
                 headers={"Authorization": f"Bearer {api_key}"},
             )
-            with urllib.request.urlopen(request, timeout=30) as response:
+            with urllib.request.urlopen(request, timeout=30, context=ctx) as response:
                 payload = json.loads(response.read().decode("utf-8"))
             models = sorted(item["id"] for item in payload.get("data", []) if "id" in item)
             self.models_ready.emit(models)
@@ -1056,16 +1188,18 @@ class AIMentorPanel(QWidget):
             else:
                 reply = payload["choices"][0]["message"]["content"]
         except ValueError as exc:
-            reply = str(exc)
+            logging.error("AI mentor ValueError: %s", exc, exc_info=True)
+            reply = "AI 服务响应解析失败，请稍后重试。"
         except urllib.error.HTTPError as exc:
             try:
                 error_body = json.loads(exc.read().decode("utf-8"))
-                error_detail = error_body.get("error", {}).get("message", str(exc))
+                logging.error("AI mentor HTTP %s: %s", exc.code, error_body, exc_info=True)
             except Exception:
-                error_detail = str(exc)
-            reply = f"调用失败（HTTP {exc.code}）：{error_detail}"
+                logging.error("AI mentor HTTP %s: %s", exc.code, exc, exc_info=True)
+            reply = f"AI 服务请求失败（HTTP {exc.code}），请检查设置或稍后重试。"
         except Exception as exc:
-            reply = f"调用失败：{exc}"
+            logging.error("AI mentor unexpected error: %s", exc, exc_info=True)
+            reply = "AI 服务连接失败，请检查设置或网络连接。"
 
         try:
             self.db.append_mentor_message(session_id, "assistant", reply)

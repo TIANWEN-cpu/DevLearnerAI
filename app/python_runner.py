@@ -32,6 +32,38 @@ _DANGEROUS_ATTRS = frozenset({
     "__class__", "__bases__", "__subclasses__", "__mro__",
     "__builtins__", "__globals__", "__code__", "__import__",
     "__loader__", "__spec__", "__file__", "__name__",
+    "__self__", "__func__", "__qualname__", "__module__",
+    "__init_subclass__", "__set_name__", "__new__", "__init__",
+    "__del__", "__repr__", "__str__", "__bytes__",
+    "__format__", "__lt__", "__le__", "__eq__", "__ne__",
+    "__gt__", "__ge__", "__hash__", "__bool__",
+    "__getattr__", "__setattr__", "__delattr__", "__dir__",
+    "__get__", "__set__", "__delete__", "__init_subclass__",
+    "__class_getitem__", "__instancecheck__", "__subclasscheck__",
+    "__call__", "__len__", "__getitem__", "__setitem__",
+    "__delitem__", "__iter__", "__next__", "__contains__",
+    "__abs__", "__neg__", "__pos__", "__invert__",
+    "__add__", "__sub__", "__mul__", "__truediv__",
+    "__floordiv__", "__mod__", "__pow__", "__lshift__",
+    "__rshift__", "__and__", "__or__", "__xor__",
+    "__radd__", "__rsub__", "__rmul__", "__rtruediv__",
+    "__rfloordiv__", "__rmod__", "__rpow__", "__rlshift__",
+    "__rrshift__", "__rand__", "__ror__", "__rxor__",
+    "__iadd__", "__isub__", "__imul__", "__itruediv__",
+    "__ifloordiv__", "__imod__", "__ipow__", "__ilshift__",
+    "__irshift__", "__iand__", "__ior__", "__ixor__",
+    "__int__", "__float__", "__complex__", "__round__",
+    "__trunc__", "__floor__", "__ceil__",
+    "__enter__", "__exit__", "__await__", "__aiter__",
+    "__anext__", "__aenter__", "__aexit__",
+})
+
+_DANGEROUS_BUILTINS_CALLS = frozenset({
+    "eval", "exec", "compile", "breakpoint",
+    "getattr", "hasattr", "delattr", "setattr",
+    "type", "object", "super",
+    "dir", "vars", "globals", "locals",
+    "memoryview", "bytearray",
 })
 
 
@@ -42,23 +74,46 @@ def _validate_code_safety(code_str: str):
         # Block access to dangerous dunder attributes
         if isinstance(node, ast.Attribute) and node.attr in _DANGEROUS_ATTRS:
             raise SyntaxError(
-                f"安全限制: 不允许访问属性 {node.attr}（第 {getattr(node, 'lineno', '?')} 行）"
+                f"安全限制: 不允许访问属性 {node.attr}（第 {node.lineno} 行）"
             )
         # Block import statements
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             raise SyntaxError(
-                f"安全限制: 不允许使用 import 语句（第 {getattr(node, 'lineno', '?')} 行），请使用内置函数。"
+                f"安全限制: 不允许使用 import 语句（第 {node.lineno} 行），请使用内置函数。"
             )
-        # Block eval/exec calls within user code
+        # Block dangerous function calls
         if isinstance(node, ast.Call):
             func = node.func
-            if isinstance(func, ast.Name) and func.id in ("eval", "exec"):
+            # Direct calls: eval(), exec(), type(), getattr(), etc.
+            if isinstance(func, ast.Name) and func.id in _DANGEROUS_BUILTINS_CALLS:
                 raise SyntaxError(
-                    f"安全限制: 不允许调用 {func.id}()（第 {getattr(node, 'lineno', '?')} 行）。"
+                    f"安全限制: 不允许调用 {func.id}()（第 {node.lineno} 行）。"
                 )
-            if isinstance(func, ast.Attribute) and func.attr in ("__subclasses__", "__bases__"):
+            # Method calls on dangerous dunder attributes
+            if isinstance(func, ast.Attribute) and func.attr in (
+                "__subclasses__", "__bases__", "__mro__",
+                "__globals__", "__code__", "__class__",
+            ):
                 raise SyntaxError(
-                    f"安全限制: 不允许调用 {func.attr}()（第 {getattr(node, 'lineno', '?')} 行）。"
+                    f"安全限制: 不允许调用 {func.attr}()（第 {node.lineno} 行）。"
+                )
+            # Block getattr/hasattr with dangerous dunder string args
+            if isinstance(func, ast.Name) and func.id in ("getattr", "hasattr"):
+                if len(node.args) >= 2:
+                    arg = node.args[1]
+                    if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                        if arg.value.startswith("__") and arg.value.endswith("__"):
+                            raise SyntaxError(
+                                f"安全限制: 不允许通过 {func.id}() 访问双下划线属性 "
+                                f"'{arg.value}'（第 {node.lineno} 行）。"
+                            )
+        # Block raw __builtins__ string references (could be used with join/chr tricks)
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            val = node.value
+            if "__builtins__" in val or "__import__" in val:
+                raise SyntaxError(
+                    f"安全限制: 不允许使用包含敏感双下划线属性的字符串"
+                    f"（第 {node.lineno} 行）。"
                 )
 
 
@@ -85,8 +140,6 @@ SAFE_BUILTINS = {
     "abs": abs,
     "round": round,
     "isinstance": isinstance,
-    "hasattr": hasattr,
-    "getattr": getattr,
     "all": all,
     "any": any,
     "reversed": reversed,

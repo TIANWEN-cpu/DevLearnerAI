@@ -454,7 +454,7 @@ class LearnWidget(QWidget):
     def _open_reader(self) -> None:
         if not self._current_html:
             return
-        dialog = ReaderDialog(self.meta_title.text(), self.meta_meta.text(), self._current_html, self)
+        dialog = ReaderDialog(self.meta_title.text(), self._current_html, self.meta_meta.text(), self)
         dialog.exec_()
 
     def eventFilter(self, watched, event):

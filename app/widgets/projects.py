@@ -308,7 +308,7 @@ class ProjectsWidget(QWidget):
                     return
 
     def _open_reader(self) -> None:
-        dialog = ReaderDialog(self._current_title, self._current_meta, self._current_html, self)
+        dialog = ReaderDialog(self._current_title, self._current_html, self._current_meta, self)
         dialog.exec_()
 
     def eventFilter(self, watched, event):

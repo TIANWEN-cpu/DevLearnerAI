@@ -10,12 +10,22 @@ from app.config import API_CREDENTIAL_ALIAS, DB_DIR, DB_PATH, LEGACY_DB_PATH, en
 from app.credentials import load_secret, save_secret
 
 _connection = None
-_lock = threading.Lock()
+_connection_lock = threading.Lock()
+_db_lock = threading.Lock()
 
 
 def get_connection(db_path: str):
     global _connection
-    with _lock:
+    with _connection_lock:
+        if _connection is not None:
+            try:
+                _connection.execute("SELECT 1")
+            except Exception:
+                try:
+                    _connection.close()
+                except Exception:
+                    pass
+                _connection = None
         if _connection is None:
             ensure_runtime_dirs()
             _connection = sqlite3.connect(db_path, check_same_thread=False)
@@ -25,7 +35,7 @@ def get_connection(db_path: str):
 
 def close_connection():
     global _connection
-    with _lock:
+    with _connection_lock:
         if _connection is not None:
             _connection.close()
             _connection = None
@@ -50,6 +60,7 @@ class AppDatabase:
 
     @contextmanager
     def connect(self):
+        _db_lock.acquire()
         conn = get_connection(str(self.db_path))
         try:
             yield conn
@@ -58,6 +69,8 @@ class AppDatabase:
             raise
         else:
             conn.commit()
+        finally:
+            _db_lock.release()
 
     def init_db(self) -> None:
         with self.connect() as conn:
