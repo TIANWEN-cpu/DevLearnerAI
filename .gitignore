@@ -24,6 +24,7 @@ env/
 
 # Database files
 *.db
+*.sqlite
 
 # Executables and packages
 *.exe
