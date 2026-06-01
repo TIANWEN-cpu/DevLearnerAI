@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Echo Lock</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="topbar">
+      <div>
+        <p class="eyebrow">30-Minute Prototype</p>
+        <h1>Echo Lock</h1>
+        <p class="subtitle">用过去 4 秒的自己，帮现在的你开路。</p>
+      </div>
+      <div class="stats">
+        <div class="stat-card">
+          <span class="label">Stage</span>
+          <strong id="stageLabel">1 / 3</strong>
+        </div>
+        <div class="stat-card">
+          <span class="label">Echoes</span>
+          <strong id="echoLabel">0 / 2</strong>
+        </div>
+        <div class="stat-card">
+          <span class="label">Integrity</span>
+          <strong id="hpLabel">5</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="canvas-shell">
+      <canvas id="game" width="960" height="540"></canvas>
+      <div class="hud-panel">
+        <div>
+          <span class="panel-label">Objective</span>
+          <p id="objectiveText">加载中...</p>
+        </div>
+        <div>
+          <span class="panel-label">Controls</span>
+          <p>WASD 移动 · 鼠标瞄准 · 左键/空格射击 · R 释放回响 · Enter 重开</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer-note">
+      玩法提示：回响会重演你最近 4 秒的动作，并在终点锚定 3 秒。
+    </footer>
+  </main>
+
+  <script src="./game.js"></script>
+</body>
+</html>

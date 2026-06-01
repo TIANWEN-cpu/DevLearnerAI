@@ -1,0 +1,464 @@
+import mistune
+from PyQt5.QtCore import QEvent, QSize, Qt
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QPushButton,
+    QSplitter,
+    QVBoxLayout,
+    QWidget,
+)
+
+from app.content_service import ContentService
+from app.database import AppDatabase
+from app.effects import optimize_scroll_widget
+from app.localized_inputs import LocalizedLineEdit, LocalizedTextBrowser, LocalizedTextEdit
+from app.reader_dialog import ReaderDialog
+from app.styles import F_TITLE, FONT
+
+
+class LearnWidget(QWidget):
+    def __init__(self, content_service: ContentService, db: AppDatabase):
+        super().__init__()
+        self.content_service = content_service
+        self.db = db
+        self.markdown = mistune.create_markdown()
+        self.current_track = self.content_service.tracks[0] if self.content_service.tracks else None
+        self.current_module = None
+        self.current_lesson = None
+        self._lesson_id_order = []
+        self._current_html = ""
+        self.browser_cards = []
+        optimize_scroll_widget(self)
+
+        root = QVBoxLayout(self)
+        root.setContentsMargins(18, 12, 18, 18)
+        root.setSpacing(16)
+        root.addWidget(self._build_header())
+
+        splitter = QSplitter(Qt.Horizontal)
+        splitter.setChildrenCollapsible(False)
+        splitter.setHandleWidth(10)
+        splitter.addWidget(self._build_left_panel())
+        splitter.addWidget(self._build_main_panel())
+        splitter.setSizes([380, 1180])
+        root.addWidget(splitter, 1)
+
+        self.track_combo.currentIndexChanged.connect(self._change_track)
+        self.search_input.textChanged.connect(self._refresh_browser)
+        self.browser_list.itemClicked.connect(self._handle_browser_click)
+        self.back_btn.clicked.connect(self._show_module_browser)
+        self.complete_btn.clicked.connect(self._complete_current_lesson)
+        self.prev_btn.clicked.connect(lambda: self._jump_relative(-1))
+        self.next_btn.clicked.connect(lambda: self._jump_relative(1))
+        self.save_note_btn.clicked.connect(self._save_note)
+        self.reader_btn.clicked.connect(self._open_reader)
+
+        if self.content_service.tracks:
+            self._change_track(0)
+
+    def select_track(self, track_id: str) -> None:
+        for index in range(self.track_combo.count()):
+            if self.track_combo.itemData(index) == track_id:
+                self.track_combo.setCurrentIndex(index)
+                return
+
+    def _surface_panel(self) -> QFrame:
+        panel = QFrame()
+        panel.setStyleSheet(
+            """
+            .QFrame {
+                background: rgba(255,253,248,0.96);
+                border: 1px solid rgba(37,99,235,0.08);
+                border-radius: 24px;
+            }
+            """
+        )
+        return panel
+
+    def _module_category_theme(self, module_key: str):
+        module_key = module_key or ""
+        if "foundations" in module_key:
+            return "#2f6df6", "基础模块"
+        if any(token in module_key for token in ["featured", "advanced", "application", "patterns", "oop", "stl"]):
+            return "#8b5cf6", "精选模块"
+        if any(token in module_key for token in ["interest", "integration", "network", "tools"]):
+            return "#10b981", "兴趣模块"
+        return "#94a3b8", "通用模块"
+
+    def _build_header(self) -> QFrame:
+        header = self._surface_panel()
+        layout = QHBoxLayout(header)
+        layout.setContentsMargins(22, 18, 22, 18)
+        layout.setSpacing(18)
+
+        left = QVBoxLayout()
+        title = QLabel("学习路径")
+        title.setFont(QFont(FONT, F_TITLE - 4, QFont.Bold))
+        subtitle = QLabel("按主线进入模块，再从模块里递进学习课程。")
+        subtitle.setStyleSheet("color: #64748b; font-size: 18px;")
+        subtitle.setWordWrap(True)
+        left.addWidget(title)
+        left.addWidget(subtitle)
+        layout.addLayout(left, 1)
+
+        right = QVBoxLayout()
+        picker_label = QLabel("切换主线")
+        picker_label.setStyleSheet("color: #64748b; font-size: 18px; font-weight: 600;")
+        self.track_combo = QComboBox()
+        for track in self.content_service.tracks:
+            self.track_combo.addItem(f"{track.icon} {track.title}", track.id)
+        self.track_combo.setMinimumWidth(280)
+        self.track_stats = QLabel("")
+        self.track_stats.setStyleSheet("color: #94a3b8; font-size: 16px;")
+        right.addWidget(picker_label)
+        right.addWidget(self.track_combo)
+        right.addWidget(self.track_stats)
+        layout.addLayout(right)
+        return header
+
+    def _build_left_panel(self) -> QFrame:
+        panel = self._surface_panel()
+        panel.setMinimumWidth(340)
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(14)
+
+        self.track_summary = QLabel("")
+        self.track_summary.setWordWrap(True)
+        self.track_summary.setStyleSheet("color: #64748b; font-size: 18px;")
+        layout.addWidget(self.track_summary)
+
+        self.search_input = LocalizedLineEdit()
+        self.search_input.setPlaceholderText("搜索当前主线里的模块")
+        layout.addWidget(self.search_input)
+
+        crumb_row = QHBoxLayout()
+        self.back_btn = QPushButton("返回模块")
+        self.back_btn.setProperty("variant", "secondary")
+        self.back_btn.hide()
+        self.panel_title = QLabel("模块列表")
+        self.panel_title.setStyleSheet("color: #94a3b8; font-weight: 700; font-size: 18px;")
+        crumb_row.addWidget(self.back_btn)
+        crumb_row.addWidget(self.panel_title)
+        crumb_row.addStretch()
+        layout.addLayout(crumb_row)
+
+        self.browser_list = QListWidget()
+        self.browser_list.setWordWrap(True)
+        self.browser_list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.browser_list.setSpacing(12)
+        self.browser_list.setStyleSheet(
+            """
+            QListWidget { background: transparent; border: none; padding: 2px; }
+            QListWidget::item { background: transparent; border: none; margin: 0; padding: 0; }
+            QListWidget::item:selected { background: transparent; }
+            """
+        )
+        layout.addWidget(self.browser_list, 1)
+
+        self.left_helper = QLabel("")
+        self.left_helper.setWordWrap(True)
+        self.left_helper.setStyleSheet("color: #94a3b8; font-size: 16px;")
+        layout.addWidget(self.left_helper)
+        return panel
+
+    def _build_main_panel(self) -> QFrame:
+        panel = self._surface_panel()
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(14)
+
+        self.meta_title = QLabel("学习地图")
+        self.meta_title.setFont(QFont(FONT, F_TITLE - 8, QFont.Bold))
+        self.meta_meta = QLabel("")
+        self.meta_meta.setStyleSheet("color: #64748b; font-size: 17px; font-weight: 600;")
+        layout.addWidget(self.meta_title)
+        layout.addWidget(self.meta_meta)
+
+        self.content_browser = LocalizedTextBrowser()
+        self.content_browser.setOpenExternalLinks(False)
+        self.content_browser.setMinimumHeight(520)
+        self.content_browser.viewport().installEventFilter(self)
+        layout.addWidget(self.content_browser, 1)
+
+        action_row = QHBoxLayout()
+        action_row.setSpacing(10)
+        self.reader_btn = QPushButton("放大阅读")
+        self.reader_btn.setProperty("variant", "secondary")
+        self.prev_btn = QPushButton("上一课")
+        self.prev_btn.setProperty("variant", "secondary")
+        self.complete_btn = QPushButton("标记完成")
+        self.next_btn = QPushButton("下一课")
+        self.next_btn.setProperty("variant", "secondary")
+        action_row.addWidget(self.reader_btn)
+        action_row.addWidget(self.prev_btn)
+        action_row.addWidget(self.complete_btn)
+        action_row.addWidget(self.next_btn)
+        action_row.addStretch()
+        layout.addLayout(action_row)
+
+        note_card = self._surface_panel()
+        note_layout = QVBoxLayout(note_card)
+        note_layout.setContentsMargins(18, 16, 18, 16)
+        note_layout.setSpacing(10)
+        note_title = QLabel("学习侧记")
+        note_title.setStyleSheet("font-weight: 700; color: #1c1c1e; font-size: 18px;")
+        self.note_hint = QLabel("")
+        self.note_hint.setStyleSheet("color: #64748b; font-size: 16px;")
+        self.note_hint.setWordWrap(True)
+        self.note_edit = LocalizedTextEdit()
+        self.note_edit.setMinimumHeight(180)
+        self.note_edit.setPlaceholderText("把关键结论、自己的理解和易错点记在这里。")
+        row = QHBoxLayout()
+        row.addStretch()
+        self.save_note_btn = QPushButton("保存笔记")
+        self.save_note_btn.setProperty("variant", "secondary")
+        row.addWidget(self.save_note_btn)
+        note_layout.addWidget(note_title)
+        note_layout.addWidget(self.note_hint)
+        note_layout.addWidget(self.note_edit)
+        note_layout.addLayout(row)
+        layout.addWidget(note_card)
+        return panel
+
+    def _apply_browser_card_style(self, card: QFrame, selected: bool, stripe: str) -> None:
+        bg = "#edf4ff" if selected else "#f7f9fc"
+        border = "rgba(37,99,235,0.18)" if selected else "rgba(15,23,42,0.08)"
+        card.setObjectName("learnCard")
+        card.setStyleSheet(
+            f"""
+            QFrame#learnCard {{
+                background: qlineargradient(
+                    x1: 0, y1: 0, x2: 0, y2: 1,
+                    stop: 0 #ffffff,
+                    stop: 0.16 rgba(255,255,255,0.98),
+                    stop: 1 {bg}
+                );
+                border: 1px solid {border};
+                border-radius: 20px;
+            }}
+            QFrame#learnCard QFrame#learnAccentStripe {{
+                background: {stripe};
+                border: none;
+                border-top-left-radius: 20px;
+                border-bottom-left-radius: 20px;
+            }}
+            QFrame#learnCard QLabel {{
+                background: transparent;
+                border: none;
+            }}
+            """
+        )
+
+    def _make_browser_card(self, title: str, meta: str, summary: str, stripe: str) -> QFrame:
+        card = QFrame()
+        self._apply_browser_card_style(card, False, stripe)
+
+        outer = QHBoxLayout(card)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+
+        accent = QFrame()
+        accent.setObjectName("learnAccentStripe")
+        accent.setFixedWidth(6)
+        outer.addWidget(accent)
+
+        body = QWidget()
+        outer.addWidget(body, 1)
+
+        layout = QVBoxLayout(body)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(8)
+
+        title_label = QLabel(title)
+        title_label.setWordWrap(True)
+        title_label.setStyleSheet("color: #0f172a; font-weight: 700; font-size: 22px;")
+        meta_label = QLabel(meta)
+        meta_label.setWordWrap(True)
+        meta_label.setStyleSheet("color: #64748b; font-size: 18px; font-weight: 600;")
+        summary_label = QLabel(summary)
+        summary_label.setWordWrap(True)
+        summary_label.setStyleSheet("color: #42556b; font-size: 18px;")
+        layout.addWidget(title_label)
+        layout.addWidget(meta_label)
+        layout.addWidget(summary_label)
+        return card
+
+    def _refresh_browser_selection(self) -> None:
+        current_item = self.browser_list.currentItem()
+        for item, card in self.browser_cards:
+            stripe = item.data(Qt.UserRole + 10) or "#94a3b8"
+            self._apply_browser_card_style(card, item is current_item, stripe)
+
+    def _change_track(self, index: int) -> None:
+        if index < 0 or index >= len(self.content_service.tracks):
+            return
+        self.current_track = self.content_service.tracks[index]
+        self.current_module = None
+        self.current_lesson = None
+        self.track_summary.setText(self.current_track.summary)
+        self.track_stats.setText(
+            f"共 {len(self.current_track.modules)} 个模块 · {len(self.current_track.lessons)} 节课程"
+        )
+        self._show_module_browser()
+
+    def _show_module_browser(self) -> None:
+        self.current_module = None
+        self.current_lesson = None
+        self.back_btn.hide()
+        self.panel_title.setText("模块列表")
+        self.left_helper.setText("先选一个模块进去，再看这一组课程。")
+        self.meta_title.setText(f"{self.current_track.title} 学习地图")
+        self.meta_meta.setText(
+            f"{self.current_track.icon} 共 {len(self.current_track.modules)} 个模块 · {len(self.current_track.lessons)} 节课程"
+        )
+        overview = [
+            f"# {self.current_track.title}",
+            "",
+            self.current_track.summary,
+            "",
+            "## 建议的学习方式",
+            "- 先点一个模块进去，再挑这组课程里的第一节开始。",
+            "- 学完一节立刻记一两句侧记，比囫囵吞全文更有效。",
+            "- 如果卡住了，就回到模块层重新缩小范围。",
+            "",
+            "## 当前主线模块",
+        ]
+        for module in self.current_track.modules:
+            overview.append(f"- **{module.title}**：{module.summary}")
+        self._current_html = self.markdown("\n".join(overview))
+        self.content_browser.setHtml(self._current_html)
+        self.note_hint.setText("你现在看到的是主线总览，还没有进入具体课程。")
+        self.note_edit.clear()
+        self._refresh_browser()
+
+    def _show_lesson_browser(self, module) -> None:
+        self.current_module = module
+        self.current_lesson = None
+        self.back_btn.show()
+        self.panel_title.setText("课程列表")
+        self.left_helper.setText("这一栏只显示当前模块里的课程，阅读会清爽很多。")
+        self.meta_title.setText(module.title)
+        self.meta_meta.setText(f"{len(module.lessons)} 节课程 · {module.summary}")
+        self._current_html = self.markdown(
+            f"# {module.title}\n\n{module.summary}\n\n## 这组课怎么学\n- 先从第一节开始，把术语和心智模型打牢。\n- 每节课都做一条笔记，帮助你形成自己的表述。"
+        )
+        self.content_browser.setHtml(self._current_html)
+        self.note_hint.setText("先进入一节具体课程，再针对那一课做侧记。")
+        self.note_edit.clear()
+        self._refresh_browser()
+
+    def _refresh_browser(self) -> None:
+        self.browser_list.clear()
+        self.browser_cards = []
+        query = self.search_input.text().strip().lower()
+        if self.current_module is None:
+            items = self.current_track.modules
+            for module in items:
+                haystack = f"{module.title} {module.summary}".lower()
+                if query and query not in haystack:
+                    continue
+                stripe, category = self._module_category_theme(module.key)
+                item = QListWidgetItem()
+                item.setData(Qt.UserRole, ("module", module.key))
+                item.setData(Qt.UserRole + 10, stripe)
+                item.setSizeHint(QSize(0, 132))
+                self.browser_list.addItem(item)
+                card = self._make_browser_card(
+                    module.title,
+                    f"{category} · {len(module.lessons)} 节课程",
+                    module.summary,
+                    stripe,
+                )
+                self.browser_list.setItemWidget(item, card)
+                self.browser_cards.append((item, card))
+        else:
+            lessons = self.current_module.lessons
+            self._lesson_id_order = [lesson.id for lesson in lessons]
+            for lesson in lessons:
+                haystack = f"{lesson.title} {lesson.summary} {' '.join(lesson.tags)}".lower()
+                if query and query not in haystack:
+                    continue
+                stripe, category = self._module_category_theme(self.current_module.key)
+                item = QListWidgetItem()
+                item.setData(Qt.UserRole, ("lesson", lesson.id))
+                item.setData(Qt.UserRole + 10, stripe)
+                item.setSizeHint(QSize(0, 150))
+                self.browser_list.addItem(item)
+                card = self._make_browser_card(
+                    lesson.title,
+                    f"{category} · {lesson.difficulty} · 预计 {lesson.estimated_minutes} 分钟",
+                    lesson.summary,
+                    stripe,
+                )
+                self.browser_list.setItemWidget(item, card)
+                self.browser_cards.append((item, card))
+
+    def _handle_browser_click(self, item: QListWidgetItem) -> None:
+        kind, identifier = item.data(Qt.UserRole)
+        self._refresh_browser_selection()
+        if kind == "module":
+            module = next((m for m in self.current_track.modules if m.key == identifier), None)
+            if module:
+                self._show_lesson_browser(module)
+        elif kind == "lesson":
+            self._open_lesson(identifier)
+
+    def _open_lesson(self, lesson_id: str) -> None:
+        track, module, lesson = self.content_service.lesson_by_id(lesson_id)
+        if not lesson:
+            return
+        self.current_track = track
+        self.current_module = module
+        self.current_lesson = lesson
+        self.meta_title.setText(lesson.title)
+        self.meta_meta.setText(
+            f"模块：{module.title} · 难度：{lesson.difficulty} · 预计 {lesson.estimated_minutes} 分钟 · 标签：{' / '.join(lesson.tags or ['入门'])}"
+        )
+        body = self.content_service.lesson_markdown(lesson)
+        self._current_html = self.markdown(body)
+        self.content_browser.setHtml(self._current_html)
+        self.note_hint.setText("把关键结论、自己的理解和易错点记在这里，会比重读更有效。")
+        saved = self.db.load_note(lesson.id)
+        self.note_edit.setPlainText(saved if saved else "")
+
+    def _jump_relative(self, step: int) -> None:
+        if not self.current_lesson or not self._lesson_id_order:
+            return
+        try:
+            idx = self._lesson_id_order.index(self.current_lesson.id)
+        except ValueError:
+            return
+        new_idx = idx + step
+        if 0 <= new_idx < len(self._lesson_id_order):
+            self._open_lesson(self._lesson_id_order[new_idx])
+
+    def _complete_current_lesson(self) -> None:
+        if not self.current_lesson:
+            return
+        self.db.mark_lesson_completed(self.current_lesson.id, self.current_track.id)
+        self.note_hint.setText("已标记完成。你可以继续下一课，或者回到模块层换一个方向。")
+
+    def _save_note(self) -> None:
+        if not self.current_lesson:
+            return
+        self.db.save_note(self.current_lesson.id, self.note_edit.toPlainText())
+        self.note_hint.setText("笔记已保存。继续用自己的话总结，会记得更牢。")
+
+    def _open_reader(self) -> None:
+        if not self._current_html:
+            return
+        dialog = ReaderDialog(self.meta_title.text(), self.meta_meta.text(), self._current_html, self)
+        dialog.exec_()
+
+    def eventFilter(self, watched, event):
+        if watched is self.content_browser.viewport() and event.type() == QEvent.MouseButtonDblClick:
+            self._open_reader()
+            return True
+        return super().eventFilter(watched, event)

@@ -1,0 +1,4317 @@
+{
+  "exercises": [
+    {
+      "id": "py-add",
+      "title": "实现 add 函数",
+      "track_id": "python",
+      "difficulty": "基础",
+      "prompt": "定义一个函数 add(a, b)，返回两个数字的和。不要只 print，要真正 return 结果。",
+      "lesson_id": "py-functions",
+      "hints": [
+        "先写 def add(a, b):",
+        "函数结果要用 return 返回"
+      ],
+      "starter_code": "def add(a, b):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "add"
+      ],
+      "tests": [
+        {
+          "expression": "add(3, 5)",
+          "expected": 8
+        },
+        {
+          "expression": "add(-2, 7)",
+          "expected": 5
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-normalize-name",
+      "title": "清洗用户名",
+      "track_id": "python",
+      "difficulty": "基础",
+      "prompt": "实现 normalize_name(text)，去掉首尾空格，并把名字改成首字母大写、其余字母小写。",
+      "lesson_id": "py-strings-collections",
+      "hints": [
+        "字符串有 strip 方法",
+        "可以组合 lower 和 upper / capitalize"
+      ],
+      "starter_code": "def normalize_name(text):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "normalize_name"
+      ],
+      "tests": [
+        {
+          "expression": "normalize_name('  alice  ')",
+          "expected": "Alice"
+        },
+        {
+          "expression": "normalize_name('BOB')",
+          "expected": "Bob"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-even-sum",
+      "title": "计算偶数和",
+      "track_id": "python",
+      "difficulty": "基础",
+      "prompt": "实现 even_sum(numbers)，返回列表中所有偶数的总和。",
+      "lesson_id": "py-control-flow",
+      "hints": [
+        "遍历列表时判断 x % 2 == 0",
+        "先把逻辑写清楚，再考虑写法优雅"
+      ],
+      "starter_code": "def even_sum(numbers):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "even_sum"
+      ],
+      "tests": [
+        {
+          "expression": "even_sum([1, 2, 3, 4, 5, 6])",
+          "expected": 12
+        },
+        {
+          "expression": "even_sum([1, 3, 5])",
+          "expected": 0
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-count-vowels",
+      "title": "统计元音字母",
+      "track_id": "python",
+      "difficulty": "基础",
+      "prompt": "实现 count_vowels(text)，统计字符串中 a/e/i/o/u 的数量，不区分大小写。",
+      "lesson_id": "py-strings-collections",
+      "hints": [
+        "先把字符串变成小写",
+        "可以用集合判断成员是否存在"
+      ],
+      "starter_code": "def count_vowels(text):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "count_vowels"
+      ],
+      "tests": [
+        {
+          "expression": "count_vowels('Hello')",
+          "expected": 2
+        },
+        {
+          "expression": "count_vowels('PYTHON')",
+          "expected": 1
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-unique-ordered",
+      "title": "去重但保留顺序",
+      "track_id": "python",
+      "difficulty": "进阶",
+      "prompt": "实现 unique_ordered(items)，返回一个新列表：去掉重复项，但保留第一次出现的顺序。",
+      "lesson_id": "py-strings-collections",
+      "hints": [
+        "可以同时维护一个结果列表和一个 seen 集合",
+        "集合适合做快速查重"
+      ],
+      "starter_code": "def unique_ordered(items):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "unique_ordered"
+      ],
+      "tests": [
+        {
+          "expression": "unique_ordered([1, 2, 1, 3, 2, 4])",
+          "expected": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "expression": "unique_ordered(['a', 'a', 'b'])",
+          "expected": [
+            "a",
+            "b"
+          ]
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-safe-divide",
+      "title": "安全除法",
+      "track_id": "python",
+      "difficulty": "进阶",
+      "prompt": "实现 safe_divide(a, b)。如果 b 为 0，返回字符串 'cannot divide by zero'；否则返回除法结果。",
+      "lesson_id": "py-files-errors",
+      "hints": [
+        "可以先判断 b 是否为 0",
+        "也可以使用 try/except ZeroDivisionError"
+      ],
+      "starter_code": "def safe_divide(a, b):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "safe_divide"
+      ],
+      "tests": [
+        {
+          "expression": "safe_divide(10, 2)",
+          "expected": 5.0
+        },
+        {
+          "expression": "safe_divide(10, 0)",
+          "expected": "cannot divide by zero"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-bank-account",
+      "title": "定义一个简单账户类",
+      "track_id": "python",
+      "difficulty": "进阶",
+      "prompt": "定义 BankAccount 类，初始化余额 balance，提供 deposit(amount) 方法用于增加余额，并返回最新余额。",
+      "lesson_id": "py-oop",
+      "hints": [
+        "类里先写 __init__",
+        "deposit 方法修改 self.balance 并返回结果"
+      ],
+      "starter_code": "class BankAccount:\n    def __init__(self, balance):\n        pass\n\n    def deposit(self, amount):\n        pass\n",
+      "expected_nodes": [
+        "ClassDef",
+        "FunctionDef"
+      ],
+      "required_names": [
+        "BankAccount"
+      ],
+      "tests": [
+        {
+          "expression": "BankAccount(100).balance",
+          "expected": 100
+        },
+        {
+          "expression": "BankAccount(50).deposit(20)",
+          "expected": 70
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-word-count",
+      "title": "统计单词数量",
+      "track_id": "python",
+      "difficulty": "进阶",
+      "prompt": "实现 word_count(text)，返回文本中按空格分开的单词数量。首尾空格不应影响结果。",
+      "lesson_id": "py-files-errors",
+      "hints": [
+        "先 strip 再 split",
+        "空字符串需要单独处理"
+      ],
+      "starter_code": "def word_count(text):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "word_count"
+      ],
+      "tests": [
+        {
+          "expression": "word_count('hello world')",
+          "expected": 2
+        },
+        {
+          "expression": "word_count('   one two three   ')",
+          "expected": 3
+        },
+        {
+          "expression": "word_count('')",
+          "expected": 0
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-build-user",
+      "title": "构造可序列化用户对象",
+      "track_id": "python",
+      "difficulty": "精选",
+      "prompt": "实现 build_user(name, age)，返回一个字典，包含 name、age、active 三个键，其中 active 固定为 True。",
+      "lesson_id": "py-stdlib-testing",
+      "hints": [
+        "返回 dict，不要返回字符串",
+        "键名必须和题目一致"
+      ],
+      "starter_code": "def build_user(name, age):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_user"
+      ],
+      "tests": [
+        {
+          "expression": "build_user('Tom', 20)",
+          "expected": {
+            "name": "Tom",
+            "age": 20,
+            "active": true
+          }
+        },
+        {
+          "expression": "build_user('Amy', 18)['active']",
+          "expected": true
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-select-active",
+      "title": "查询活跃用户",
+      "track_id": "database",
+      "difficulty": "基础",
+      "prompt": "表 users(name, status) 中，写一条 SQL 查询所有 status = 'active' 的用户名。",
+      "lesson_id": "db-crud",
+      "hints": [
+        "用 SELECT 指定列",
+        "用 WHERE 限定条件"
+      ],
+      "starter_code": "SELECT ...;",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "select",
+        "from",
+        "where",
+        "status"
+      ],
+      "forbidden_keywords": [
+        "delete",
+        "drop"
+      ]
+    },
+    {
+      "id": "db-order-count",
+      "title": "统计每个用户订单数",
+      "track_id": "database",
+      "difficulty": "进阶",
+      "prompt": "表 orders(user_id, amount) 中，统计每个 user_id 的订单数量，并按数量从高到低排序。",
+      "lesson_id": "db-aggregation",
+      "hints": [
+        "需要 COUNT(*)",
+        "记得 GROUP BY user_id",
+        "排序用 ORDER BY"
+      ],
+      "starter_code": "SELECT ...;",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "select",
+        "count",
+        "group by",
+        "order by"
+      ],
+      "forbidden_keywords": [
+        "delete",
+        "drop"
+      ]
+    },
+    {
+      "id": "db-join-user-order",
+      "title": "连接用户表和订单表",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "表 users(id, name) 和 orders(user_id, amount) 中，查询每条订单对应的用户名和金额。",
+      "lesson_id": "db-aggregation",
+      "hints": [
+        "需要 JOIN",
+        "连接条件是 users.id = orders.user_id"
+      ],
+      "starter_code": "SELECT ...;",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "select",
+        "join",
+        "on",
+        "users.id",
+        "orders.user_id"
+      ],
+      "forbidden_keywords": [
+        "delete",
+        "drop"
+      ]
+    },
+    {
+      "id": "db-subquery-high-score",
+      "title": "用子查询找高于平均分的学生",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "表 scores(student, score) 中，写 SQL 查询所有分数高于全班平均分的学生。",
+      "lesson_id": "db-subqueries-sets",
+      "hints": [
+        "平均分可以先用子查询算出来",
+        "主查询再和平均值比较"
+      ],
+      "starter_code": "SELECT ...;",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "select",
+        "from",
+        "where",
+        "avg"
+      ],
+      "forbidden_keywords": [
+        "delete",
+        "drop"
+      ]
+    },
+    {
+      "id": "db-case-report",
+      "title": "按金额区间做订单报表",
+      "track_id": "database",
+      "difficulty": "兴趣",
+      "prompt": "表 orders(amount) 中，写 SQL 用 CASE 把订单分成 low / medium / high 三档，并统计每档数量。",
+      "lesson_id": "db-reporting-case",
+      "hints": [
+        "先用 CASE 做分类",
+        "再按分类结果 GROUP BY"
+      ],
+      "starter_code": "SELECT ...;",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "case",
+        "when",
+        "group by",
+        "count"
+      ],
+      "forbidden_keywords": [
+        "delete",
+        "drop"
+      ]
+    },
+    {
+      "id": "c-max-function",
+      "title": "写一个返回较大值的 C 函数",
+      "track_id": "c",
+      "difficulty": "基础",
+      "prompt": "用 C 写一个函数 int max_of_two(int a, int b)，返回两个整数中较大的那个。",
+      "lesson_id": "c-functions-arrays",
+      "hints": [
+        "先写函数签名",
+        "核心逻辑通常需要 if"
+      ],
+      "starter_code": "int max_of_two(int a, int b) {\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "int",
+        "max_of_two",
+        "if",
+        "return"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "c-pointer-swap",
+      "title": "用指针交换两个整数",
+      "track_id": "c",
+      "difficulty": "精选",
+      "prompt": "写一个 C 函数 void swap_int(int *a, int *b)，使用临时变量交换两个整数的值。",
+      "lesson_id": "c-pointers-memory",
+      "hints": [
+        "参数类型需要是指针",
+        "交换值时会用到 *a 和 *b"
+      ],
+      "starter_code": "void swap_int(int *a, int *b) {\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "void",
+        "swap_int",
+        "int *a",
+        "int *b",
+        "*a",
+        "*b"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "c-struct-book",
+      "title": "定义一个图书结构体",
+      "track_id": "c",
+      "difficulty": "精选",
+      "prompt": "定义一个 C 结构体 Book，至少包含 title 和 price 两个字段。",
+      "lesson_id": "c-structs-files",
+      "hints": [
+        "会用到 struct 关键字",
+        "title 可以先用字符数组表示"
+      ],
+      "starter_code": "struct Book {\n    \n};\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "struct",
+        "Book",
+        "title",
+        "price"
+      ],
+      "forbidden_keywords": [
+        "class",
+        "def"
+      ]
+    },
+    {
+      "id": "cs-average-method",
+      "title": "写一个 C# 平均值方法",
+      "track_id": "csharp",
+      "difficulty": "基础",
+      "prompt": "用 C# 写一个方法 double AverageOfTwo(double a, double b)，返回两个数的平均值。",
+      "lesson_id": "cs-methods-collections",
+      "hints": [
+        "先写返回类型和方法名",
+        "别忘了 return"
+      ],
+      "starter_code": "double AverageOfTwo(double a, double b)\n{\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "double",
+        "AverageOfTwo",
+        "return"
+      ],
+      "forbidden_keywords": [
+        "def",
+        "print"
+      ]
+    },
+    {
+      "id": "cs-student-class",
+      "title": "定义一个 Student 类",
+      "track_id": "csharp",
+      "difficulty": "基础",
+      "prompt": "定义一个 C# 类 Student，至少包含 Name 和 Score 两个属性。",
+      "lesson_id": "cs-oop-basics",
+      "hints": [
+        "会用到 class 关键字",
+        "属性通常写成 public 类型 名称 { get; set; }"
+      ],
+      "starter_code": "class Student\n{\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "class",
+        "Student",
+        "Name",
+        "Score"
+      ],
+      "forbidden_keywords": [
+        "def",
+        "print"
+      ]
+    },
+    {
+      "id": "cs-linq-filter",
+      "title": "用 LINQ 过滤大于 60 分的成绩",
+      "track_id": "csharp",
+      "difficulty": "精选",
+      "prompt": "写一段 C# 代码，使用 LINQ 从 scores 集合中过滤出大于 60 的元素。",
+      "lesson_id": "cs-linq-generics",
+      "hints": [
+        "可以使用 Where",
+        "通常需要 using System.Linq;"
+      ],
+      "starter_code": "using System.Linq;\n// 在这里补充代码\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "using system.linq",
+        "where"
+      ],
+      "forbidden_keywords": [
+        "def",
+        "print("
+      ]
+    },
+    {
+      "id": "integration-book-repo",
+      "title": "封装图书新增函数",
+      "track_id": "integration",
+      "difficulty": "综合",
+      "prompt": "实现 add_book(repo, title, author)，它调用 repo.append(...) 存储一本字典格式的图书，并返回当前图书总数。",
+      "lesson_id": "project-library-sqlite",
+      "hints": [
+        "repo 可以先当作列表来理解",
+        "新增的数据建议包含 title 和 author 两个键"
+      ],
+      "starter_code": "def add_book(repo, title, author):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "add_book"
+      ],
+      "tests": [
+        {
+          "expression": "add_book([], 'Clean Code', 'Robert')",
+          "expected": 1
+        },
+        {
+          "expression": "(lambda repo: [add_book(repo, 'A', 'B'), add_book(repo, 'C', 'D'), len(repo)])([])",
+          "expected": [
+            1,
+            2,
+            2
+          ]
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-api-summary",
+      "title": "构造学习进度响应体",
+      "track_id": "integration",
+      "difficulty": "综合",
+      "prompt": "实现 build_progress_response(user, completed, total)，返回一个字典，包含 user、completed、total、ratio 四个键，其中 ratio = completed / total。",
+      "lesson_id": "project-fastapi-data",
+      "hints": [
+        "返回字典",
+        "ratio 建议直接计算浮点数"
+      ],
+      "starter_code": "def build_progress_response(user, completed, total):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_progress_response"
+      ],
+      "tests": [
+        {
+          "expression": "build_progress_response('Tom', 6, 8)['ratio']",
+          "expected": 0.75
+        },
+        {
+          "expression": "build_progress_response('Amy', 3, 5)['completed']",
+          "expected": 3
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-log-summary",
+      "title": "统计日志级别次数",
+      "track_id": "integration",
+      "difficulty": "精选",
+      "prompt": "实现 summarize_levels(levels)，接收一个日志级别列表，返回一个字典，统计每种级别出现的次数。",
+      "lesson_id": "project-log-analyzer",
+      "hints": [
+        "字典很适合做计数",
+        "遇到新键时先给默认值"
+      ],
+      "starter_code": "def summarize_levels(levels):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "summarize_levels"
+      ],
+      "tests": [
+        {
+          "expression": "summarize_levels(['INFO', 'ERROR', 'INFO'])",
+          "expected": {
+            "INFO": 2,
+            "ERROR": 1
+          }
+        },
+        {
+          "expression": "summarize_levels([])",
+          "expected": {}
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-squares-comprehension",
+      "title": "??????????",
+      "track_id": "python",
+      "difficulty": "??",
+      "prompt": "?? odd_squares(numbers)??? numbers ???????????",
+      "lesson_id": "py-list-comprehensions",
+      "hints": [
+        "???????????",
+        "????????????"
+      ],
+      "starter_code": "def odd_squares(numbers):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "odd_squares"
+      ],
+      "tests": [
+        {
+          "expression": "odd_squares([1,2,3,4,5])",
+          "expected": [
+            1,
+            9,
+            25
+          ]
+        },
+        {
+          "expression": "odd_squares([2,4])",
+          "expected": []
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-factorial-recursive",
+      "title": "??????",
+      "track_id": "python",
+      "difficulty": "??",
+      "prompt": "?? factorial(n)??????? n ?????? 0 ? 1 ????? 1?",
+      "lesson_id": "py-recursion-patterns",
+      "hints": [
+        "?????????",
+        "?????? factorial(n) = n * factorial(n-1)?"
+      ],
+      "starter_code": "def factorial(n):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "factorial"
+      ],
+      "tests": [
+        {
+          "expression": "factorial(1)",
+          "expected": 1
+        },
+        {
+          "expression": "factorial(5)",
+          "expected": 120
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-save-user-payload",
+      "title": "????????",
+      "track_id": "python",
+      "difficulty": "??",
+      "prompt": "?? build_user_payload(name, city)????? name?city?active ?????????? active ??? True?",
+      "lesson_id": "py-json-pathlib",
+      "hints": [
+        "???????????",
+        "??????????????"
+      ],
+      "starter_code": "def build_user_payload(name, city):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_user_payload"
+      ],
+      "tests": [
+        {
+          "expression": "build_user_payload('Tom', 'Shanghai')",
+          "expected": {
+            "name": "Tom",
+            "city": "Shanghai",
+            "active": true
+          }
+        },
+        {
+          "expression": "build_user_payload('Amy', 'Beijing')['active']",
+          "expected": true
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-test-target-positive",
+      "title": "????????????",
+      "track_id": "python",
+      "difficulty": "??",
+      "prompt": "?? is_positive(num)?? num ?? 0 ??? True????? False?",
+      "lesson_id": "py-unit-testing-workflow",
+      "hints": [
+        "????????????",
+        "?? 0 ?????"
+      ],
+      "starter_code": "def is_positive(num):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "is_positive"
+      ],
+      "tests": [
+        {
+          "expression": "is_positive(3)",
+          "expected": true
+        },
+        {
+          "expression": "is_positive(0)",
+          "expected": false
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-summarize-status",
+      "title": "????????",
+      "track_id": "python",
+      "difficulty": "??",
+      "prompt": "?? summarize_status(items)????????????????????????",
+      "lesson_id": "py-json-pathlib",
+      "hints": [
+        "?????????",
+        "??????????"
+      ],
+      "starter_code": "def summarize_status(items):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "summarize_status"
+      ],
+      "tests": [
+        {
+          "expression": "summarize_status(['todo', 'done', 'todo'])",
+          "expected": {
+            "todo": 2,
+            "done": 1
+          }
+        },
+        {
+          "expression": "summarize_status([])",
+          "expected": {}
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-string-contains-zero",
+      "title": "???? C ???",
+      "track_id": "c",
+      "difficulty": "??",
+      "prompt": "??? C ????????? name?????????? \\0 ??????????",
+      "lesson_id": "c-strings-pointers",
+      "hints": [
+        "??????????????",
+        "??? char ???????"
+      ],
+      "starter_code": "char name[] = \"Tom\";\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "char",
+        "name",
+        "\""
+      ],
+      "forbidden_keywords": [
+        "class",
+        "def"
+      ]
+    },
+    {
+      "id": "c-malloc-int-array",
+      "title": "?????????",
+      "track_id": "c",
+      "difficulty": "??",
+      "prompt": "???? C ????? malloc ?? 10 ? int ??????????? free ????",
+      "lesson_id": "c-dynamic-memory",
+      "hints": [
+        "???? malloc ? free ?????",
+        "??? sizeof(int)?"
+      ],
+      "starter_code": "int *nums = ;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "malloc",
+        "free",
+        "sizeof",
+        "int"
+      ],
+      "forbidden_keywords": [
+        "def",
+        "print"
+      ]
+    },
+    {
+      "id": "c-node-struct",
+      "title": "?????????",
+      "track_id": "c",
+      "difficulty": "??",
+      "prompt": "???? Node ???????? value ? next ??????? next ????? Node?",
+      "lesson_id": "c-linked-list-basics",
+      "hints": [
+        "next ???? struct Node *next?",
+        "??????????"
+      ],
+      "starter_code": "struct Node {\n    \n};\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "struct",
+        "Node",
+        "value",
+        "next"
+      ],
+      "forbidden_keywords": [
+        "class",
+        "def"
+      ]
+    },
+    {
+      "id": "c-gdb-break-main",
+      "title": "?? GDB ???????",
+      "track_id": "c",
+      "difficulty": "??",
+      "prompt": "???? GDB ????? main ?????????????",
+      "lesson_id": "c-make-gdb",
+      "hints": [
+        "?? break main?",
+        "?? run?"
+      ],
+      "starter_code": "# gdb commands\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "break main",
+        "run"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-parse-score-safe",
+      "title": "?????????",
+      "track_id": "csharp",
+      "difficulty": "??",
+      "prompt": "??? C# ???? int.TryParse ???? scoreText???????? if ???",
+      "lesson_id": "cs-exception-debugging",
+      "hints": [
+        "TryParse ? Parse ???",
+        "??? if ????????"
+      ],
+      "starter_code": "string scoreText = \"98\";\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "TryParse",
+        "int",
+        "if"
+      ],
+      "forbidden_keywords": [
+        "def",
+        "print"
+      ]
+    },
+    {
+      "id": "cs-declare-saved-event",
+      "title": "?? Saved ??",
+      "track_id": "csharp",
+      "difficulty": "??",
+      "prompt": "? C# ???????? Saved ???????? Action?",
+      "lesson_id": "cs-delegates-events",
+      "hints": [
+        "?? event ????",
+        "??????? public event Action Saved;"
+      ],
+      "starter_code": "class Tracker\n{\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "event",
+        "Action",
+        "Saved"
+      ],
+      "forbidden_keywords": [
+        "def",
+        "print"
+      ]
+    },
+    {
+      "id": "cs-save-json",
+      "title": "??????? JSON",
+      "track_id": "csharp",
+      "difficulty": "??",
+      "prompt": "??? C# ????? JsonSerializer.Serialize(task) ? task ?? JSON ????",
+      "lesson_id": "cs-entity-file-persistence",
+      "hints": [
+        "????? JsonSerializer.Serialize?",
+        "??? task ???????"
+      ],
+      "starter_code": "var task = new { Title = \"Learn\" };\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "JsonSerializer.Serialize",
+        "task"
+      ],
+      "forbidden_keywords": [
+        "def"
+      ]
+    },
+    {
+      "id": "cs-mapget-ping",
+      "title": "???? ping ??",
+      "track_id": "csharp",
+      "difficulty": "??",
+      "prompt": "????? API ?????? /ping ????????? MapGet ???",
+      "lesson_id": "cs-webapi-intro",
+      "hints": [
+        "??? MapGet?",
+        "???? new { ok = true }?"
+      ],
+      "starter_code": "// minimal api\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "MapGet",
+        "/ping",
+        "new"
+      ],
+      "forbidden_keywords": [
+        "def"
+      ]
+    },
+    {
+      "id": "db-design-enrollment-table",
+      "title": "???????",
+      "track_id": "database",
+      "difficulty": "??",
+      "prompt": "??????????????????????? student_id ? course_id ?????",
+      "lesson_id": "db-schema-design",
+      "hints": [
+        "????? enrollments?",
+        "????????"
+      ],
+      "starter_code": "CREATE TABLE ...;",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "create table",
+        "student_id",
+        "course_id"
+      ],
+      "forbidden_keywords": [
+        "drop table"
+      ]
+    },
+    {
+      "id": "db-rank-scores",
+      "title": "??????",
+      "track_id": "database",
+      "difficulty": "??",
+      "prompt": "??? SQL??? RANK() OVER ? score ? students ????????",
+      "lesson_id": "db-window-functions",
+      "hints": [
+        "?? rank() over?",
+        "??????? order by score desc?"
+      ],
+      "starter_code": "SELECT ...;",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "rank()",
+        "over",
+        "order by",
+        "score"
+      ],
+      "forbidden_keywords": [
+        "delete",
+        "drop"
+      ]
+    },
+    {
+      "id": "db-coalesce-phone",
+      "title": "? COALESCE ??????",
+      "track_id": "database",
+      "difficulty": "??",
+      "prompt": "??? SQL?? users ??????????? phone ?????? unknown?",
+      "lesson_id": "db-data-cleaning-sql",
+      "hints": [
+        "?????? COALESCE?",
+        "?????????????"
+      ],
+      "starter_code": "SELECT ...;",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "select",
+        "coalesce",
+        "phone"
+      ],
+      "forbidden_keywords": [
+        "delete",
+        "drop"
+      ]
+    },
+    {
+      "id": "db-postgres-connect",
+      "title": "?? PostgreSQL ???",
+      "track_id": "database",
+      "difficulty": "??",
+      "prompt": "???? psql ??????? learn_db ? PostgreSQL ????",
+      "lesson_id": "db-postgresql-intro",
+      "hints": [
+        "????? psql ???",
+        "???????????"
+      ],
+      "starter_code": "psql ...",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "psql",
+        "learn_db"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-add-item-record",
+      "title": "??????",
+      "track_id": "integration",
+      "difficulty": "??",
+      "prompt": "?? add_item(items, name, count)?????? name ? count ????????????????????",
+      "lesson_id": "project-c-inventory",
+      "hints": [
+        "items ??????",
+        "??????????"
+      ],
+      "starter_code": "def add_item(items, name, count):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "add_item"
+      ],
+      "tests": [
+        {
+          "expression": "add_item([], 'apple', 3)",
+          "expected": 1
+        },
+        {
+          "expression": "(lambda x: [add_item(x, 'a', 1), len(x)])([])",
+          "expected": [
+            1,
+            1
+          ]
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-build-metric-row",
+      "title": "???????",
+      "track_id": "integration",
+      "difficulty": "??",
+      "prompt": "?? build_metric_row(name, value)??????? metric ? value ????????",
+      "lesson_id": "project-sql-report-dashboard",
+      "hints": [
+        "?????????",
+        "?????? metric ? value?"
+      ],
+      "starter_code": "def build_metric_row(name, value):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_metric_row"
+      ],
+      "tests": [
+        {
+          "expression": "build_metric_row('done_count', 8)",
+          "expected": {
+            "metric": "done_count",
+            "value": 8
+          }
+        },
+        {
+          "expression": "build_metric_row('avg_score', 91)['metric']",
+          "expected": "avg_score"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-api-brief",
+      "title": "?? API ????",
+      "track_id": "integration",
+      "difficulty": "??",
+      "prompt": "?? build_api_brief(source, count)????????:weather, ??:3????????",
+      "lesson_id": "project-api-client-tool",
+      "hints": [
+        "???? f-string?",
+        "? source ? count ?????????"
+      ],
+      "starter_code": "def build_api_brief(source, count):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_api_brief"
+      ],
+      "tests": [
+        {
+          "expression": "build_api_brief('weather', 3)",
+          "expected": "??:weather, ??:3"
+        },
+        {
+          "expression": "build_api_brief('users', 10)",
+          "expected": "??:users, ??:10"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-progress-badge",
+      "title": "????????",
+      "track_id": "integration",
+      "difficulty": "??",
+      "prompt": "?? build_badge(done, total)??????3/10 ?????????",
+      "lesson_id": "project-algorithm-playground",
+      "hints": [
+        "???????????????",
+        "??????????"
+      ],
+      "starter_code": "def build_badge(done, total):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_badge"
+      ],
+      "tests": [
+        {
+          "expression": "build_badge(3, 10)",
+          "expected": "3/10 ???"
+        },
+        {
+          "expression": "build_badge(0, 5)",
+          "expected": "0/5 ???"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-include-guard-header",
+      "title": "?????????",
+      "track_id": "c",
+      "difficulty": "??",
+      "prompt": "?????????????? TASKS_H ? include guard?",
+      "lesson_id": "c-header-modules",
+      "hints": [
+        "?????? ifndef?define?endif?",
+        "????????"
+      ],
+      "starter_code": "#ifndef TASKS_H\n#define TASKS_H\n\n\n#endif\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "#ifndef",
+        "#define",
+        "#endif",
+        "TASKS_H"
+      ],
+      "forbidden_keywords": [
+        "class",
+        "def"
+      ]
+    },
+    {
+      "id": "c-free-null-safe",
+      "title": "????????",
+      "track_id": "c",
+      "difficulty": "??",
+      "prompt": "???? C ?????? buffer??? buffer ?? NULL?",
+      "lesson_id": "c-memory-bug-patterns",
+      "hints": [
+        "? free?????",
+        "NULL ????"
+      ],
+      "starter_code": "free(buffer);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "free",
+        "buffer",
+        "NULL"
+      ],
+      "forbidden_keywords": [
+        "def",
+        "print"
+      ]
+    },
+    {
+      "id": "cs-interface-notifier",
+      "title": "声明通知接口",
+      "track_id": "csharp",
+      "difficulty": "基础",
+      "prompt": "定义一个 INotifier 接口，包含 Send(string message) 方法。",
+      "lesson_id": "cs-di-lifetimes",
+      "hints": [
+        "接口名以 I 开头。",
+        "方法返回 void 即可。"
+      ],
+      "starter_code": "public interface INotifier\n{\n    void Send(string message);\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "interface INotifier",
+        "Send"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-record-student",
+      "title": "?? Student record",
+      "track_id": "csharp",
+      "difficulty": "??",
+      "prompt": "??? `record Student(string Name, int Score);`??????????",
+      "lesson_id": "cs-dictionary-records",
+      "hints": [
+        "record ?????????",
+        "?????????"
+      ],
+      "starter_code": "public ",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "record",
+        "Student",
+        "Name",
+        "Score"
+      ],
+      "forbidden_keywords": [
+        "def"
+      ]
+    },
+    {
+      "id": "db-orders-foreign-key",
+      "title": "???????",
+      "track_id": "database",
+      "difficulty": "??",
+      "prompt": "??? CREATE TABLE ????? orders ???? user_id ?? FOREIGN KEY ?? users(id)?",
+      "lesson_id": "db-constraints-foreign-keys",
+      "hints": [
+        "??? user_id ??",
+        "?? FOREIGN KEY (user_id) REFERENCES users(id)?"
+      ],
+      "starter_code": "CREATE TABLE orders (...);",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "create table",
+        "orders",
+        "foreign key",
+        "references",
+        "users",
+        "user_id"
+      ],
+      "forbidden_keywords": [
+        "drop table"
+      ]
+    },
+    {
+      "id": "db-left-join-users-orders",
+      "title": "???????? LEFT JOIN",
+      "track_id": "database",
+      "difficulty": "??",
+      "prompt": "??? SQL?? users ?? orders ?? `users.id = orders.user_id` ? LEFT JOIN?",
+      "lesson_id": "db-join-patterns",
+      "hints": [
+        "???? LEFT JOIN?",
+        "??? ON ???"
+      ],
+      "starter_code": "SELECT ...;",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "select",
+        "from",
+        "users",
+        "left join",
+        "orders",
+        "on"
+      ],
+      "forbidden_keywords": [
+        "delete",
+        "drop"
+      ]
+    },
+    {
+      "id": "py-make-logger",
+      "title": "???????????",
+      "track_id": "python",
+      "difficulty": "??",
+      "prompt": "?? make_logger(tag)?????????? log(message)???????? \"[TAG] message\" ?????",
+      "lesson_id": "py-decorators-basics",
+      "hints": [
+        "????????????",
+        "????????????? tag?"
+      ],
+      "starter_code": "def make_logger(tag):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "make_logger"
+      ],
+      "tests": [
+        {
+          "expression": "make_logger('API')('ok')",
+          "expected": "[API] ok"
+        },
+        {
+          "expression": "make_logger('DB')('saved')",
+          "expected": "[DB] saved"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-build-student-card",
+      "title": "????????",
+      "track_id": "python",
+      "difficulty": "??",
+      "prompt": "?? build_student_card(name, score)?????????? name?score?passed ??????? passed ?????????",
+      "lesson_id": "py-type-hints-dataclasses",
+      "hints": [
+        "???????",
+        "???? 60 ????"
+      ],
+      "starter_code": "def build_student_card(name, score):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_student_card"
+      ],
+      "tests": [
+        {
+          "expression": "build_student_card('Alice', 80)",
+          "expected": {
+            "name": "Alice",
+            "score": 80,
+            "passed": true
+          }
+        },
+        {
+          "expression": "build_student_card('Bob', 40)",
+          "expected": {
+            "name": "Bob",
+            "score": 40,
+            "passed": false
+          }
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-bitmask-check-read",
+      "title": "?????? READ ???",
+      "track_id": "c",
+      "difficulty": "??",
+      "prompt": "??? C ??????????????? perms ???? READ ????",
+      "lesson_id": "c-bitwise-flags",
+      "hints": [
+        "????? &?",
+        "????? if (perms & READ) { ... }"
+      ],
+      "starter_code": "if (/* ?????? */) {\n    printf(\"read\\n\");\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "perms",
+        "&",
+        "READ"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-main-argc-argv",
+      "title": "?????? main ????",
+      "track_id": "c",
+      "difficulty": "??",
+      "prompt": "???? C ?????????????????? argc ? argv?",
+      "lesson_id": "c-command-args",
+      "hints": [
+        "??? main ??????",
+        "argv ???? char *argv[]?"
+      ],
+      "starter_code": "",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "main",
+        "argc",
+        "argv"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-httpclient-get",
+      "title": "?????? GET ??",
+      "track_id": "csharp",
+      "difficulty": "??",
+      "prompt": "??? C# ????? HttpClient ?????? URL???? await ?????",
+      "lesson_id": "cs-httpclient-json",
+      "hints": [
+        "????? HttpClient?",
+        "??????? GetAsync ? GetStringAsync?"
+      ],
+      "starter_code": "",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "HttpClient",
+        "await"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-xunit-assert-equal",
+      "title": "??? Assert.Equal ??",
+      "track_id": "csharp",
+      "difficulty": "??",
+      "prompt": "??? xUnit ????? Add(2, 3) ????? 5?",
+      "lesson_id": "cs-testing-workflow",
+      "hints": [
+        "????? Assert.Equal?",
+        "????????????"
+      ],
+      "starter_code": "",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "Assert.Equal",
+        "Add(2, 3)"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-with-sales-cte",
+      "title": "????????? CTE",
+      "track_id": "database",
+      "difficulty": "??",
+      "prompt": "??? SQL?? WITH sales_cte ??? orders ???????? sales_cte ??????",
+      "lesson_id": "db-cte-patterns",
+      "hints": [
+        "???? WITH?SELECT?FROM?",
+        "??????? sales_cte?"
+      ],
+      "starter_code": "",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "with",
+        "sales_cte",
+        "select",
+        "from"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-group-having-order",
+      "title": "筛出订单数至少 2 的用户",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，返回订单数至少为 2 的 user_id 和数量，并按 user_id 排序。",
+      "lesson_id": "db-aggregation",
+      "hints": [
+        "这题关键是 group by + having。",
+        "最后 order by user_id。"
+      ],
+      "starter_code": "SELECT user_id, COUNT(*) AS order_count\nFROM orders\nGROUP BY user_id\nHAVING COUNT(*) >= 2\nORDER BY user_id;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "group by",
+        "having",
+        "order by"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-build-desktop-record",
+      "title": "???????",
+      "track_id": "integration",
+      "difficulty": "??",
+      "prompt": "?? build_desktop_record(title, done, source)?????????? title?done?source ?????",
+      "lesson_id": "project-csharp-sqlite-desktop",
+      "hints": [
+        "???????",
+        "?????? title?done?source?"
+      ],
+      "starter_code": "def build_desktop_record(title, done, source):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_desktop_record"
+      ],
+      "tests": [
+        {
+          "expression": "build_desktop_record('Task', True, 'sqlite')",
+          "expected": {
+            "title": "Task",
+            "done": true,
+            "source": "sqlite"
+          }
+        },
+        {
+          "expression": "build_desktop_record('Read', False, 'local')",
+          "expected": {
+            "title": "Read",
+            "done": false,
+            "source": "local"
+          }
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-build-report-line",
+      "title": "???????",
+      "track_id": "integration",
+      "difficulty": "??",
+      "prompt": "?? build_report_line(day, passed, total)????? \"2026-04-03 ? 8/10 ???\" ?????",
+      "lesson_id": "project-python-report-pipeline",
+      "hints": [
+        "????? f-string?",
+        "??????????????"
+      ],
+      "starter_code": "def build_report_line(day, passed, total):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_report_line"
+      ],
+      "tests": [
+        {
+          "expression": "build_report_line('2026-04-03', 8, 10)",
+          "expected": "2026-04-03 ? 8/10 ???"
+        },
+        {
+          "expression": "build_report_line('2026-04-04', 0, 5)",
+          "expected": "2026-04-04 ? 0/5 ???"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-yield-range",
+      "title": "?",
+      "track_id": "python",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "py-generators-iterators",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "def count_up(n):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef"
+      ],
+      "required_names": [
+        "count_up"
+      ],
+      "tests": [
+        {
+          "expression": "list(count_up(4))",
+          "expected": [
+            1,
+            2,
+            3,
+            4
+          ]
+        }
+      ],
+      "required_keywords": [
+        "yield"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-open-log-summary",
+      "title": "?",
+      "track_id": "python",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "py-context-managers",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "with open(\"demo.txt\", \"r\", encoding=\"utf-8\") as f:\n    first_line = None\n",
+      "expected_nodes": [],
+      "required_names": [
+        "first_line"
+      ],
+      "tests": [],
+      "required_keywords": [
+        "with",
+        "open"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-save-record-line",
+      "title": "?",
+      "track_id": "c",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "c-file-io-records",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "/* write here */\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "fprintf"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-call-callback",
+      "title": "?",
+      "track_id": "c",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "c-function-pointers",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "/* write here */\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "fn"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-await-delay",
+      "title": "?",
+      "track_id": "csharp",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "cs-async-task-workflow",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "// write here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "await",
+        "Task.Delay"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-group-score-lines",
+      "title": "?",
+      "track_id": "csharp",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "cs-linq-grouping",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "// write here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "GroupBy"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-transfer-transaction",
+      "title": "?",
+      "track_id": "database",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "db-transactions-isolation",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "-- write SQL here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "BEGIN",
+        "COMMIT"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-create-index-users-email",
+      "title": "?",
+      "track_id": "database",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "db-index-design-patterns",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "-- write SQL here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "CREATE INDEX",
+        "users",
+        "email"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-build-log-entry",
+      "title": "?",
+      "track_id": "integration",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "project-c-log-parser",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "def build_log_entry(level, count):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_log_entry"
+      ],
+      "tests": [
+        {
+          "expression": "build_log_entry('ERROR', 3)",
+          "expected": {
+            "level": "ERROR",
+            "count": 3
+          }
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-build-dashboard-card",
+      "title": "?",
+      "track_id": "integration",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "project-csharp-api-dashboard",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "def build_card_title(source, metric):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_card_title"
+      ],
+      "tests": [
+        {
+          "expression": "build_card_title('weather', 'requests')",
+          "expected": "weather ? requests"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-safe-parse-int",
+      "title": "?",
+      "track_id": "python",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "py-error-handling-patterns",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "def safe_parse_int(text, default):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "safe_parse_int"
+      ],
+      "tests": [
+        {
+          "expression": "safe_parse_int('12', 0)",
+          "expected": 12
+        },
+        {
+          "expression": "safe_parse_int('oops', 7)",
+          "expected": 7
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-argparse-add-flag",
+      "title": "?",
+      "track_id": "python",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "py-cli-argparse",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "import argparse\nparser = argparse.ArgumentParser()\n# write here\n",
+      "expected_nodes": [],
+      "required_names": [
+        "parser"
+      ],
+      "tests": [],
+      "required_keywords": [
+        "add_argument",
+        "--limit"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-open-binary-write",
+      "title": "?",
+      "track_id": "c",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "c-binary-file-basics",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "/* write here */\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "fopen",
+        "wb"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-switch-task-state",
+      "title": "?",
+      "track_id": "c",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "c-enum-state-machine",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "/* write here */\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "switch",
+        "case",
+        "STATE_DONE"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-ctor-inject-logger",
+      "title": "?",
+      "track_id": "csharp",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "cs-dependency-injection-intro",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "// write here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "ILogger",
+        "_logger"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-repository-interface",
+      "title": "?",
+      "track_id": "csharp",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "cs-repository-pattern-intro",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "// write here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "interface",
+        "ITaskRepository"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-exists-active-users",
+      "title": "???????????",
+      "track_id": "database",
+      "difficulty": "?",
+      "prompt": "??? SQL????????? active ???????",
+      "lesson_id": "db-subqueries-exists",
+      "hints": [
+        "???? EXISTS?",
+        "??? users???? sessions?"
+      ],
+      "starter_code": "-- write SQL here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "SELECT",
+        "EXISTS",
+        "sessions"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-create-user-view",
+      "title": "????????",
+      "track_id": "database",
+      "difficulty": "?",
+      "prompt": "??? CREATE VIEW ????? active_users ?????? status=active ????????",
+      "lesson_id": "db-views-materialization",
+      "hints": [
+        "????? active_users?",
+        "????? name ? status ???"
+      ],
+      "starter_code": "-- write SQL here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "CREATE VIEW",
+        "active_users"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-build-audit-item",
+      "title": "?",
+      "track_id": "integration",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "project-database-audit-tool",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "def build_audit_item(table_name, has_pk):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_audit_item"
+      ],
+      "tests": [
+        {
+          "expression": "build_audit_item('users', True)",
+          "expected": {
+            "table_name": "users",
+            "has_pk": true
+          }
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-build-cli-help",
+      "title": "?",
+      "track_id": "integration",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "project-python-cli-packager",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "def build_help_line(command, desc):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_help_line"
+      ],
+      "tests": [
+        {
+          "expression": "build_help_line('scan', '???????')",
+          "expected": "scan: ???????"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-configure-basic-logger",
+      "title": "?",
+      "track_id": "python",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "py-logging-debugging",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "import logging\n# write here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "basicConfig",
+        "INFO"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "py-build-package-entry",
+      "title": "?",
+      "track_id": "python",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "py-project-structure",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "# write structure here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "app",
+        "main.py",
+        "tests"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-define-max-macro",
+      "title": "?",
+      "track_id": "c",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "c-preprocessor-macros",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "/* write here */\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "#define",
+        "MAX_ITEMS",
+        "128"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-qsort-compare-int",
+      "title": "?",
+      "track_id": "c",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "c-qsort-comparator",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "/* write here */\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "compare_ints",
+        "const void *"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-read-config-value",
+      "title": "读取配置值",
+      "track_id": "csharp",
+      "difficulty": "进阶",
+      "prompt": "写一段代码，从 IConfiguration 读取 Api:BaseUrl。",
+      "lesson_id": "cs-options-validation",
+      "hints": [
+        "索引器写法很常见。",
+        "也可以用 GetSection。"
+      ],
+      "starter_code": "string? baseUrl = configuration[\"Api:BaseUrl\"];\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "IConfiguration",
+        "Api:BaseUrl"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-map-route-id",
+      "title": "?",
+      "track_id": "csharp",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "cs-minimal-api-routing",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "// write here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "MapGet",
+        "/users/{id}"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-explain-users-query",
+      "title": "?",
+      "track_id": "database",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "db-explain-query-plans",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "-- write SQL here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "EXPLAIN",
+        "SELECT",
+        "users"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-add-column-migration",
+      "title": "?",
+      "track_id": "database",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "db-migrations-basics",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "-- write SQL here\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "ALTER TABLE",
+        "ADD COLUMN",
+        "last_login"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-build-kpi-row",
+      "title": "?",
+      "track_id": "integration",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "project-sql-learning-analytics",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "def build_kpi_row(name, value):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_kpi_row"
+      ],
+      "tests": [
+        {
+          "expression": "build_kpi_row('passed_rate', 0.8)",
+          "expected": {
+            "name": "passed_rate",
+            "value": 0.8
+          }
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "integration-build-note-summary",
+      "title": "?",
+      "track_id": "integration",
+      "difficulty": "?",
+      "prompt": "?",
+      "lesson_id": "project-csharp-notes-manager",
+      "hints": [
+        "?"
+      ],
+      "starter_code": "def build_note_summary(title, keyword_count):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_note_summary"
+      ],
+      "tests": [
+        {
+          "expression": "build_note_summary('Python ???', 3)",
+          "expected": "Python ??? ? 3 ????"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-insert-daily-report",
+      "title": "插入日报记录",
+      "track_id": "database",
+      "difficulty": "基础",
+      "prompt": "写一条 INSERT 语句，把 2026-04-01 这天的 total=8 插入 reports 表。",
+      "lesson_id": "db-sql-test-data",
+      "hints": [
+        "先看表结构里有哪两列。",
+        "插入一条完整记录即可。"
+      ],
+      "starter_code": "INSERT INTO reports(day, total)\nVALUES ('2026-04-01', 8);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "insert",
+        "into",
+        "values"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-update-null-phone",
+      "title": "把空手机号补成 unknown",
+      "track_id": "database",
+      "difficulty": "基础",
+      "prompt": "写一条 UPDATE，把 users 表中 phone 为 NULL 的记录改成 unknown。",
+      "lesson_id": "db-sql-test-data",
+      "hints": [
+        "先锁定 phone IS NULL 的记录。",
+        "别把原本有手机号的记录也改掉。"
+      ],
+      "starter_code": "UPDATE users\nSET phone = 'unknown'\nWHERE phone IS NULL;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "update",
+        "set",
+        "where"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-delete-cancelled-orders",
+      "title": "删除已取消订单",
+      "track_id": "database",
+      "difficulty": "基础",
+      "prompt": "写一条 DELETE，把 orders 表里 status=cancelled 的记录删掉。",
+      "lesson_id": "db-sql-test-data",
+      "hints": [
+        "先确定删除条件。",
+        "DELETE 通常和 WHERE 一起出现。"
+      ],
+      "starter_code": "DELETE FROM orders\nWHERE status = 'cancelled';\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "delete",
+        "from",
+        "where"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-window-running-total",
+      "title": "做销售额累计和",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，返回 day、amount 和按日期累加的 running_total。",
+      "lesson_id": "db-window-functions",
+      "hints": [
+        "这题是窗口函数题。",
+        "running_total 常见写法是 sum(amount) over (...)。"
+      ],
+      "starter_code": "SELECT day, amount,\n       SUM(amount) OVER (ORDER BY day) AS running_total\nFROM sales;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "sum",
+        "over",
+        "order by"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-exists-high-value-users",
+      "title": "找出有高金额订单的用户",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，返回至少存在一笔 amount>100 订单的用户名。",
+      "lesson_id": "db-subqueries-exists",
+      "hints": [
+        "这题适合 EXISTS。",
+        "把 users 放在外层。"
+      ],
+      "starter_code": "SELECT name\nFROM users u\nWHERE EXISTS (\n    SELECT 1\n    FROM orders o\n    WHERE o.user_id = u.id AND o.amount > 100\n);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "select",
+        "exists"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-upsert-daily-kpi",
+      "title": "用 UPSERT 更新日报 KPI",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，把 day=2026-04-01 的 total 更新成 8；如果不存在就插入。",
+      "lesson_id": "db-upsert-merge-patterns",
+      "hints": [
+        "这题核心是主键冲突时更新。",
+        "SQLite 用 ON CONFLICT。"
+      ],
+      "starter_code": "INSERT INTO kpi(day, total)\nVALUES ('2026-04-01', 8)\nON CONFLICT(day) DO UPDATE SET total = excluded.total;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "insert",
+        "on conflict",
+        "do update"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-cte-top-users",
+      "title": "用 CTE 统计高价值用户总额",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，先用 CTE 聚合每个 user_id 的总金额，再返回 user_id 和 total。",
+      "lesson_id": "db-cte-patterns",
+      "hints": [
+        "先写 WITH 子句。",
+        "再在主查询里 select 聚合结果。"
+      ],
+      "starter_code": "WITH user_totals AS (\n    SELECT user_id, SUM(amount) AS total\n    FROM orders\n    GROUP BY user_id\n)\nSELECT user_id, total\nFROM user_totals;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "with",
+        "sum",
+        "group by"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-row-number-latest-log",
+      "title": "取每个用户最新一条日志",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，返回每个 user_id 最新一条日志的时间和分数。",
+      "lesson_id": "db-window-functions",
+      "hints": [
+        "这题适合 row_number() over(partition by ... order by ... desc)。",
+        "最后只取 rn=1。"
+      ],
+      "starter_code": "WITH ranked AS (\n    SELECT user_id, ts, score,\n           ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY ts DESC) AS rn\n    FROM logs\n)\nSELECT user_id, ts, score\nFROM ranked\nWHERE rn = 1;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "row_number",
+        "over",
+        "partition by"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-join-course-enrollment-count",
+      "title": "统计课程报名人数",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，返回课程标题和报名人数，没报名的课程也要显示为 0。",
+      "lesson_id": "db-join-patterns",
+      "hints": [
+        "左连接课程和报名表。",
+        "计数时注意空值。"
+      ],
+      "starter_code": "SELECT c.title, COUNT(e.student_id) AS enrolled_count\nFROM courses c\nLEFT JOIN enrollments e ON e.course_id = c.id\nGROUP BY c.id, c.title;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "left join",
+        "count",
+        "group by"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-subquery-above-course-average",
+      "title": "找出高于课程平均分的学生",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，返回成绩高于本课程平均分的学生姓名。",
+      "lesson_id": "db-subqueries-exists",
+      "hints": [
+        "这题是相关子查询。",
+        "按 course 比较平均分。"
+      ],
+      "starter_code": "SELECT student\nFROM scores s\nWHERE score > (\n    SELECT AVG(score)\n    FROM scores\n    WHERE course = s.course\n);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "select",
+        "avg"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-create-covering-index-report",
+      "title": "给报表表加组合索引",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "写一条 CREATE INDEX 语句，给 reports(created_at, status) 建组合索引。",
+      "lesson_id": "db-covering-indexes",
+      "hints": [
+        "索引名可以自定。",
+        "列顺序要先 created_at，再 status。"
+      ],
+      "starter_code": "CREATE INDEX idx_reports_created_status\nON reports(created_at, status);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "create index",
+        "reports",
+        "created_at",
+        "status"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-add-status-column-users",
+      "title": "给用户表补 status 列",
+      "track_id": "database",
+      "difficulty": "基础",
+      "prompt": "写一条 ALTER TABLE 语句，给 users 表新增 status 文本列。",
+      "lesson_id": "db-migrations-basics",
+      "hints": [
+        "SQLite 里常见写法是 add column。",
+        "列类型可用 TEXT。"
+      ],
+      "starter_code": "ALTER TABLE users\nADD COLUMN status TEXT;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "alter table",
+        "add column",
+        "status"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-create-enrollment-foreign-key",
+      "title": "创建带外键的选课表",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "写一段建表脚本，创建 enrollments 表，并让 student_id / course_id 分别引用 students / courses。",
+      "lesson_id": "db-constraints-foreign-keys",
+      "hints": [
+        "先想清楚两列名。",
+        "SQLite foreign key 写在列后或表级约束都行。"
+      ],
+      "starter_code": "CREATE TABLE enrollments(\n    student_id INTEGER NOT NULL,\n    course_id INTEGER NOT NULL,\n    FOREIGN KEY(student_id) REFERENCES students(id),\n    FOREIGN KEY(course_id) REFERENCES courses(id)\n);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "create table",
+        "foreign key",
+        "student_id",
+        "course_id"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-left-join-course-report",
+      "title": "课程报名报表（左连接）",
+      "track_id": "database",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，返回每门课程标题和报名人数，包含没人报名的课程。",
+      "lesson_id": "db-join-patterns",
+      "hints": [
+        "这题更强调 left join 报表心智。",
+        "统计时别把空课程漏掉。"
+      ],
+      "starter_code": "SELECT c.title, COUNT(e.student_id) AS enrolled_count\nFROM courses c\nLEFT JOIN enrollments e ON e.course_id = c.id\nGROUP BY c.title;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "left join",
+        "count",
+        "group by"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "db-coalesce-city-label",
+      "title": "给空城市打标签",
+      "track_id": "database",
+      "difficulty": "基础",
+      "prompt": "写一条 SQL，返回用户姓名和城市；如果 city 为 NULL，则显示“未知城市”。",
+      "lesson_id": "db-data-cleaning-sql",
+      "hints": [
+        "这题适合 COALESCE。",
+        "别忘了把 name 也查出来。"
+      ],
+      "starter_code": "SELECT name, COALESCE(city, '未知城市') AS city_label\nFROM users\nORDER BY name;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "select",
+        "coalesce"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-declare-score-array",
+      "title": "声明成绩数组",
+      "track_id": "c",
+      "difficulty": "基础",
+      "prompt": "声明一个包含 5 个整数的 scores 数组。",
+      "lesson_id": "c-arrays-memory-layout",
+      "hints": [
+        "最小答案就是一个整型数组声明。",
+        "可以顺手给初始值。"
+      ],
+      "starter_code": "int scores[5] = {0};\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "int",
+        "scores",
+        "[5]"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-sum-array-loop",
+      "title": "循环累加数组",
+      "track_id": "c",
+      "difficulty": "基础",
+      "prompt": "写一段代码，遍历 nums 数组并把总和累加到 sum。",
+      "lesson_id": "c-arrays-memory-layout",
+      "hints": [
+        "要有 for 循环。",
+        "sum += nums[i] 很常见。"
+      ],
+      "starter_code": "int sum = 0;\nfor (int i = 0; i < count; ++i) {\n    sum += nums[i];\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "for",
+        "sum",
+        "nums"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-swap-pointer-signature",
+      "title": "写出 swap 指针签名",
+      "track_id": "c",
+      "difficulty": "基础",
+      "prompt": "声明一个 swap 函数，接收两个 int 指针并交换内容。",
+      "lesson_id": "c-pointer-arithmetic",
+      "hints": [
+        "参数是 int*。",
+        "函数名叫 swap。"
+      ],
+      "starter_code": "void swap(int *a, int *b)\n{\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "void",
+        "swap",
+        "int *"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-copy-string-safe",
+      "title": "安全复制字符串",
+      "track_id": "c",
+      "difficulty": "基础",
+      "prompt": "写一段代码，把 source 安全复制到 dest，并保证结尾有空字符。",
+      "lesson_id": "c-string-library-patterns",
+      "hints": [
+        "可以用 strncpy。",
+        "记得手动补 \\0。"
+      ],
+      "starter_code": "strncpy(dest, source, size - 1);\ndest[size - 1] = '\\0';\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "strncpy",
+        "dest",
+        "\\0"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-open-file-read",
+      "title": "打开文件读取",
+      "track_id": "c",
+      "difficulty": "基础",
+      "prompt": "写一段代码，用 fopen 打开 path，并判断是否打开成功。",
+      "lesson_id": "c-binary-file-indexer",
+      "hints": [
+        "先声明 FILE*。",
+        "判断空指针。"
+      ],
+      "starter_code": "FILE *fp = fopen(path, \"r\");\nif (!fp) {\n    return -1;\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "fopen",
+        "FILE",
+        "if"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-fgets-check-null",
+      "title": "用 fgets 读一行并判空",
+      "track_id": "c",
+      "difficulty": "基础",
+      "prompt": "写一段代码，用 fgets 读取一行，并在失败时直接返回。",
+      "lesson_id": "c-string-library-patterns",
+      "hints": [
+        "fgets 返回值可以直接判空。",
+        "失败时尽早 return。"
+      ],
+      "starter_code": "if (!fgets(buffer, sizeof(buffer), fp)) {\n    return -1;\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "fgets",
+        "if",
+        "return"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-define-book-struct",
+      "title": "定义图书结构体",
+      "track_id": "c",
+      "difficulty": "基础",
+      "prompt": "定义一个 Book 结构体，至少包含 id 和 title 两个字段。",
+      "lesson_id": "c-binary-file-indexer",
+      "hints": [
+        "用 typedef struct。",
+        "title 可以给一个固定长度字符数组。"
+      ],
+      "starter_code": "typedef struct {\n    int id;\n    char title[64];\n} Book;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "typedef struct",
+        "Book",
+        "title"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-allocate-single-node",
+      "title": "申请一个链表节点",
+      "track_id": "c",
+      "difficulty": "进阶",
+      "prompt": "写一段代码，用 malloc 申请一个 Node 节点，并判空。",
+      "lesson_id": "c-defensive-coding",
+      "hints": [
+        "malloc 后先判空。",
+        "可以顺手初始化 next。"
+      ],
+      "starter_code": "Node *node = malloc(sizeof(Node));\nif (!node) {\n    return NULL;\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "malloc",
+        "Node",
+        "if"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-free-and-null-pointer",
+      "title": "释放后置空指针",
+      "track_id": "c",
+      "difficulty": "进阶",
+      "prompt": "写一段代码，释放 ptr 后把它设为 NULL。",
+      "lesson_id": "c-defensive-coding",
+      "hints": [
+        "free 后主动置空。",
+        "避免悬空指针。"
+      ],
+      "starter_code": "free(ptr);\nptr = NULL;\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "free",
+        "NULL"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-argc-usage-guard",
+      "title": "命令行参数数量检查",
+      "track_id": "c",
+      "difficulty": "基础",
+      "prompt": "写一段代码，如果 argc 小于 2 就打印用法并返回。",
+      "lesson_id": "c-defensive-coding",
+      "hints": [
+        "先判断 argc。",
+        "可以打印 Usage。"
+      ],
+      "starter_code": "if (argc < 2) {\n    printf(\"Usage: app <file>\\n\");\n    return 1;\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "argc",
+        "if",
+        "printf"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-enum-state-switch",
+      "title": "用 enum 做状态分支",
+      "track_id": "c",
+      "difficulty": "进阶",
+      "prompt": "定义一个 State 枚举，并用 switch 处理至少两个状态。",
+      "lesson_id": "c-defensive-coding",
+      "hints": [
+        "先 enum，再 switch。",
+        "至少写两个 case。"
+      ],
+      "starter_code": "typedef enum {\n    STATE_IDLE,\n    STATE_RUNNING\n} State;\n\nswitch (state) {\n    case STATE_IDLE:\n        break;\n    case STATE_RUNNING:\n        break;\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "enum",
+        "switch",
+        "case"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-callback-typedef",
+      "title": "给回调函数起别名",
+      "track_id": "c",
+      "difficulty": "进阶",
+      "prompt": "写一个 typedef，把接收 int 并返回 int 的函数指针命名为 TransformFn。",
+      "lesson_id": "c-callback-qsort-patterns",
+      "hints": [
+        "typedef 目标是函数指针。",
+        "别名叫 TransformFn。"
+      ],
+      "starter_code": "typedef int (*TransformFn)(int);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "typedef",
+        "TransformFn",
+        "(*"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-qsort-call-site",
+      "title": "调用 qsort 排序",
+      "track_id": "c",
+      "difficulty": "进阶",
+      "prompt": "写一行 qsort 调用，对 nums 数组按 int 比较函数 cmp_int 排序。",
+      "lesson_id": "c-callback-qsort-patterns",
+      "hints": [
+        "参数里要有元素个数和 sizeof(int)。",
+        "比较函数传 cmp_int。"
+      ],
+      "starter_code": "qsort(nums, count, sizeof(int), cmp_int);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "qsort",
+        "sizeof",
+        "cmp_int"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-write-binary-header",
+      "title": "写入二进制文件头",
+      "track_id": "c",
+      "difficulty": "进阶",
+      "prompt": "写一段代码，用 fwrite 把 header 结构体写入 fp。",
+      "lesson_id": "c-binary-file-indexer",
+      "hints": [
+        "fwrite 的 size 常写 sizeof(Header)。",
+        "count 通常是 1。"
+      ],
+      "starter_code": "fwrite(&header, sizeof(Header), 1, fp);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "fwrite",
+        "sizeof",
+        "header"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "c-header-include-guard",
+      "title": "写头文件保护宏",
+      "track_id": "c",
+      "difficulty": "基础",
+      "prompt": "写出一个名为 USER_REPO_H 的 include guard。",
+      "lesson_id": "c-defensive-coding",
+      "hints": [
+        "ifndef / define / endif 三件套。",
+        "宏名保持统一。"
+      ],
+      "starter_code": "#ifndef USER_REPO_H\n#define USER_REPO_H\n\n#endif\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "#ifndef",
+        "#define",
+        "#endif"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-define-product-class",
+      "title": "定义 Product 类",
+      "track_id": "csharp",
+      "difficulty": "基础",
+      "prompt": "定义一个 Product 类，至少包含 Id 和 Name 两个属性。",
+      "lesson_id": "cs-generics-constraints",
+      "hints": [
+        "C# 属性常用 get; set;。",
+        "类名就叫 Product。"
+      ],
+      "starter_code": "public class Product\n{\n    public int Id { get; set; }\n    public string Name { get; set; } = string.Empty;\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "class Product",
+        "Id",
+        "Name"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-tryparse-port",
+      "title": "解析端口号",
+      "track_id": "csharp",
+      "difficulty": "基础",
+      "prompt": "写一段代码，用 int.TryParse 解析 text，并在成功时把结果保存到 port。",
+      "lesson_id": "cs-options-validation",
+      "hints": [
+        "关键是 int.TryParse。",
+        "通常会有 if 判断。"
+      ],
+      "starter_code": "if (int.TryParse(text, out int port))\n{\n    Console.WriteLine(port);\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "int.TryParse",
+        "if",
+        "port"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-dictionary-count-word",
+      "title": "统计词频",
+      "track_id": "csharp",
+      "difficulty": "基础",
+      "prompt": "写一段代码，用 Dictionary<string,int> 统计 words 里的词频。",
+      "lesson_id": "cs-linq-projection-aggregation",
+      "hints": [
+        "先判断 key 是否存在。",
+        "不存在就从 0 开始。"
+      ],
+      "starter_code": "var counts = new Dictionary<string, int>();\nforeach (var word in words)\n{\n    if (!counts.ContainsKey(word)) counts[word] = 0;\n    counts[word]++;\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "Dictionary",
+        "ContainsKey",
+        "++"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-record-order",
+      "title": "定义订单 record",
+      "track_id": "csharp",
+      "difficulty": "基础",
+      "prompt": "定义一个 Order record，包含 Id 和 Total。",
+      "lesson_id": "cs-generics-constraints",
+      "hints": [
+        "record 是轻量不可变建模常用工具。",
+        "字段可以用主构造。"
+      ],
+      "starter_code": "public record Order(int Id, decimal Total);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "record Order",
+        "Id",
+        "Total"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-event-raise-saved",
+      "title": "触发 Saved 事件",
+      "track_id": "csharp",
+      "difficulty": "进阶",
+      "prompt": "定义一个 Saved 事件，并在 Save() 方法里触发它。",
+      "lesson_id": "cs-background-services-intro",
+      "hints": [
+        "event EventHandler 很常见。",
+        "触发时可用 ?.Invoke。"
+      ],
+      "starter_code": "public event EventHandler? Saved;\n\npublic void Save()\n{\n    Saved?.Invoke(this, EventArgs.Empty);\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "event",
+        "EventHandler",
+        "Invoke"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-linq-where-select",
+      "title": "用 LINQ 过滤并投影",
+      "track_id": "csharp",
+      "difficulty": "进阶",
+      "prompt": "写一段 LINQ，筛出 active 用户并投影出 Name。",
+      "lesson_id": "cs-linq-projection-aggregation",
+      "hints": [
+        "Where 后面通常接 Select。",
+        "别忘了属性名。"
+      ],
+      "starter_code": "var names = users\n    .Where(x => x.IsActive)\n    .Select(x => x.Name)\n    .ToList();\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "Where",
+        "Select"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-linq-groupby-count",
+      "title": "按城市分组计数",
+      "track_id": "csharp",
+      "difficulty": "进阶",
+      "prompt": "写一段 LINQ，按 City 分组，并统计每组人数。",
+      "lesson_id": "cs-linq-projection-aggregation",
+      "hints": [
+        "GroupBy 后通常接 Select。",
+        "Select 里可以 new 一个匿名对象。"
+      ],
+      "starter_code": "var result = users\n    .GroupBy(x => x.City)\n    .Select(g => new { City = g.Key, Count = g.Count() })\n    .ToList();\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "GroupBy",
+        "Count",
+        "Select"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-await-task-delay",
+      "title": "等待异步延迟",
+      "track_id": "csharp",
+      "difficulty": "基础",
+      "prompt": "写一个 async 方法，await Task.Delay(500) 后返回 \"ok\"。",
+      "lesson_id": "cs-background-services-intro",
+      "hints": [
+        "返回类型一般是 Task<string>。",
+        "方法体里要有 await。"
+      ],
+      "starter_code": "public static async Task<string> BuildAsync()\n{\n    await Task.Delay(500);\n    return \"ok\";\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "async",
+        "Task",
+        "await"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-httpclient-get-json",
+      "title": "发起最小 GET 请求",
+      "track_id": "csharp",
+      "difficulty": "进阶",
+      "prompt": "写一段代码，用 HttpClient.GetStringAsync 拉取 url 内容。",
+      "lesson_id": "cs-background-services-intro",
+      "hints": [
+        "HttpClient 常配合 await。",
+        "结果保存到 string。"
+      ],
+      "starter_code": "using var client = new HttpClient();\nstring text = await client.GetStringAsync(url);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "HttpClient",
+        "GetStringAsync",
+        "await"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-minimalapi-user-route",
+      "title": "定义最小 API 路由",
+      "track_id": "csharp",
+      "difficulty": "进阶",
+      "prompt": "写一条 MapGet 路由，返回 /users/{id} 的匿名对象。",
+      "lesson_id": "cs-background-services-intro",
+      "hints": [
+        "MapGet 的第一个参数是路由模板。",
+        "lambda 里可以直接返回对象。"
+      ],
+      "starter_code": "app.MapGet(\"/users/{id}\", (int id) => new { Id = id });\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "MapGet",
+        "/users/{id}"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-register-scoped-service",
+      "title": "注册 Scoped 服务",
+      "track_id": "csharp",
+      "difficulty": "进阶",
+      "prompt": "写一行代码，把 IUserRepo 映射到 UserRepo，生命周期为 Scoped。",
+      "lesson_id": "cs-di-lifetimes",
+      "hints": [
+        "services.AddScoped 很常见。",
+        "接口和实现都要写出来。"
+      ],
+      "starter_code": "services.AddScoped<IUserRepo, UserRepo>();\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "AddScoped",
+        "IUserRepo",
+        "UserRepo"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-xunit-assert-total",
+      "title": "写一条 xUnit 断言",
+      "track_id": "csharp",
+      "difficulty": "基础",
+      "prompt": "写一条 Assert.Equal，断言 result.Total 等于 3。",
+      "lesson_id": "cs-options-validation",
+      "hints": [
+        "xUnit 常见写法是 Assert.Equal(expected, actual)。",
+        "别把顺序写反。"
+      ],
+      "starter_code": "Assert.Equal(3, result.Total);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "Assert.Equal",
+        "result.Total"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cs-save-json-options",
+      "title": "保存 JSON 配置",
+      "track_id": "csharp",
+      "difficulty": "进阶",
+      "prompt": "写一段代码，用 JsonSerializer.Serialize 把 options 写成 JSON 字符串。",
+      "lesson_id": "cs-options-validation",
+      "hints": [
+        "System.Text.Json 里常用 JsonSerializer.Serialize。",
+        "结果保存到 string。"
+      ],
+      "starter_code": "string json = JsonSerializer.Serialize(options);\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "JsonSerializer.Serialize",
+        "options"
+      ],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-running-sum",
+      "title": "数组前缀和（running sum）",
+      "track_id": "algorithms",
+      "difficulty": "基础",
+      "prompt": "实现 running_sum(nums)，返回每个位置到当前为止的累计和列表。",
+      "lesson_id": "algo-prefix-sum-window",
+      "hints": [
+        "可以边遍历边累计。",
+        "结果列表长度和输入相同。"
+      ],
+      "starter_code": "def running_sum(nums):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "running_sum"
+      ],
+      "tests": [
+        {
+          "expression": "running_sum([1,2,3,4])",
+          "expected": [
+            1,
+            3,
+            6,
+            10
+          ]
+        },
+        {
+          "expression": "running_sum([5,-2,7])",
+          "expected": [
+            5,
+            3,
+            10
+          ]
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-two-sum-hash",
+      "title": "Two Sum 哈希版",
+      "track_id": "algorithms",
+      "difficulty": "基础",
+      "prompt": "实现 two_sum(nums, target)，返回一组满足和为 target 的两个下标。",
+      "lesson_id": "algo-arrays-hashing",
+      "hints": [
+        "先想“当前值还缺谁”。",
+        "边扫边记最早出现的位置。"
+      ],
+      "starter_code": "def two_sum(nums, target):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "two_sum"
+      ],
+      "tests": [
+        {
+          "expression": "two_sum([2,7,11,15], 9)",
+          "expected": [
+            0,
+            1
+          ]
+        },
+        {
+          "expression": "two_sum([3,2,4], 6)",
+          "expected": [
+            1,
+            2
+          ]
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-valid-anagram",
+      "title": "判断有效字母异位词",
+      "track_id": "algorithms",
+      "difficulty": "基础",
+      "prompt": "实现 is_anagram(a, b)，如果两个字符串互为字母异位词则返回 True。",
+      "lesson_id": "algo-arrays-hashing",
+      "hints": [
+        "可以比较计数字典，也可以排序后比较。",
+        "长度不同直接 False。"
+      ],
+      "starter_code": "def is_anagram(a, b):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "is_anagram"
+      ],
+      "tests": [
+        {
+          "expression": "is_anagram(\"anagram\", \"nagaram\")",
+          "expected": true
+        },
+        {
+          "expression": "is_anagram(\"rat\", \"car\")",
+          "expected": false
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-two-pointer-palindrome",
+      "title": "双指针回文判断",
+      "track_id": "algorithms",
+      "difficulty": "基础",
+      "prompt": "实现 is_palindrome(text)，判断 text 是否是回文字符串。",
+      "lesson_id": "algo-two-pointers",
+      "hints": [
+        "左右指针往中间走。",
+        "遇到不同字符就返回 False。"
+      ],
+      "starter_code": "def is_palindrome(text):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "is_palindrome"
+      ],
+      "tests": [
+        {
+          "expression": "is_palindrome(\"level\")",
+          "expected": true
+        },
+        {
+          "expression": "is_palindrome(\"hello\")",
+          "expected": false
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-binary-search-index",
+      "title": "标准二分查找",
+      "track_id": "algorithms",
+      "difficulty": "基础",
+      "prompt": "实现 binary_search(nums, target)，找到则返回下标，否则返回 -1。",
+      "lesson_id": "algo-binary-search-greedy",
+      "hints": [
+        "先写 left、right、mid。",
+        "注意循环条件和边界更新。"
+      ],
+      "starter_code": "def binary_search(nums, target):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "binary_search"
+      ],
+      "tests": [
+        {
+          "expression": "binary_search([1,3,5,7,9], 7)",
+          "expected": 3
+        },
+        {
+          "expression": "binary_search([1,3,5,7,9], 2)",
+          "expected": -1
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-max-subarray-sum",
+      "title": "最大子数组和",
+      "track_id": "algorithms",
+      "difficulty": "精选",
+      "prompt": "实现 max_subarray(nums)，返回连续子数组的最大和。",
+      "lesson_id": "algo-prefix-sum-window",
+      "hints": [
+        "这是经典 DP / 贪心题。",
+        "思考“以当前位置结尾的最优值”。"
+      ],
+      "starter_code": "def max_subarray(nums):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "max_subarray"
+      ],
+      "tests": [
+        {
+          "expression": "max_subarray([-2,1,-3,4,-1,2,1,-5,4])",
+          "expected": 6
+        },
+        {
+          "expression": "max_subarray([1])",
+          "expected": 1
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-climb-stairs",
+      "title": "爬楼梯",
+      "track_id": "algorithms",
+      "difficulty": "基础",
+      "prompt": "实现 climb_stairs(n)，每次可以走 1 或 2 步，返回走到第 n 阶的方法数。",
+      "lesson_id": "algo-dynamic-programming-intuition",
+      "hints": [
+        "先写 n<=2 的边界。",
+        "再想状态转移。"
+      ],
+      "starter_code": "def climb_stairs(n):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "climb_stairs"
+      ],
+      "tests": [
+        {
+          "expression": "climb_stairs(2)",
+          "expected": 2
+        },
+        {
+          "expression": "climb_stairs(5)",
+          "expected": 8
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-valid-parentheses",
+      "title": "有效括号",
+      "track_id": "algorithms",
+      "difficulty": "基础",
+      "prompt": "实现 valid_parentheses(text)，判断括号是否匹配。",
+      "lesson_id": "algo-stack-queue",
+      "hints": [
+        "栈里存左括号。",
+        "遇到右括号时做匹配。"
+      ],
+      "starter_code": "def valid_parentheses(text):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "valid_parentheses"
+      ],
+      "tests": [
+        {
+          "expression": "valid_parentheses(\"()[]{}\")",
+          "expected": true
+        },
+        {
+          "expression": "valid_parentheses(\"(]\")",
+          "expected": false
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-count-islands",
+      "title": "岛屿数量",
+      "track_id": "algorithms",
+      "difficulty": "精选",
+      "prompt": "实现 count_islands(grid)，返回二维网格中的岛屿数量。网格里 1 表示陆地，0 表示水。",
+      "lesson_id": "algo-graph-shortest-path",
+      "hints": [
+        "遇到新岛屿就做一次 DFS/BFS。",
+        "访问过的位置要标记。"
+      ],
+      "starter_code": "def count_islands(grid):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "count_islands"
+      ],
+      "tests": [
+        {
+          "expression": "count_islands([[\"1\",\"1\",\"0\"],[\"0\",\"1\",\"0\"],[\"1\",\"0\",\"1\"]])",
+          "expected": 3
+        },
+        {
+          "expression": "count_islands([[\"0\",\"0\"],[\"0\",\"0\"]])",
+          "expected": 0
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-top-k-frequency",
+      "title": "前 K 个高频元素",
+      "track_id": "algorithms",
+      "difficulty": "精选",
+      "prompt": "实现 top_k_frequent(nums, k)，返回出现频率最高的 k 个元素。",
+      "lesson_id": "algo-arrays-hashing",
+      "hints": [
+        "先统计频率。",
+        "结果顺序不要求固定时也要保证元素集合正确。"
+      ],
+      "starter_code": "def top_k_frequent(nums, k):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "top_k_frequent"
+      ],
+      "tests": [
+        {
+          "expression": "sorted(top_k_frequent([1,1,1,2,2,3], 2))",
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "expression": "sorted(top_k_frequent([4,4,5,5,5,6], 1))",
+          "expected": [
+            5
+          ]
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-merge-intervals",
+      "title": "合并区间",
+      "track_id": "algorithms",
+      "difficulty": "精选",
+      "prompt": "实现 merge_intervals(intervals)，合并所有重叠区间并返回结果。",
+      "lesson_id": "algo-binary-search-greedy",
+      "hints": [
+        "先按起点排序。",
+        "再维护当前合并区间。"
+      ],
+      "starter_code": "def merge_intervals(intervals):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "merge_intervals"
+      ],
+      "tests": [
+        {
+          "expression": "merge_intervals([[1,3],[2,6],[8,10],[15,18]])",
+          "expected": [
+            [
+              1,
+              6
+            ],
+            [
+              8,
+              10
+            ],
+            [
+              15,
+              18
+            ]
+          ]
+        },
+        {
+          "expression": "merge_intervals([[1,4],[4,5]])",
+          "expected": [
+            [
+              1,
+              5
+            ]
+          ]
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-min-coins",
+      "title": "零钱兑换最少硬币数",
+      "track_id": "algorithms",
+      "difficulty": "精选",
+      "prompt": "实现 min_coins(coins, amount)，返回凑成 amount 所需最少硬币数，无法凑成则返回 -1。",
+      "lesson_id": "algo-dynamic-programming-intuition",
+      "hints": [
+        "这是典型完全背包 / DP 题。",
+        "先设一个“不可能”的大值。"
+      ],
+      "starter_code": "def min_coins(coins, amount):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "min_coins"
+      ],
+      "tests": [
+        {
+          "expression": "min_coins([1,2,5], 11)",
+          "expected": 3
+        },
+        {
+          "expression": "min_coins([2], 3)",
+          "expected": -1
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-product-except-self",
+      "title": "除自身以外数组的乘积",
+      "track_id": "algorithms",
+      "difficulty": "精选",
+      "prompt": "实现 product_except_self(nums)，返回每个位置除自身外其他元素的乘积。",
+      "lesson_id": "algo-prefix-sum-window",
+      "hints": [
+        "常见思路是前缀积和后缀积。",
+        "不要直接用总乘积除自己。"
+      ],
+      "starter_code": "def product_except_self(nums):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "product_except_self"
+      ],
+      "tests": [
+        {
+          "expression": "product_except_self([1,2,3,4])",
+          "expected": [
+            24,
+            12,
+            8,
+            6
+          ]
+        },
+        {
+          "expression": "product_except_self([2,3,4,5])",
+          "expected": [
+            60,
+            40,
+            30,
+            24
+          ]
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-search-rotated-array",
+      "title": "搜索旋转有序数组",
+      "track_id": "algorithms",
+      "difficulty": "精选",
+      "prompt": "实现 search_rotated(nums, target)，在旋转有序数组中查找 target。",
+      "lesson_id": "algo-binary-search-greedy",
+      "hints": [
+        "关键是判断哪一侧仍然有序。",
+        "二分里每次只保留一个可能区间。"
+      ],
+      "starter_code": "def search_rotated(nums, target):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "search_rotated"
+      ],
+      "tests": [
+        {
+          "expression": "search_rotated([4,5,6,7,0,1,2], 0)",
+          "expected": 4
+        },
+        {
+          "expression": "search_rotated([4,5,6,7,0,1,2], 3)",
+          "expected": -1
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-shortest-path-grid",
+      "title": "网格最短路径步数",
+      "track_id": "algorithms",
+      "difficulty": "精选",
+      "prompt": "实现 shortest_path_grid(grid)，返回从左上角到右下角的最短步数，只能走上下左右，1 表示可走，0 表示障碍。无法到达返回 -1。",
+      "lesson_id": "algo-graph-shortest-path",
+      "hints": [
+        "这题适合 BFS。",
+        "队列里可以存坐标和当前步数。"
+      ],
+      "starter_code": "def shortest_path_grid(grid):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "shortest_path_grid"
+      ],
+      "tests": [
+        {
+          "expression": "shortest_path_grid([[1,1,1],[0,1,0],[1,1,1]])",
+          "expected": 4
+        },
+        {
+          "expression": "shortest_path_grid([[1,0],[0,1]])",
+          "expected": -1
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-min-window-len",
+      "title": "最短满足条件子数组",
+      "track_id": "algorithms",
+      "difficulty": "精选",
+      "prompt": "实现 min_window_len(target, nums)，返回和至少为 target 的最短连续子数组长度，不存在则返回 0。",
+      "lesson_id": "algo-prefix-sum-window",
+      "hints": [
+        "这题适合可变滑动窗口。",
+        "窗口和达标后尝试收缩左边界。"
+      ],
+      "starter_code": "def min_window_len(target, nums):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "min_window_len"
+      ],
+      "tests": [
+        {
+          "expression": "min_window_len(7, [2,3,1,2,4,3])",
+          "expected": 2
+        },
+        {
+          "expression": "min_window_len(15, [1,2,3,4])",
+          "expected": 0
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "algo-level-order-values",
+      "title": "二叉树层序遍历结果",
+      "track_id": "algorithms",
+      "difficulty": "精选",
+      "prompt": "实现 level_order_values(root)，返回二叉树层序遍历的每层节点值。root 节点有 val、left、right 属性。",
+      "lesson_id": "algo-tree-bfs-dfs",
+      "hints": [
+        "用队列按层推进。",
+        "结果通常是二维列表。"
+      ],
+      "starter_code": "from collections import deque\n\ndef level_order_values(root):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "level_order_values"
+      ],
+      "tests": [
+        {
+          "expression": "level_order_values(type(\"N\", (), {\"val\":1,\"left\":type(\"N\", (), {\"val\":2,\"left\":None,\"right\":None})(),\"right\":type(\"N\", (), {\"val\":3,\"left\":None,\"right\":None})()})())",
+          "expected": [
+            [
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        {
+          "expression": "level_order_values(None)",
+          "expected": []
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "cpp-max-function",
+      "title": "编写 max_of_two 函数",
+      "track_id": "cplusplus",
+      "difficulty": "基础",
+      "prompt": "用 C++ 编写函数 int max_of_two(int a, int b)，返回两个整数中较大的那个。",
+      "lesson_id": "cpp-syntax-functions",
+      "hints": [
+        "比较两个参数",
+        "使用 if 判断和 return 返回结果"
+      ],
+      "starter_code": "int max_of_two(int a, int b) {\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "int",
+        "max_of_two",
+        "if",
+        "return"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-swap-reference",
+      "title": "引用交换两个值",
+      "track_id": "cplusplus",
+      "difficulty": "进阶",
+      "prompt": "编写 void swap_values(int& a, int& b) 函数，使用引用交换两个整数的值。",
+      "lesson_id": "cpp-references-const",
+      "hints": [
+        "需要一个临时变量",
+        "依次赋值完成交换"
+      ],
+      "starter_code": "void swap_values(int& a, int& b) {\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "void",
+        "swap_values",
+        "&",
+        "="
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-vector-even-sum",
+      "title": "计算 vector 中所有偶数之和",
+      "track_id": "cplusplus",
+      "difficulty": "基础",
+      "prompt": "编写 int even_sum(const std::vector<int>& nums) 函数，返回 nums 中所有偶数的和。",
+      "lesson_id": "cpp-string-vector",
+      "hints": [
+        "遍历 vector",
+        "判断是否为偶数"
+      ],
+      "starter_code": "#include <vector>\n\nint even_sum(const std::vector<int>& nums) {\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "vector",
+        "for",
+        "return"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-person-class",
+      "title": "定义 Person 类",
+      "track_id": "cplusplus",
+      "difficulty": "进阶",
+      "prompt": "定义一个 Person 类，包含 name 和 age 两个成员变量，以及一个构造函数和获取 age 的成员函数。",
+      "lesson_id": "cpp-oop-classes",
+      "hints": [
+        "使用 class Person",
+        "区分 public 和 private 成员"
+      ],
+      "starter_code": "#include <string>\n\nclass Person {\npublic:\n    \n};\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "class",
+        "Person",
+        "public",
+        "string"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-sort-desc",
+      "title": "用 sort 实现降序排序",
+      "track_id": "cplusplus",
+      "difficulty": "进阶",
+      "prompt": "用 C++ 标准库的 sort 函数将 vector<int> nums 按降序排列。",
+      "lesson_id": "cpp-stl-algorithms",
+      "hints": [
+        "需要包含 algorithm 头文件",
+        "使用 greater<int>() 或 lambda 表达式"
+      ],
+      "starter_code": "#include <algorithm>\n#include <vector>\n\nvoid sort_desc(std::vector<int>& nums) {\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "sort",
+        "vector"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-template-max",
+      "title": "编写泛型 max_value 函数",
+      "track_id": "cplusplus",
+      "difficulty": "进阶",
+      "prompt": "编写函数模板 max_value，使其适用于任意可比较类型，返回两个参数中较大的那个。",
+      "lesson_id": "cpp-templates-intro",
+      "hints": [
+        "使用 template<typename T>",
+        "函数体内用 if 比较并返回"
+      ],
+      "starter_code": "template <typename T>\nT max_value(T a, T b) {\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "template",
+        "typename",
+        "max_value",
+        "return"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-unique-ptr-demo",
+      "title": "用 unique_ptr 管理动态内存",
+      "track_id": "cplusplus",
+      "difficulty": "进阶",
+      "prompt": "在 main 函数中使用 std::unique_ptr 创建一个 int 类型的智能指针，并初始值为 42。",
+      "lesson_id": "cpp-raii-smart-pointers",
+      "hints": [
+        "需要包含 memory 头文件",
+        "使用 make_unique"
+      ],
+      "starter_code": "#include <memory>\n\nint main() {\n    \n    return 0;\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "unique_ptr"
+      ],
+      "forbidden_keywords": [
+        "delete",
+        "free"
+      ]
+    },
+    {
+      "id": "cpp-file-read-line",
+      "title": "读取文件第一行",
+      "track_id": "cplusplus",
+      "difficulty": "进阶",
+      "prompt": "用 C++ 编写函数，使用 ifstream 打开文件，并用 getline 读取第一行内容返回。",
+      "lesson_id": "cpp-file-io-basics",
+      "hints": [
+        "需要包含 fstream 和 string 头文件",
+        "使用 ifstream 和 getline"
+      ],
+      "starter_code": "#include <fstream>\n#include <string>\n\nstd::string read_first_line(const std::string& path) {\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "ifstream",
+        "getline",
+        "return"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-lambda-filter",
+      "title": "用 Lambda 过滤奇数",
+      "track_id": "cplusplus",
+      "difficulty": "进阶",
+      "prompt": "使用 std::copy_if 和 Lambda 表达式，将 vector<int> 中的所有奇数复制到另一个 vector 中。",
+      "lesson_id": "cpp-lambda-functional",
+      "hints": [
+        "需要包含 algorithm 头文件",
+        "Lambda 捕获为空，参数为 const int&"
+      ],
+      "starter_code": "#include <vector>\n#include <algorithm>\n\nstd::vector<int> filter_odds(const std::vector<int>& nums) {\n    std::vector<int> result;\n    \n    return result;\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "copy_if"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-thread-hello",
+      "title": "创建线程打印消息",
+      "track_id": "cplusplus",
+      "difficulty": "进阶",
+      "prompt": "使用 std::thread 创建一个线程，在线程函数中打印 \"Hello from thread\"，并在主线程中等待它完成。",
+      "lesson_id": "cpp-concurrency",
+      "hints": [
+        "需要包含 thread 头文件",
+        "使用 join 等待线程完成"
+      ],
+      "starter_code": "#include <thread>\n#include <iostream>\n\nvoid thread_func() {\n    \n}\n\nint main() {\n    \n    return 0;\n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "thread",
+        "join"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-move-vector",
+      "title": "移动 vector 避免拷贝",
+      "track_id": "cplusplus",
+      "difficulty": "进阶",
+      "prompt": "编写函数 transfer_data，接受一个 vector<int> 的右值引用参数，将其移动到一个新的 vector 中并返回。",
+      "lesson_id": "cpp-move-semantics",
+      "hints": [
+        "使用 std::move 进行移动",
+        "参数类型为 vector<int>&&"
+      ],
+      "starter_code": "#include <vector>\n#include <utility>\n\nstd::vector<int> transfer_data(std::vector<int>&& source) {\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "move",
+        "vector"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-try-catch-divide",
+      "title": "用异常处理除零错误",
+      "track_id": "cplusplus",
+      "difficulty": "进阶",
+      "prompt": "编写函数 safe_divide(double a, double b)，当 b 为 0 时抛出异常，否则返回 a/b。在 main 中用 try/catch 捕获并处理。",
+      "lesson_id": "cpp-exception-error",
+      "hints": [
+        "使用 throw 抛出 std::runtime_error",
+        "用 try/catch 捕获"
+      ],
+      "starter_code": "#include <stdexcept>\n\ndouble safe_divide(double a, double b) {\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "throw",
+        "try",
+        "catch"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-map-word-count",
+      "title": "用 map 统计词频",
+      "track_id": "cplusplus",
+      "difficulty": "进阶",
+      "prompt": "编写函数 word_count，接受 vector<string>，返回 map<string, int> 统计每个单词出现的次数。",
+      "lesson_id": "cpp-map-set",
+      "hints": [
+        "遍历 vector，用 map[word]++ 累加"
+      ],
+      "starter_code": "#include <map>\n#include <vector>\n#include <string>\n\nstd::map<std::string, int> word_count(const std::vector<std::string>& words) {\n    \n}\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "map",
+        "string",
+        "for"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-virtual-animal",
+      "title": "虚函数实现多态动物叫声",
+      "track_id": "cplusplus",
+      "difficulty": "进阶",
+      "prompt": "定义抽象基类 Animal，包含纯虚函数 makeSound()。派生类 Dog 和 Cat 分别实现为输出 \"Woof\" 和 \"Meow\"。",
+      "lesson_id": "cpp-polymorphism-virtual",
+      "hints": [
+        "Animal 的 makeSound 用 = 0 声明为纯虚函数",
+        "派生类用 override 关键字"
+      ],
+      "starter_code": "#include <iostream>\n#include <string>\n#include <memory>\n\nclass Animal {\npublic:\n    virtual ~Animal() = default;\n    \n};\n\nclass Dog : public Animal {\npublic:\n    \n};\n\nclass Cat : public Animal {\npublic:\n    \n};\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "virtual",
+        "override",
+        "class"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    },
+    {
+      "id": "cpp-constexpr-factorial",
+      "title": "constexpr 编译期计算阶乘",
+      "track_id": "cplusplus",
+      "difficulty": "综合",
+      "prompt": "编写 constexpr 函数 factorial(n)，在编译期计算 n 的阶乘。用 static_assert 验证 factorial(5) == 120。",
+      "lesson_id": "cpp-templates-advanced",
+      "hints": [
+        "使用 constexpr 关键字",
+        "递归实现 factorial"
+      ],
+      "starter_code": "constexpr int factorial(int n) {\n    \n}\n\nstatic_assert(factorial(5) == 120, \"factorial(5) should be 120\");\n",
+      "expected_nodes": [],
+      "required_names": [],
+      "tests": [],
+      "required_keywords": [
+        "constexpr",
+        "factorial"
+      ],
+      "forbidden_keywords": [
+        "print",
+        "def"
+      ]
+    }
+  ]
+}
