@@ -17,9 +17,17 @@ env/
 
 # IDE
 .idea/
+.vs/
 .vscode/
 *.swp
 *.swo
+
+# Database files
+*.db
+
+# Executables and packages
+*.exe
+DevLearnerAI_Package/
 
 # OS
 Thumbs.db
