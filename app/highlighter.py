@@ -33,6 +33,10 @@ class _RuleBasedHighlighter(QSyntaxHighlighter):
         self._rules.append((re.compile(r'"[^"\n]*"'), string_format))
         self._rules.append((re.compile(r"'[^'\n]*'"), string_format))
 
+        self._triple_quote_start = re.compile(r'"""|' + r"'''")
+        self._triple_quote_end = re.compile(r'"""|' + r"'''")
+        self._string_format = string_format
+
         comment_format = QTextCharFormat()
         comment_format.setForeground(QColor("#6b7280"))
         comment_format.setFontItalic(True)
@@ -40,9 +44,54 @@ class _RuleBasedHighlighter(QSyntaxHighlighter):
             self._rules.append((re.compile(pattern), comment_format))
 
     def highlightBlock(self, text):
+        # Handle multiline (triple-quoted) strings.
+        # State 0 = normal, State 1 = inside a triple-quoted string.
+        state = self.previousBlockState()
+        start_index = 0
+
+        if state == 1:
+            # Continue from previous block: search for closing triple-quote.
+            end_match = self._triple_quote_end.search(text, start_index)
+            if end_match:
+                # Found the end of the multiline string on this line.
+                length = end_match.end() - start_index
+                self.setFormat(start_index, length, self._string_format)
+                start_index = end_match.end()
+                self.setCurrentBlockState(0)
+            else:
+                # Entire line is still inside the multiline string.
+                self.setFormat(0, len(text), self._string_format)
+                self.setCurrentBlockState(1)
+                return
+
+        # Apply normal single-line rules first.
         for pattern, fmt in self._rules:
             for match in pattern.finditer(text):
                 self.setFormat(match.start(), match.end() - match.start(), fmt)
+
+        # Now scan for new triple-quote starts (that are not inside single-line strings).
+        self.setCurrentBlockState(0)
+        search_pos = start_index
+        while search_pos < len(text):
+            start_match = self._triple_quote_start.search(text, search_pos)
+            if not start_match:
+                break
+            # Skip if this position was already formatted as a single-line string.
+            fmt_at = self.format(start_match.start())
+            if fmt_at and fmt_at.foreground().color() == QColor("#b45309"):
+                search_pos = start_match.end()
+                continue
+            # Search for the closing triple-quote on the same line.
+            end_match = self._triple_quote_end.search(text, start_match.end())
+            if end_match:
+                length = end_match.end() - start_match.start()
+                self.setFormat(start_match.start(), length, self._string_format)
+                search_pos = end_match.end()
+            else:
+                # No closing triple-quote on this line -- goes to next block.
+                self.setFormat(start_match.start(), len(text) - start_match.start(), self._string_format)
+                self.setCurrentBlockState(1)
+                break
 
 
 class PythonHighlighter(_RuleBasedHighlighter):

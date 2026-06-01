@@ -28,6 +28,74 @@ ALLOWED_IMPORTS = {
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
+_DANGEROUS_ATTRS = frozenset({
+    "__class__", "__bases__", "__subclasses__", "__mro__",
+    "__builtins__", "__globals__", "__code__", "__import__",
+    "__loader__", "__spec__", "__file__", "__name__",
+})
+
+
+def _validate_code_safety(code_str: str):
+    """Raise SyntaxError if *code_str* contains patterns unsafe for the sandbox."""
+    tree = ast.parse(code_str)
+    for node in ast.walk(tree):
+        # Block access to dangerous dunder attributes
+        if isinstance(node, ast.Attribute) and node.attr in _DANGEROUS_ATTRS:
+            raise SyntaxError(
+                f"安全限制: 不允许访问属性 {node.attr}（第 {getattr(node, 'lineno', '?')} 行）"
+            )
+        # Block import statements
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            raise SyntaxError(
+                f"安全限制: 不允许使用 import 语句（第 {getattr(node, 'lineno', '?')} 行），请使用内置函数。"
+            )
+        # Block eval/exec calls within user code
+        if isinstance(node, ast.Call):
+            func = node.func
+            if isinstance(func, ast.Name) and func.id in ("eval", "exec"):
+                raise SyntaxError(
+                    f"安全限制: 不允许调用 {func.id}()（第 {getattr(node, 'lineno', '?')} 行）。"
+                )
+            if isinstance(func, ast.Attribute) and func.attr in ("__subclasses__", "__bases__"):
+                raise SyntaxError(
+                    f"安全限制: 不允许调用 {func.attr}()（第 {getattr(node, 'lineno', '?')} 行）。"
+                )
+
+
+SAFE_BUILTINS = {
+    "print": print,
+    "len": len,
+    "range": range,
+    "int": int,
+    "float": float,
+    "str": str,
+    "bool": bool,
+    "list": list,
+    "dict": dict,
+    "tuple": tuple,
+    "set": set,
+    "sorted": sorted,
+    "enumerate": enumerate,
+    "zip": zip,
+    "map": map,
+    "filter": filter,
+    "sum": sum,
+    "min": min,
+    "max": max,
+    "abs": abs,
+    "round": round,
+    "isinstance": isinstance,
+    "hasattr": hasattr,
+    "getattr": getattr,
+    "all": all,
+    "any": any,
+    "reversed": reversed,
+    "Exception": Exception,
+    "TypeError": TypeError,
+    "ValueError": ValueError,
+}
+
+
 class LimitedBuffer(io.StringIO):
     def __init__(self, limit: int = 12000):
         super().__init__()
@@ -70,45 +138,16 @@ def _safe_open_factory(workdir: Path):
 
 
 def _safe_builtins(workdir: Path):
-    return {
-        "__import__": _safe_import,
-        "abs": abs,
-        "all": all,
-        "any": any,
-        "bool": bool,
-        "dict": dict,
-        "enumerate": enumerate,
-        "Exception": Exception,
-        "filter": filter,
-        "float": float,
-        "int": int,
-        "isinstance": isinstance,
-        "len": len,
-        "list": list,
-        "map": map,
-        "max": max,
-        "min": min,
-        "open": _safe_open_factory(workdir),
-        "print": print,
-        "range": range,
-        "reversed": reversed,
-        "round": round,
-        "set": set,
-        "sorted": sorted,
-        "str": str,
-        "sum": sum,
-        "type": type,
-        "tuple": tuple,
-        "TypeError": TypeError,
-        "ValueError": ValueError,
-        "zip": zip,
-    }
+    builtins = dict(SAFE_BUILTINS)
+    builtins["open"] = _safe_open_factory(workdir)
+    return builtins
 
 
 def _execute_code_impl(code: str):
     started_at = time.time()
     previous_cwd = Path.cwd()
     try:
+        _validate_code_safety(code)
         with tempfile.TemporaryDirectory(prefix="devlearner-run-") as temp_dir:
             workdir = Path(temp_dir)
             os.chdir(workdir)
@@ -168,6 +207,7 @@ def _evaluate_code_impl(code: str, expected_nodes, required_names, tests):
         feedback.append("代码结构符合要求。")
 
     try:
+        _validate_code_safety(code)
         with tempfile.TemporaryDirectory(prefix="devlearner-eval-") as temp_dir:
             workdir = Path(temp_dir)
             os.chdir(workdir)

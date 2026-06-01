@@ -1,8 +1,18 @@
+import base64
 import ctypes
+import logging
 import sys
 from ctypes import wintypes
 from pathlib import Path
 from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+try:
+    import keyring as _keyring
+    _HAS_KEYRING = True
+except ImportError:
+    _HAS_KEYRING = False
 
 
 if sys.platform == "win32":
@@ -71,14 +81,18 @@ if sys.platform == "win32":
 
 def save_secret(target: str, secret: str, username: str = "DevLearnerAI") -> None:
     if sys.platform != "win32":
-        import warnings
-
-        warnings.warn(
-            "Secret storage falls back to plaintext file on non-Windows platforms."
+        if _HAS_KEYRING:
+            _keyring.set_password("DevLearnerAI", target, secret)
+            return
+        logger.warning(
+            "keyring not installed; falling back to base64-encoded file storage "
+            "for API key at ~/.devlearnerai/api_key.txt"
         )
         fallback_path = Path.home() / ".devlearnerai" / "api_key.txt"
         fallback_path.parent.mkdir(parents=True, exist_ok=True)
-        fallback_path.write_text(secret, encoding="utf-8")
+        fallback_path.write_text(
+            base64.b64encode(secret.encode("utf-8")).decode("ascii"), encoding="utf-8"
+        )
         return
 
     blob = secret.encode("utf-16-le")
@@ -98,7 +112,18 @@ def save_secret(target: str, secret: str, username: str = "DevLearnerAI") -> Non
 
 def load_secret(target: str) -> Optional[str]:
     if sys.platform != "win32":
-        return None
+        if _HAS_KEYRING:
+            return _keyring.get_password("DevLearnerAI", target)
+        fallback_path = Path.home() / ".devlearnerai" / "api_key.txt"
+        if not fallback_path.exists():
+            return None
+        raw = fallback_path.read_text(encoding="utf-8").strip()
+        if not raw:
+            return None
+        try:
+            return base64.b64decode(raw).decode("utf-8")
+        except Exception:
+            return raw
 
     credential = PCREDENTIALW()
     if not CredReadW(target, CRED_TYPE_GENERIC, 0, ctypes.byref(credential)):
@@ -118,6 +143,16 @@ def load_secret(target: str) -> Optional[str]:
 
 def delete_secret(target: str) -> bool:
     if sys.platform != "win32":
+        if _HAS_KEYRING:
+            try:
+                _keyring.delete_password("DevLearnerAI", target)
+                return True
+            except _keyring.errors.PasswordDeleteError:
+                return False
+        fallback_path = Path.home() / ".devlearnerai" / "api_key.txt"
+        if fallback_path.exists():
+            fallback_path.unlink()
+            return True
         return False
 
     if CredDeleteW(target, CRED_TYPE_GENERIC, 0):

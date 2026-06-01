@@ -1,5 +1,6 @@
 import shutil
 import sqlite3
+import threading
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -7,6 +8,27 @@ from typing import List, Optional, Sequence, Tuple
 
 from app.config import API_CREDENTIAL_ALIAS, DB_DIR, DB_PATH, LEGACY_DB_PATH, ensure_runtime_dirs
 from app.credentials import load_secret, save_secret
+
+_connection = None
+_lock = threading.Lock()
+
+
+def get_connection(db_path: str):
+    global _connection
+    with _lock:
+        if _connection is None:
+            ensure_runtime_dirs()
+            _connection = sqlite3.connect(db_path, check_same_thread=False)
+            _connection.execute("PRAGMA foreign_keys = ON")
+        return _connection
+
+
+def close_connection():
+    global _connection
+    with _lock:
+        if _connection is not None:
+            _connection.close()
+            _connection = None
 
 
 def now_text() -> str:
@@ -28,14 +50,14 @@ class AppDatabase:
 
     @contextmanager
     def connect(self):
-        ensure_runtime_dirs()
-        conn = sqlite3.connect(str(self.db_path))
-        conn.execute("PRAGMA foreign_keys = ON")
+        conn = get_connection(str(self.db_path))
         try:
             yield conn
+        except Exception:
+            conn.rollback()
+            raise
+        else:
             conn.commit()
-        finally:
-            conn.close()
 
     def init_db(self) -> None:
         with self.connect() as conn:

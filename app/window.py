@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import (
 from app.ai_mentor import AIMentorDock, AIMentorPanel
 from app.config import APP_TITLE
 from app.content_service import ContentService
-from app.database import AppDatabase
+from app.database import AppDatabase, close_connection
 from app.effects import apply_shadow
 from app.practice_service import PracticeService
 from app.styles import F_TITLE, FONT, GLOBAL_STYLE
@@ -379,4 +379,6 @@ def run():
     app.setStyleSheet(GLOBAL_STYLE)
     window = DevLearnerWindow()
     window.show()
-    sys.exit(app.exec())
+    exit_code = app.exec()
+    close_connection()
+    sys.exit(exit_code)

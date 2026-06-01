@@ -1,4 +1,5 @@
 import json
+import ssl
 import threading
 import urllib.error
 import urllib.request
@@ -117,6 +118,7 @@ class AIMentorPanel(QWidget):
         self.current_session_id = None
         self.settings_dialog = None
         self._request_in_flight = False
+        self._is_valid = True
 
         self.response_ready.connect(self._handle_response_ready)
         self.models_ready.connect(self._populate_models)
@@ -723,14 +725,31 @@ class AIMentorPanel(QWidget):
         self._set_settings_status("正在测试连接...")
         threading.Thread(target=self._test_connection_worker, args=(host, api_key), daemon=True).start()
 
+    @staticmethod
+    def _require_https(host: str) -> None:
+        """Raise ValueError if the host does not use HTTPS."""
+        if not host.lower().startswith("https://"):
+            raise ValueError(
+                "出于安全考虑，仅允许 HTTPS 连接。请将 API Host 改为 https:// 开头的地址。"
+            )
+
+    @staticmethod
+    def _create_ssl_context() -> ssl.SSLContext:
+        """Return a hardened SSL context that verifies certificates."""
+        return ssl.create_default_context()
+
     def _test_connection_worker(self, host: str, api_key: str) -> None:
         try:
+            self._require_https(host)
+            ctx = self._create_ssl_context()
             request = urllib.request.Request(
                 self._build_models_url(host),
                 headers={"Authorization": f"Bearer {api_key}"},
             )
-            with urllib.request.urlopen(request, timeout=20) as response:
+            with urllib.request.urlopen(request, timeout=20, context=ctx) as response:
                 message = f"连接成功，状态码 {response.status}。"
+        except ValueError as exc:
+            message = str(exc)
         except Exception as exc:
             message = "连接失败，请检查 Host 地址和网络连接。"
         self.status_ready.emit(message)
@@ -1012,6 +1031,9 @@ class AIMentorPanel(QWidget):
 
     def _chat_worker(self, host: str, api_key: str, model: str, system_context: str, session_id: int) -> None:
         try:
+            self._require_https(host)
+            ctx = self._create_ssl_context()
+
             messages = [{"role": "system", "content": system_context}]
             for role, content, _created_at in self.db.load_mentor_messages(session_id)[-12:]:
                 messages.append({"role": role, "content": content})
@@ -1025,7 +1047,7 @@ class AIMentorPanel(QWidget):
                     "Content-Type": "application/json",
                 },
             )
-            with urllib.request.urlopen(request, timeout=90) as response:
+            with urllib.request.urlopen(request, timeout=90, context=ctx) as response:
                 payload = json.loads(response.read().decode("utf-8"))
 
             if not payload.get("choices"):
@@ -1033,6 +1055,8 @@ class AIMentorPanel(QWidget):
                 reply = f"AI 响应异常：{error_msg}"
             else:
                 reply = payload["choices"][0]["message"]["content"]
+        except ValueError as exc:
+            reply = str(exc)
         except urllib.error.HTTPError as exc:
             try:
                 error_body = json.loads(exc.read().decode("utf-8"))
@@ -1046,7 +1070,11 @@ class AIMentorPanel(QWidget):
         try:
             self.db.append_mentor_message(session_id, "assistant", reply)
         finally:
-            self.response_ready.emit(session_id)
+            if self._is_valid:
+                try:
+                    self.response_ready.emit(session_id)
+                except RuntimeError:
+                    pass  # underlying C++ object already destroyed
 
 
 class AIMentorDock(QDockWidget):

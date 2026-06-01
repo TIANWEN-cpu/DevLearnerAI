@@ -1,9 +1,12 @@
 import json
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional, Tuple
 
 from app.config import CONTENT_DIR, METADATA_DIR
+
+logger = logging.getLogger(__name__)
 
 
 def _looks_corrupt(value: str) -> bool:
@@ -70,80 +73,89 @@ class Track:
 class ContentService:
     def __init__(self, metadata_path: Optional[Path] = None):
         self.metadata_path = metadata_path or (METADATA_DIR / "course_map.json")
-        self._tracks = self._load_tracks()
+        self._cache: dict[str, Track] = {}
+        self._tracks_index = self._discover_tracks()
 
-    def _load_tracks(self) -> List[Track]:
+    def _discover_tracks(self) -> List[dict]:
+        """Discover available tracks without loading lesson content."""
         try:
             raw = json.loads(self.metadata_path.read_text(encoding="utf-8"))
         except FileNotFoundError:
-            print(f"[ContentService] 课程元数据文件未找到: {self.metadata_path}")
+            logger.warning("课程元数据文件未找到: %s", self.metadata_path)
             return []
         except json.JSONDecodeError as exc:
-            print(f"[ContentService] 课程元数据 JSON 解析失败: {exc}")
+            logger.error("课程元数据 JSON 解析失败: %s", exc)
             return []
+        return raw.get("tracks", [])
 
-        tracks: List[Track] = []
-        for track_data in raw.get("tracks", []):
-            modules: List[Module] = []
-            for module_data in track_data.get("modules", []):
-                lessons: List[Lesson] = []
-                for lesson_data in module_data.get("lessons", []):
-                    lesson_id = lesson_data.get("id", "lesson")
-                    lessons.append(
-                        Lesson(
-                            id=lesson_id,
-                            title=_clean_text(lesson_data.get("title", ""), "未命名课程"),
-                            summary=_clean_text(
-                                lesson_data.get("summary", ""),
-                                "这节课会带你继续推进当前主线。",
-                            ),
-                            path=lesson_data.get("path", ""),
-                            difficulty=_clean_text(
-                                lesson_data.get("difficulty", ""),
-                                "基础",
-                            ),
-                            estimated_minutes=int(lesson_data.get("estimated_minutes", 25)),
-                            tags=_clean_list(lesson_data.get("tags", [])),
-                            prerequisites=_clean_list(lesson_data.get("prerequisites", [])),
-                            outcomes=_clean_list(lesson_data.get("outcomes", [])),
-                        )
-                    )
-
-                modules.append(
-                    Module(
-                        id=module_data.get("id", "module"),
-                        title=_clean_text(module_data.get("title", ""), "未命名模块"),
+    def _build_track(self, track_data: dict) -> Track:
+        modules: List[Module] = []
+        for module_data in track_data.get("modules", []):
+            lessons: List[Lesson] = []
+            for lesson_data in module_data.get("lessons", []):
+                lesson_id = lesson_data.get("id", "lesson")
+                lessons.append(
+                    Lesson(
+                        id=lesson_id,
+                        title=_clean_text(lesson_data.get("title", ""), "未命名课程"),
                         summary=_clean_text(
-                            module_data.get("summary", ""),
-                            "这组内容会帮你稳步推进当前主线。",
+                            lesson_data.get("summary", ""),
+                            "这节课会带你继续推进当前主线。",
                         ),
-                        lessons=lessons,
+                        path=lesson_data.get("path", ""),
+                        difficulty=_clean_text(
+                            lesson_data.get("difficulty", ""),
+                            "基础",
+                        ),
+                        estimated_minutes=int(lesson_data.get("estimated_minutes", 25)),
+                        tags=_clean_list(lesson_data.get("tags", [])),
+                        prerequisites=_clean_list(lesson_data.get("prerequisites", [])),
+                        outcomes=_clean_list(lesson_data.get("outcomes", [])),
                     )
                 )
 
-            tracks.append(
-                Track(
-                    id=track_data.get("id", "track"),
-                    title=_clean_text(track_data.get("title", ""), "未命名主线"),
-                    icon=_clean_text(track_data.get("icon", ""), "📘"),
+            modules.append(
+                Module(
+                    id=module_data.get("id", "module"),
+                    title=_clean_text(module_data.get("title", ""), "未命名模块"),
                     summary=_clean_text(
-                        track_data.get("summary", ""),
-                        "按主线推进模块，再从模块里递进学习课程。",
+                        module_data.get("summary", ""),
+                        "这组内容会帮你稳步推进当前主线。",
                     ),
-                    modules=modules,
+                    lessons=lessons,
                 )
             )
-        return tracks
+
+        return Track(
+            id=track_data.get("id", "track"),
+            title=_clean_text(track_data.get("title", ""), "未命名主线"),
+            icon=_clean_text(track_data.get("icon", ""), "📘"),
+            summary=_clean_text(
+                track_data.get("summary", ""),
+                "按主线推进模块，再从模块里递进学习课程。",
+            ),
+            modules=modules,
+        )
+
+    def _load_track(self, track_data: dict) -> Track:
+        """Load a track on demand and cache it."""
+        track_id = track_data.get("id", "track")
+        if track_id not in self._cache:
+            self._cache[track_id] = self._build_track(track_data)
+        return self._cache[track_id]
 
     @property
     def tracks(self) -> List[Track]:
-        return self._tracks
+        return [self._load_track(td) for td in self._tracks_index]
 
     def track_by_id(self, track_id: str) -> Optional[Track]:
-        return next((track for track in self._tracks if track.id == track_id), None)
+        for td in self._tracks_index:
+            if td.get("id") == track_id:
+                return self._load_track(td)
+        return None
 
     def lesson_by_id(self, lesson_id: str) -> Optional[Tuple[Track, Module, Lesson]]:
-        for track in self._tracks:
+        for track in self.tracks:
             for module in track.modules:
                 for lesson in module.lessons:
                     if lesson.id == lesson_id:
@@ -155,15 +167,15 @@ class ContentService:
         try:
             return path.read_text(encoding="utf-8")
         except FileNotFoundError:
-            print(f"[ContentService] 课程 Markdown 文件未找到: {path}")
+            logger.warning("课程 Markdown 文件未找到: %s", path)
             return f"# {lesson.title}\n\n这节课的文档文件暂时缺失。"
         except Exception as exc:
-            print(f"[ContentService] 读取课程 Markdown 失败: {path} - {exc}")
+            logger.error("读取课程 Markdown 失败: %s - %s", path, exc)
             return f"# {lesson.title}\n\n加载文档时出现错误：{exc}"
 
     def all_lessons(self) -> List[Tuple[Track, Module, Lesson]]:
         rows: List[Tuple[Track, Module, Lesson]] = []
-        for track in self._tracks:
+        for track in self.tracks:
             for module in track.modules:
                 for lesson in module.lessons:
                     rows.append((track, module, lesson))

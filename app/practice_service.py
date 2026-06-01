@@ -1,6 +1,7 @@
 import ast
 import io
 import json
+import logging
 import re
 import sqlite3
 import time
@@ -10,6 +11,8 @@ from typing import Dict, List, Optional
 
 from app.config import METADATA_DIR
 from app.python_runner import evaluate_python_code
+
+logger = logging.getLogger(__name__)
 
 
 SAFE_BUILTINS = {
@@ -478,85 +481,6 @@ def _needs_fallback(value: str) -> bool:
     return "?" in value
 
 
-DATABASE_EXERCISE_FALLBACKS = {
-    "db-design-enrollment-table": {
-        "title": "设计选课关系表",
-        "difficulty": "精选",
-        "prompt": "写出一条建表语句，创建学生选课关系表，至少包含 student_id 和 course_id 两个字段。",
-        "hints": ["表名可以叫 enrollments。", "这是一张学生和课程的关系表。"],
-    },
-    "db-rank-scores": {
-        "title": "给成绩做排名",
-        "difficulty": "精选",
-        "prompt": "写一条 SQL，使用 RANK() OVER 按 score 对 students 表进行降序排名。",
-        "hints": ["关键是 rank() over。", "排序条件通常是 order by score desc。"],
-    },
-    "db-coalesce-phone": {
-        "title": "用 COALESCE 处理空手机号",
-        "difficulty": "进阶",
-        "prompt": "写一条 SQL，从 users 表查询手机号字段；如果 phone 为空，就显示 unknown。",
-        "hints": ["这题核心是 COALESCE。", "把空值转成可读文本即可。"],
-    },
-    "db-postgres-connect": {
-        "title": "连接 PostgreSQL 数据库",
-        "difficulty": "进阶",
-        "prompt": "写出一条 psql 命令，连接名为 learn_db 的 PostgreSQL 数据库。",
-        "hints": ["命令通常以 psql 开头。", "把数据库名写出来即可。"],
-    },
-    "db-orders-foreign-key": {
-        "title": "给订单表加外键",
-        "difficulty": "进阶",
-        "prompt": "写一条 CREATE TABLE 语句，创建 orders 表，并让 user_id 通过 FOREIGN KEY 引用 users(id)。",
-        "hints": [
-            "先定义 user_id 列。",
-            "再写 FOREIGN KEY (user_id) REFERENCES users(id)。",
-        ],
-    },
-    "db-left-join-users-orders": {
-        "title": "写出用户与订单的 LEFT JOIN",
-        "difficulty": "精选",
-        "prompt": "写一条 SQL，把 users 表和 orders 表按 users.id = orders.user_id 做 LEFT JOIN。",
-        "hints": ["关键字是 LEFT JOIN。", "别忘了 ON 条件。"],
-    },
-    "db-with-sales-cte": {
-        "title": "写一个最小销售汇总 CTE",
-        "difficulty": "精选",
-        "prompt": "写一条 SQL，用 WITH sales_cte 先汇总 orders 表中的金额，再从 sales_cte 中查询结果。",
-        "hints": ["至少要有 WITH、SELECT、FROM。", "中间结果名写成 sales_cte。"],
-    },
-    "db-group-having-order": {
-        "title": "写出分组后筛选的报表查询骨架",
-        "difficulty": "精选",
-        "prompt": "写一条 SQL，要求包含 GROUP BY、HAVING 和 ORDER BY，用于统计订单数量并筛选高频用户。",
-        "hints": ["重点是 GROUP BY、HAVING、ORDER BY 的顺序。", "先把查询骨架写完整。"],
-    },
-    "db-transfer-transaction": {
-        "title": "写一个转账事务骨架",
-        "difficulty": "精选",
-        "prompt": "写一段 SQL 事务脚本，至少包含 BEGIN 和 COMMIT，表示一次完整的转账操作。",
-        "hints": ["先开启事务。", "最后记得提交。"],
-    },
-    "db-create-index-users-email": {
-        "title": "给用户邮箱创建索引",
-        "difficulty": "精选",
-        "prompt": "写一条 SQL，给 users 表的 email 列创建索引。",
-        "hints": ["关键字是 CREATE INDEX。", "索引目标列是 email。"],
-    },
-    "db-explain-users-query": {
-        "title": "给用户查询加 EXPLAIN",
-        "difficulty": "精选",
-        "prompt": "写一条 SQL，在 SELECT * FROM users WHERE email = 'a@example.com' 前加上 EXPLAIN。",
-        "hints": ["只需要在查询前加 EXPLAIN。", "保持原查询主体不变即可。"],
-    },
-    "db-add-column-migration": {
-        "title": "写一个给 users 加列的迁移",
-        "difficulty": "精选",
-        "prompt": "写一条 SQL，给 users 表新增 last_login 文本列。",
-        "hints": ["关键字是 ALTER TABLE 和 ADD COLUMN。", "列名固定为 last_login。"],
-    },
-}
-
-
 SQL_QUERY_FIXTURES = {
     "db-select-active": {
         "setup": """
@@ -918,16 +842,14 @@ class PracticeService:
         try:
             raw = json.loads(self.metadata_path.read_text(encoding="utf-8"))
         except FileNotFoundError:
-            print(f"[PracticeService] 练习元数据文件未找到: {self.metadata_path}")
+            logger.warning("练习元数据文件未找到: %s", self.metadata_path)
             return []
         except json.JSONDecodeError as e:
-            print(f"[PracticeService] 练习元数据 JSON 解析失败: {e}")
+            logger.error("练习元数据 JSON 解析失败: %s", e)
             return []
         exercises = []
         for item in raw["exercises"]:
-            fallback = {**EXERCISE_FALLBACKS, **DATABASE_EXERCISE_FALLBACKS}.get(
-                item["id"], {}
-            )
+            fallback = EXERCISE_FALLBACKS.get(item["id"], {})
             patched = dict(item)
             for field_name in ("title", "difficulty", "prompt"):
                 value = patched.get(field_name, "")
