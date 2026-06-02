@@ -324,6 +324,11 @@ class AppDatabase:
             )
 
             # ── Achievement System ─────────────────────────────────────────────
+            # Migrate old achievements schema (id, name, unlocked, date) to new schema
+            ach_columns = {row[1] for row in cursor.execute("PRAGMA table_info(achievements)").fetchall()}
+            if ach_columns and "title" not in ach_columns:
+                cursor.execute("DROP TABLE IF EXISTS achievement_progress")
+                cursor.execute("DROP TABLE IF EXISTS achievements")
             cursor.execute(
                 """
                 CREATE TABLE IF NOT EXISTS achievements (

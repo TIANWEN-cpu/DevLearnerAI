@@ -62,8 +62,10 @@ DRAFT_DIR = USER_DATA_DIR / "drafts"
 LEGACY_DB_PATH = BASE_DIR / "db" / "learner.db"
 
 APP_TITLE = f"DevLearner AI {APP_VERSION}"
-APP_SUBTITLE = "Python / 数据库 / 融合项目一体化学习平台"
 API_CREDENTIAL_ALIAS = f"{APP_NAME}:mentor_api_key"
+
+# ── Language setting ────────────────────────────────────────────────────────
+DEFAULT_LANGUAGE = "zh_CN"
 
 
 def ensure_runtime_dirs() -> None:

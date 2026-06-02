@@ -358,20 +358,24 @@ def _execute_code_impl(code: str) -> dict[str, Any]:
         with tempfile.TemporaryDirectory(prefix="devlearner-run-") as temp_dir:
             workdir = Path(temp_dir)
             os.chdir(workdir)
-            stdout_buffer = LimitedBuffer()
-            namespace = {
-                "__builtins__": _safe_builtins(workdir),
-                "__name__": "__main__",
-            }
-            with redirect_stdout(stdout_buffer):
-                exec(compile(code, "<exercise-run>", "exec"), namespace, namespace)
-            return {
-                "ok": True,
-                "stdout": stdout_buffer.getvalue().strip(),
-                "duration_sec": int(time.time() - started_at),
-            }
+            try:
+                stdout_buffer = LimitedBuffer()
+                namespace = {
+                    "__builtins__": _safe_builtins(workdir),
+                    "__name__": "__main__",
+                }
+                with redirect_stdout(stdout_buffer):
+                    exec(compile(code, "<exercise-run>", "exec"), namespace, namespace)
+                return {
+                    "ok": True,
+                    "stdout": stdout_buffer.getvalue().strip(),
+                    "duration_sec": int(time.time() - started_at),
+                }
+            finally:
+                os.chdir(previous_cwd)
     except Exception as exc:
         logger.debug("代码执行异常: %s", exc)
+        os.chdir(previous_cwd)
         return {
             "ok": False,
             "stdout": "",

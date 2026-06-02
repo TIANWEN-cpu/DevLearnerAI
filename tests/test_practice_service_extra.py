@@ -64,6 +64,14 @@ class TestFiltered:
             _make_exercise("ex3", track_id="database", difficulty="精选"),
             _make_exercise("ex4", track_id="c", difficulty="兴趣"),
         ]
+        # Build indexes (normally done in __init__)
+        svc._by_track = {}
+        svc._by_difficulty = {}
+        svc._by_id = {}
+        for ex in svc.exercises:
+            svc._by_track.setdefault(ex.track_id, []).append(ex)
+            svc._by_difficulty.setdefault(ex.difficulty, []).append(ex)
+            svc._by_id[ex.id] = ex
         return svc
 
     def test_filter_all_returns_all(self):
@@ -97,6 +105,9 @@ class TestFiltered:
     def test_filter_empty_exercises(self):
         svc = PracticeService.__new__(PracticeService)
         svc.exercises = []
+        svc._by_id = {}
+        svc._by_track = {}
+        svc._by_difficulty = {}
         assert svc.filtered("all", "all") == []
 
 
@@ -109,6 +120,7 @@ class TestExerciseById:
     def test_found(self):
         svc = PracticeService.__new__(PracticeService)
         svc.exercises = [_make_exercise("abc-123"), _make_exercise("def-456")]
+        svc._by_id = {ex.id: ex for ex in svc.exercises}
         result = svc.exercise_by_id("abc-123")
         assert result is not None
         assert result.id == "abc-123"
@@ -116,12 +128,14 @@ class TestExerciseById:
     def test_not_found_returns_none(self):
         svc = PracticeService.__new__(PracticeService)
         svc.exercises = [_make_exercise("abc-123")]
+        svc._by_id = {ex.id: ex for ex in svc.exercises}
         result = svc.exercise_by_id("nonexistent")
         assert result is None
 
     def test_empty_exercises_list(self):
         svc = PracticeService.__new__(PracticeService)
         svc.exercises = []
+        svc._by_id = {}
         assert svc.exercise_by_id("any") is None
 
 

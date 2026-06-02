@@ -23,10 +23,11 @@ from PyQt5.QtWidgets import (
 )
 
 from app.ai_mentor import AIMentorDock, AIMentorPanel
-from app.config import APP_TITLE, APP_VERSION
+from app.config import APP_TITLE, APP_VERSION, DEFAULT_LANGUAGE
 from app.content_service import ContentService
 from app.database import AppDatabase, close_connection
 from app.effects import apply_shadow
+from app.i18n import set_language, tr
 from app.practice_service import PracticeService
 from app.styles import (
     F_TITLE,
@@ -47,6 +48,9 @@ class DevLearnerWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        # Initialize language from config
+        set_language(DEFAULT_LANGUAGE)
+
         self.setWindowTitle(APP_TITLE)
         self.setMinimumSize(1360, 900)
         screen = QApplication.primaryScreen()
@@ -94,15 +98,15 @@ class DevLearnerWindow(QMainWindow):
         self.ai_page = self._ai_page_placeholder
 
         self.learning_pages = [
-            ("首页", "总览今天学什么、练了什么、下一步去哪里。", self.dashboard, "首"),
-            ("学习路径", "按主线进入模块，再从模块里递进学习课程。", self.learn, "路"),
-            ("练习中心", "把知识点变成能真正写出来、能通过的代码能力。", self.practice, "练"),
-            ("融合项目", "从单点知识走向能交付的小作品。", self.projects, "项"),
-            ("算法动画", "把抽象步骤变成更容易看懂的过程。", self.algo, "算"),
+            (tr("page.home"), tr("page.home.desc"), self.dashboard, tr("page.home")[0]),
+            (tr("page.learn"), tr("page.learn.desc"), self.learn, tr("page.learn")[0]),
+            (tr("page.practice"), tr("page.practice.desc"), self.practice, tr("page.practice")[0]),
+            (tr("page.projects"), tr("page.projects.desc"), self.projects, tr("page.projects")[0]),
+            (tr("page.algo"), tr("page.algo.desc"), self.algo, tr("page.algo")[0]),
         ]
         self.ai_page_spec = (
-            "AI 工作台",
-            "把对话、知识库和学习上下文放进一个真正可工作的 AI 页面。",
+            tr("page.ai"),
+            tr("page.ai.desc"),
             self.ai_page,
         )
         self.ai_page_index = len(self.learning_pages)
@@ -122,51 +126,51 @@ class DevLearnerWindow(QMainWindow):
 
         # Connection status indicator
         self._connection_label = QLabel()
-        self._connection_label.setAccessibleName("连接状态")
-        self._connection_label.setAccessibleDescription("显示当前网络连接状态")
+        self._connection_label.setAccessibleName(tr("window.connection_ready"))
+        self._connection_label.setAccessibleDescription(tr("window.connection_ready"))
         self._connection_label.setStyleSheet(
             "padding: 4px 12px; border-radius: 10px; font-size: 16px; font-weight: 600;"
         )
         self._update_connection_status("ready")
         self.status.addPermanentWidget(self._connection_label)
 
-        self.status.showMessage(f"v{APP_VERSION} | Ctrl+Enter 提交 | Ctrl+N 下一题 | Ctrl+H 提示 | Ctrl+/ 快捷键帮助")
+        self.status.showMessage(tr("window.status_bar", version=APP_VERSION))
 
         # ── Keyboard shortcuts ───────────────────────────────────────────────
 
-        ask_action = QAction("向 AI 提问", self)
+        ask_action = QAction(tr("window.shortcuts_ai"), self)
         ask_action.setShortcut(QKeySequence("Ctrl+Shift+A"))
         ask_action.triggered.connect(self.ask_ai_about_editor)
         self.addAction(ask_action)
 
-        submit_action = QAction("提交答案", self)
+        submit_action = QAction(tr("window.shortcuts_submit"), self)
         submit_action.setShortcut(QKeySequence("Ctrl+Return"))
         submit_action.triggered.connect(self._shortcut_submit)
         self.addAction(submit_action)
 
-        next_ex_action = QAction("下一题", self)
+        next_ex_action = QAction(tr("window.shortcuts_next"), self)
         next_ex_action.setShortcut(QKeySequence("Ctrl+N"))
         next_ex_action.triggered.connect(self._shortcut_next_exercise)
         self.addAction(next_ex_action)
 
-        hint_action = QAction("查看提示", self)
+        hint_action = QAction(tr("window.shortcuts_hint"), self)
         hint_action.setShortcut(QKeySequence("Ctrl+H"))
         hint_action.triggered.connect(self._shortcut_show_hint)
         self.addAction(hint_action)
 
-        theme_action = QAction("切换主题", self)
+        theme_action = QAction(tr("window.shortcuts_theme"), self)
         theme_action.setShortcut(QKeySequence("Ctrl+T"))
         theme_action.triggered.connect(self.toggle_theme)
         self.addAction(theme_action)
 
-        help_shortcuts_action = QAction("快捷键帮助", self)
+        help_shortcuts_action = QAction(tr("window.shortcuts_help"), self)
         help_shortcuts_action.setShortcut(QKeySequence("Ctrl+/"))
         help_shortcuts_action.triggered.connect(self._show_shortcuts_help)
         self.addAction(help_shortcuts_action)
 
         # Page navigation shortcuts (Ctrl+1 through Ctrl+5)
         for page_idx in range(min(5, len(self.learning_pages))):
-            nav_action = QAction(f"切换到页面 {page_idx + 1}", self)
+            nav_action = QAction(f"Ctrl+{page_idx + 1}", self)
             nav_action.setShortcut(QKeySequence(f"Ctrl+{page_idx + 1}"))
             nav_action.triggered.connect(lambda _checked=False, i=page_idx: self.switch_page(i))
             self.addAction(nav_action)
@@ -183,7 +187,7 @@ class DevLearnerWindow(QMainWindow):
             return self.projects
 
         self.projects = ProjectsWidget(self.content_service)
-        self.learning_pages[3] = ("融合项目", "从单点知识走向能交付的小作品。", self.projects, "项")
+        self.learning_pages[3] = (tr("page.projects"), tr("page.projects.desc"), self.projects, tr("page.projects")[0])
         self._projects_ready = True
         return self.projects
 
@@ -193,7 +197,7 @@ class DevLearnerWindow(QMainWindow):
             return self.algo
 
         self.algo = AlgoVisualizerWidget()
-        self.learning_pages[4] = ("算法动画", "把抽象步骤变成更容易看懂的过程。", self.algo, "算")
+        self.learning_pages[4] = (tr("page.algo"), tr("page.algo.desc"), self.algo, tr("page.algo")[0])
         self._algo_ready = True
         return self.algo
 
@@ -204,8 +208,8 @@ class DevLearnerWindow(QMainWindow):
         self.ai_page = AIMentorPanel(self.db, self.content_service, mode="page")
         self.ai_page.request_open_dock.connect(self.open_ai_dock)
         self.ai_page_spec = (
-            "AI 工作台",
-            "把对话、知识库和学习上下文放进一个真正可工作的 AI 页面。",
+            tr("page.ai"),
+            tr("page.ai.desc"),
             self.ai_page,
         )
         self._ai_ready = True
@@ -271,9 +275,9 @@ class DevLearnerWindow(QMainWindow):
         self.sidebar_toggle_btn = QPushButton("◀")
         self.sidebar_toggle_btn.setProperty("variant", "secondary")
         self.sidebar_toggle_btn.clicked.connect(self.toggle_sidebar)
-        self.sidebar_toggle_btn.setToolTip("收起导航")
-        self.sidebar_toggle_btn.setAccessibleName("收起导航侧栏")
-        self.sidebar_toggle_btn.setAccessibleDescription("收起或展开左侧导航面板")
+        self.sidebar_toggle_btn.setToolTip(tr("window.sidebar_toggle_close"))
+        self.sidebar_toggle_btn.setAccessibleName(tr("window.sidebar_toggle_close"))
+        self.sidebar_toggle_btn.setAccessibleDescription(tr("window.sidebar_toggle_close"))
         self.sidebar_toggle_btn.setFixedSize(48, 48)
         top_row.addWidget(self.sidebar_toggle_btn)
         layout.addLayout(top_row)
@@ -294,25 +298,31 @@ class DevLearnerWindow(QMainWindow):
         brand_layout.setSpacing(6)
         self.brand_logo = QLabel("DevLearner")
         self.brand_logo.setFont(QFont(FONT, F_TITLE - 8, QFont.Bold))
-        self.brand_sub = QLabel("把学习路径、练习、项目和 AI 助手整合成一个清晰的工作台。")
+        self.brand_sub = QLabel(tr("window.brand_sub"))
         self.brand_sub.setWordWrap(True)
         self.brand_sub.setStyleSheet("color: #5f6f86; font-size: 18px;")
         brand_layout.addWidget(self.brand_logo)
         brand_layout.addWidget(self.brand_sub)
         layout.addWidget(self.brand_card)
 
-        self.section = QLabel("导航")
+        self.section = QLabel(tr("window.section_nav"))
         self.section.setStyleSheet("color: #8b98ab; font-size: 18px; font-weight: 600; padding: 6px 10px;")
         layout.addWidget(self.section)
 
-        nav_icons = ["首", "路", "练", "项", "算"]
+        nav_icons = [
+            tr("page.home")[0],
+            tr("page.learn")[0],
+            tr("page.practice")[0],
+            tr("page.projects")[0],
+            tr("page.algo")[0],
+        ]
         for index, (title, _desc, _widget, short_title) in enumerate(self.learning_pages):
             button = QPushButton(title)
             button.setProperty("nav", "true")
             button.setCheckable(True)
-            button.setToolTip(f"切换到{title}页面 (Ctrl+{index + 1})")
-            button.setAccessibleName(f"导航到{title}")
-            button.setAccessibleDescription(f"切换到{title}页面")
+            button.setToolTip(f"{title} (Ctrl+{index + 1})")
+            button.setAccessibleName(title)
+            button.setAccessibleDescription(title)
             button.clicked.connect(lambda checked=False, i=index: self.switch_page(i))
             button.full_text = title
             button.short_text = short_title
@@ -328,35 +338,39 @@ class DevLearnerWindow(QMainWindow):
         settings_layout.setContentsMargins(0, 0, 0, 0)
         settings_layout.setSpacing(8)
 
-        self.theme_btn = QPushButton("深色模式")
+        self.theme_btn = QPushButton(tr("window.theme_btn"))
         self.theme_btn.setProperty("variant", "secondary")
         self.theme_btn.setFixedHeight(48)
         self.theme_btn.setCursor(Qt.PointingHandCursor)
-        self.theme_btn.setToolTip("切换深色/浅色主题 (Ctrl+T)")
-        self.theme_btn.setAccessibleName("主题切换")
-        self.theme_btn.setAccessibleDescription("切换深色或浅色主题")
+        self.theme_btn.setToolTip(tr("window.shortcuts_theme"))
+        self.theme_btn.setAccessibleName(tr("window.shortcuts_theme"))
+        self.theme_btn.setAccessibleDescription(tr("window.shortcuts_theme"))
         self.theme_btn.clicked.connect(self.toggle_theme)
         settings_layout.addWidget(self.theme_btn)
 
         font_row = QHBoxLayout()
         font_row.setSpacing(6)
-        font_labels = [("small", "A-", "缩小字体"), ("medium", "A", "默认字体"), ("large", "A+", "放大字体")]
+        font_labels = [
+            ("small", "A-", tr("window.font_small_tip")),
+            ("medium", "A", tr("window.font_medium_tip")),
+            ("large", "A+", tr("window.font_large_tip")),
+        ]
         for size_name, label, tip in font_labels:
             btn = QPushButton(label)
             btn.setProperty("variant", "secondary")
             btn.setFixedSize(48, 48)
             btn.setCursor(Qt.PointingHandCursor)
             btn.setToolTip(tip)
-            btn.setAccessibleName(f"字体大小：{tip}")
-            btn.setAccessibleDescription(f"将界面字体调整为{tip}")
+            btn.setAccessibleName(tip)
+            btn.setAccessibleDescription(tip)
             btn.clicked.connect(lambda _checked=False, s=size_name: self.set_font_size(s))
             font_row.addWidget(btn)
         settings_layout.addLayout(font_row)
 
-        whats_new_btn = QPushButton("新版本")
+        whats_new_btn = QPushButton(tr("window.whats_new"))
         whats_new_btn.setProperty("variant", "ghost")
         whats_new_btn.setCursor(Qt.PointingHandCursor)
-        whats_new_btn.setToolTip("查看当前版本的更新内容")
+        whats_new_btn.setToolTip(tr("window.whats_new"))
         whats_new_btn.clicked.connect(self._show_whats_new)
         settings_layout.addWidget(whats_new_btn)
 
@@ -386,11 +400,11 @@ class DevLearnerWindow(QMainWindow):
         self.page_title = QLabel("")
         self.page_title.setFont(QFont(FONT, F_TITLE, QFont.Bold))
         self.page_title.setStyleSheet("color: #1c1c1e;")
-        self.page_title.setAccessibleName("页面标题")
+        self.page_title.setAccessibleName(tr("page.home"))
         self.page_subtitle = QLabel("")
         self.page_subtitle.setStyleSheet("color: #64748b; font-size: 21px;")
         self.page_subtitle.setWordWrap(True)
-        self.page_subtitle.setAccessibleName("页面描述")
+        self.page_subtitle.setAccessibleName(tr("page.home.desc"))
 
         title_layout = QVBoxLayout()
         title_layout.setSpacing(4)
@@ -401,19 +415,19 @@ class DevLearnerWindow(QMainWindow):
         chip_layout = QHBoxLayout()
         chip_layout.setSpacing(10)
         chip_layout.addWidget(self._make_chip(QDate.currentDate().toString("yyyy-MM-dd"), False))
-        self.quick_ai_btn = QPushButton("AI 工作台")
+        self.quick_ai_btn = QPushButton(tr("page.ai"))
         self.quick_ai_btn.setProperty("variant", "secondary")
-        self.quick_ai_btn.setToolTip("打开 AI 工作台 (Ctrl+Shift+A)")
-        self.quick_ai_btn.setAccessibleName("AI 工作台")
-        self.quick_ai_btn.setAccessibleDescription("打开 AI 工作台进行智能对话")
+        self.quick_ai_btn.setToolTip(tr("page.ai"))
+        self.quick_ai_btn.setAccessibleName(tr("page.ai"))
+        self.quick_ai_btn.setAccessibleDescription(tr("page.ai.desc"))
         self.quick_ai_btn.clicked.connect(self.open_ai_workspace)
         chip_layout.addWidget(self.quick_ai_btn)
         topbar_layout.addLayout(chip_layout)
         layout.addWidget(topbar)
 
         self.stack = QStackedWidget()
-        self.stack.setAccessibleName("主要内容区域")
-        self.stack.setAccessibleDescription("显示当前选中页面的内容")
+        self.stack.setAccessibleName(tr("page.home"))
+        self.stack.setAccessibleDescription(tr("page.home.desc"))
         for _title, _desc, widget, _short in self.learning_pages:
             self.stack.addWidget(self._wrap_page(widget))
         self.stack.addWidget(self._wrap_page(self.ai_page))
@@ -480,7 +494,9 @@ class DevLearnerWindow(QMainWindow):
         if hasattr(self, "_sidebar_settings"):
             self._sidebar_settings.setVisible(expanded)
         self.sidebar_toggle_btn.setText("◀" if expanded else "▶")
-        self.sidebar_toggle_btn.setToolTip("收起导航" if expanded else "展开导航")
+        self.sidebar_toggle_btn.setToolTip(
+            tr("window.sidebar_toggle_close") if expanded else tr("window.sidebar_toggle_open")
+        )
 
         for button in self.nav_buttons:
             button.setText(button.full_text if expanded else button.icon_text)
@@ -501,11 +517,10 @@ class DevLearnerWindow(QMainWindow):
         title, desc, widget, _short = self.learning_pages[index]
         self.page_title.setText(title)
         self.page_subtitle.setText(desc)
-        self.page_title.setAccessibleName(f"当前页面：{title}")
+        self.page_title.setAccessibleName(title)
         self.page_subtitle.setAccessibleDescription(desc)
-        self.status.showMessage(f"已切换到：{title}", 3000)
-        # Announce page change for screen readers
-        self.status.setAccessibleDescription(f"当前页面：{title}。{desc}")
+        self.status.showMessage(tr("window.page_switched", title=title), 3000)
+        self.status.setAccessibleDescription(f"{title}。{desc}")
         if widget is self.dashboard:
             self.dashboard.refresh()
 
@@ -548,7 +563,7 @@ class DevLearnerWindow(QMainWindow):
         if not selected:
             selected = self.practice.editor.toPlainText().strip()
         if selected:
-            prompt = f"请帮我分析这段代码，并指出如何改进：\n{selected}"
+            prompt = tr("window.ask_ai_prompt", code=selected)
             page = self._ensure_ai_page()
             page.refresh_shared_state()
             page.input.setText(prompt)
@@ -578,21 +593,16 @@ class DevLearnerWindow(QMainWindow):
 
     # ── Connection status ────────────────────────────────────────────────────
 
-    # Connection status themes: status_key -> (label, foreground_color, background_color)
     _CONNECTION_THEMES: dict[str, tuple[str, str, str]] = {
-        "ready": ("在线就绪", "#22c55e", "#dcfce7"),
-        "online": ("已连接", "#22c55e", "#dcfce7"),
-        "offline": ("未连接", "#ef4444", "#fee2e2"),
-        "busy": ("请求中...", "#f59e0b", "#fef3c7"),
+        "ready": ("window.connection_ready", "#22c55e", "#dcfce7"),
+        "online": ("window.connection_online", "#22c55e", "#dcfce7"),
+        "offline": ("window.connection_offline", "#ef4444", "#fee2e2"),
+        "busy": ("window.connection_busy", "#f59e0b", "#fef3c7"),
     }
 
     def _update_connection_status(self, status: str) -> None:
-        """Update the permanent connection status indicator in the status bar.
-
-        Args:
-            status: One of 'ready', 'online', 'offline', 'busy'.
-        """
-        text, color, bg = self._CONNECTION_THEMES.get(status, self._CONNECTION_THEMES["ready"])
+        key, color, bg = self._CONNECTION_THEMES.get(status, self._CONNECTION_THEMES["ready"])
+        text = tr(key)
         self._connection_label.setText(f"  {text}  ")
         self._connection_label.setStyleSheet(
             f"background: {bg}; color: {color}; padding: 4px 12px; "
@@ -605,19 +615,20 @@ class DevLearnerWindow(QMainWindow):
         """Switch between light and dark themes."""
         self._dark_mode = not self._dark_mode
         self._apply_style_deferred()
-        theme_label = "深色" if self._dark_mode else "浅色"
-        self.status.showMessage(f"已切换到{theme_label}主题", 3000)
+        # Use direct labels for theme since there is no specific theme name key
+        theme_label = tr("window.font_size_large") if self._dark_mode else tr("window.font_size_small")
+        self.status.showMessage(tr("window.theme_switched", theme=theme_label), 3000)
 
     def set_font_size(self, size_name: str) -> None:
-        """Apply a named font-size preset and rebuild the stylesheet.
-
-        Args:
-            size_name: 'small', 'medium', or 'large'.
-        """
+        """Apply a named font-size preset and rebuild the stylesheet."""
         self._font_size = size_name
         self._apply_style_deferred()
-        size_labels = {"small": "小", "medium": "中", "large": "大"}
-        self.status.showMessage(f"字体大小已调整为：{size_labels.get(size_name, size_name)}", 3000)
+        size_labels = {
+            "small": tr("window.font_size_small"),
+            "medium": tr("window.font_size_medium"),
+            "large": tr("window.font_size_large"),
+        }
+        self.status.showMessage(tr("window.font_size_changed", size=size_labels.get(size_name, size_name)), 3000)
 
     def _apply_style_deferred(self) -> None:
         """Apply stylesheet on next event loop tick to batch rapid changes."""
@@ -647,7 +658,6 @@ class DevLearnerWindow(QMainWindow):
         except FileNotFoundError:
             raw = ""
 
-        # Extract the latest version section (up to the next '---' or '## ')
         lines = raw.splitlines()
         section_lines = []
         in_section = False
@@ -660,9 +670,9 @@ class DevLearnerWindow(QMainWindow):
                     break
                 section_lines.append(line)
 
-        body = "\n".join(section_lines).strip() if section_lines else "暂无更新说明。"
+        body = "\n".join(section_lines).strip() if section_lines else tr("window.whats_new_empty")
         msg = QMessageBox(self)
-        msg.setWindowTitle(f"DevLearner AI v{APP_VERSION} -- 新版本内容")
+        msg.setWindowTitle(tr("window.whats_new_title", version=APP_VERSION))
         msg.setTextFormat(Qt.RichText)
         msg.setText(
             f"<h3>DevLearner AI v{APP_VERSION}</h3>"
@@ -675,34 +685,34 @@ class DevLearnerWindow(QMainWindow):
         """Show a keyboard shortcuts reference dialog."""
         from PyQt5.QtWidgets import QMessageBox
 
-        shortcuts_html = """
+        shortcuts_html = f"""
         <table style="font-size: 14px; border-collapse: collapse; width: 100%;">
-        <tr style="background: #f1f5f9;"><th style="padding: 8px 16px; text-align: left;">快捷键</th>
-        <th style="padding: 8px 16px; text-align: left;">功能</th></tr>
+        <tr style="background: #f1f5f9;"><th style="padding: 8px 16px; text-align: left;">{tr("window.shortcuts_table_header_key")}</th>
+        <th style="padding: 8px 16px; text-align: left;">{tr("window.shortcuts_table_header_func")}</th></tr>
         <tr><td style="padding: 6px 16px;"><b>Ctrl+1</b> ~ <b>Ctrl+5</b></td>
-            <td style="padding: 6px 16px;">切换页面（首页 / 路径 / 练习 / 项目 / 算法）</td></tr>
+            <td style="padding: 6px 16px;">{tr("window.shortcuts_page_switch")}</td></tr>
         <tr style="background: #f8fafc;"><td style="padding: 6px 16px;"><b>Ctrl+Enter</b></td>
-            <td style="padding: 6px 16px;">提交答案（练习模式）</td></tr>
+            <td style="padding: 6px 16px;">{tr("window.shortcuts_submit")}</td></tr>
         <tr><td style="padding: 6px 16px;"><b>Ctrl+N</b></td>
-            <td style="padding: 6px 16px;">下一题（练习模式）</td></tr>
+            <td style="padding: 6px 16px;">{tr("window.shortcuts_next")}</td></tr>
         <tr style="background: #f8fafc;"><td style="padding: 6px 16px;"><b>Ctrl+H</b></td>
-            <td style="padding: 6px 16px;">查看提示（练习模式）</td></tr>
+            <td style="padding: 6px 16px;">{tr("window.shortcuts_hint")}</td></tr>
         <tr><td style="padding: 6px 16px;"><b>Ctrl+Shift+A</b></td>
-            <td style="padding: 6px 16px;">向 AI 提问</td></tr>
+            <td style="padding: 6px 16px;">{tr("window.shortcuts_ai")}</td></tr>
         <tr style="background: #f8fafc;"><td style="padding: 6px 16px;"><b>Ctrl+T</b></td>
-            <td style="padding: 6px 16px;">切换深色 / 浅色主题</td></tr>
+            <td style="padding: 6px 16px;">{tr("window.shortcuts_theme")}</td></tr>
         <tr><td style="padding: 6px 16px;"><b>Ctrl+/</b></td>
-            <td style="padding: 6px 16px;">显示本快捷键帮助</td></tr>
+            <td style="padding: 6px 16px;">{tr("window.shortcuts_help")}</td></tr>
         <tr style="background: #f8fafc;"><td style="padding: 6px 16px;"><b>Escape</b></td>
-            <td style="padding: 6px 16px;">关闭弹出对话框</td></tr>
+            <td style="padding: 6px 16px;">{tr("window.shortcuts_escape")}</td></tr>
         <tr><td style="padding: 6px 16px;"><b>Tab</b></td>
-            <td style="padding: 6px 16px;">在控件之间移动焦点</td></tr>
+            <td style="padding: 6px 16px;">{tr("window.shortcuts_tab")}</td></tr>
         </table>
         """
         msg = QMessageBox(self)
-        msg.setWindowTitle("键盘快捷键帮助")
+        msg.setWindowTitle(tr("window.shortcuts_help_title"))
         msg.setTextFormat(Qt.RichText)
-        msg.setText(f"<h3>键盘快捷键</h3>{shortcuts_html}")
+        msg.setText(f"<h3>{tr('window.shortcuts_heading')}</h3>{shortcuts_html}")
         msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()
 
@@ -712,7 +722,7 @@ def run():
     app.setStyleSheet(GLOBAL_STYLE)
 
     # Show splash screen while loading
-    splash_label = QLabel(f"DevLearner AI\nv{APP_VERSION}\n正在加载...")
+    splash_label = QLabel(f"DevLearner AI\nv{APP_VERSION}\n{tr('splash.loading')}")
     splash_label.setAlignment(Qt.AlignCenter)
     splash_label.setStyleSheet(
         """

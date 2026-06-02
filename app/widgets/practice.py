@@ -27,6 +27,7 @@ from app.content_service import ContentService
 from app.database import AppDatabase
 from app.effects import optimize_scroll_widget, surface_panel
 from app.highlighter import CLikeHighlighter, PythonHighlighter, SqlHighlighter
+from app.i18n import tr
 from app.localized_inputs import LocalizedCodeEditor, LocalizedTextEdit
 from app.practice_service import PracticeService
 from app.python_runner import run_python_code
@@ -128,7 +129,7 @@ class PracticeWidget(QWidget):
         hero_layout.setSpacing(16)
 
         left = QVBoxLayout()
-        badge = QLabel("训练工作台")
+        badge = QLabel(tr("practice.badge"))
         badge.setStyleSheet(
             f"""
             QLabel {{
@@ -142,9 +143,9 @@ class PracticeWidget(QWidget):
             """
         )
         badge.setFixedWidth(128)
-        title = QLabel("练习中心")
+        title = QLabel(tr("practice.title"))
         title.setFont(QFont(FONT, F_TITLE - 2, QFont.Bold))
-        subtitle = QLabel("把知识点变成真正能运行、能通过、能复用的代码能力。")
+        subtitle = QLabel(tr("practice.subtitle"))
         subtitle.setStyleSheet(f"color: {TEXT_SUB}; font-size: 21px;")
         subtitle.setWordWrap(True)
         left.addWidget(badge)

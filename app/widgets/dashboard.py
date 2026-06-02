@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import (
 from app.content_service import ContentService
 from app.database import AppDatabase
 from app.effects import apply_shadow
+from app.i18n import tr
 from app.styles import (
     ACCENT,
     ACCENT_SOFT,
@@ -180,12 +181,12 @@ class DashboardWidget(QWidget):
         text_col = QVBoxLayout()
         text_col.setSpacing(8)
 
-        title = QLabel("欢迎回来")
+        title = QLabel(tr("dashboard.welcome"))
         title.setFont(QFont(FONT, F_TITLE - 8, QFont.Bold))
         title.setStyleSheet(f"color: {TEXT_MAIN};")
         text_col.addWidget(title)
 
-        self.welcome_sub = QLabel("正在加载学习数据...")
+        self.welcome_sub = QLabel(tr("dashboard.loading"))
         self.welcome_sub.setWordWrap(True)
         self.welcome_sub.setStyleSheet(f"color: {TEXT_SUB}; font-size: 21px;")
         text_col.addWidget(self.welcome_sub)
@@ -201,10 +202,10 @@ class DashboardWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(18)
 
-        self.stat_lessons = self._stat_card("已完成课程", "0", ACCENT)
-        self.stat_score = self._stat_card("练习平均分", "0", SUCCESS)
-        self.stat_streak = self._stat_card("连续学习天数", "0", WARNING)
-        self.stat_attempts = self._stat_card("总练习次数", "0", "#8b5cf6")
+        self.stat_lessons = self._stat_card(tr("dashboard.stat_lessons"), "0", ACCENT)
+        self.stat_score = self._stat_card(tr("dashboard.stat_score"), "0", SUCCESS)
+        self.stat_streak = self._stat_card(tr("dashboard.stat_streak"), "0", WARNING)
+        self.stat_attempts = self._stat_card(tr("dashboard.stat_attempts"), "0", "#8b5cf6")
 
         layout.addWidget(self.stat_lessons)
         layout.addWidget(self.stat_score)
@@ -219,7 +220,7 @@ class DashboardWidget(QWidget):
         layout.setSpacing(14)
 
         header_row = QHBoxLayout()
-        title = QLabel("学习进度总览")
+        title = QLabel(tr("dashboard.progress_title"))
         title.setFont(QFont(FONT, F_TITLE - 16, QFont.Bold))
         header_row.addWidget(title)
         header_row.addStretch()
@@ -232,8 +233,8 @@ class DashboardWidget(QWidget):
         self.progress_bar = QProgressBar()
         self.progress_bar.setFixedHeight(18)
         self.progress_bar.setTextVisible(False)
-        self.progress_bar.setAccessibleName("学习进度")
-        self.progress_bar.setAccessibleDescription("总体学习进度百分比")
+        self.progress_bar.setAccessibleName(tr("dashboard.progress_name"))
+        self.progress_bar.setAccessibleDescription(tr("dashboard.progress_desc"))
         layout.addWidget(self.progress_bar)
 
         self.chart_container = QFrame()
@@ -244,10 +245,10 @@ class DashboardWidget(QWidget):
         # Weekly activity chart
         chart_left = QVBoxLayout()
         chart_left.setSpacing(6)
-        chart_label = QLabel("本周活动")
+        chart_label = QLabel(tr("dashboard.chart_weekly"))
         chart_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 18px; font-weight: 600;")
         self.weekly_chart = MiniBarChart(bar_color=ACCENT)
-        self.weekly_chart.setAccessibleName("本周活动图表")
+        self.weekly_chart.setAccessibleName(tr("dashboard.chart_weekly_name"))
         chart_left.addWidget(chart_label)
         chart_left.addWidget(self.weekly_chart)
         chart_layout.addLayout(chart_left, 1)
@@ -255,10 +256,10 @@ class DashboardWidget(QWidget):
         # Recent scores chart
         chart_right = QVBoxLayout()
         chart_right.setSpacing(6)
-        score_label_text = QLabel("近期练习分数")
+        score_label_text = QLabel(tr("dashboard.chart_scores"))
         score_label_text.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 18px; font-weight: 600;")
         self.score_chart = MiniBarChart(bar_color=SUCCESS)
-        self.score_chart.setAccessibleName("近期练习分数图表")
+        self.score_chart.setAccessibleName(tr("dashboard.chart_scores_name"))
         chart_right.addWidget(score_label_text)
         chart_right.addWidget(self.score_chart)
         chart_layout.addLayout(chart_right, 1)
@@ -272,7 +273,7 @@ class DashboardWidget(QWidget):
         layout.setContentsMargins(28, 24, 28, 24)
         layout.setSpacing(14)
 
-        header = QLabel("学习路线")
+        header = QLabel(tr("dashboard.tracks_title"))
         header.setFont(QFont(FONT, F_TITLE - 16, QFont.Bold))
         layout.addWidget(header)
 
@@ -280,7 +281,7 @@ class DashboardWidget(QWidget):
         for track in self.content_service.tracks:
             btn = QPushButton(f"{track.icon}  {track.title}")
             btn.setProperty("variant", "secondary")
-            btn.setToolTip(f"进入 {track.title} 学习路径")
+            btn.setToolTip(tr("dashboard.track_tooltip", title=track.title))
             btn.setStyleSheet(
                 f"""
                 QPushButton {{
@@ -305,7 +306,7 @@ class DashboardWidget(QWidget):
             self.track_buttons.append(btn)
 
         if not self.content_service.tracks:
-            placeholder = QLabel("暂时没有可用的学习路线。")
+            placeholder = QLabel(tr("dashboard.no_tracks"))
             placeholder.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 18px;")
             layout.addWidget(placeholder)
 
@@ -317,22 +318,26 @@ class DashboardWidget(QWidget):
         layout.setContentsMargins(28, 24, 28, 24)
         layout.setSpacing(14)
 
-        title = QLabel("学习目标")
+        title = QLabel(tr("dashboard.goal_title"))
         title.setFont(QFont(FONT, F_TITLE - 16, QFont.Bold))
         layout.addWidget(title)
 
         goal_row = QHBoxLayout()
         goal_row.setSpacing(14)
-        for label, target, icon in [("每日1课", 1, "日"), ("每周5课", 5, "周"), ("每月20课", 20, "月")]:
+        for label, target, icon in [
+            (tr("dashboard.goal_daily"), 1, "D"),
+            (tr("dashboard.goal_weekly"), 5, "W"),
+            (tr("dashboard.goal_monthly"), 20, "M"),
+        ]:
             btn = QPushButton(f"{icon} {label}")
             btn.setProperty("variant", "secondary")
             btn.setCursor(Qt.PointingHandCursor)
-            btn.setToolTip(f"设置目标：{label}（{target} 课）")
+            btn.setToolTip(tr("dashboard.goal_tooltip", label=label, target=target))
             btn.clicked.connect(lambda _checked=False, t=target, lbl=label: self._set_goal(t, lbl))
             goal_row.addWidget(btn)
         layout.addLayout(goal_row)
 
-        self.goal_label = QLabel("点击上方按钮设置学习目标，完成后会在这里显示进度。")
+        self.goal_label = QLabel(tr("dashboard.goal_hint"))
         self.goal_label.setWordWrap(True)
         self.goal_label.setStyleSheet(f"color: {TEXT_SUB}; font-size: 18px;")
         layout.addWidget(self.goal_label)
@@ -341,8 +346,8 @@ class DashboardWidget(QWidget):
         self.goal_bar.setFixedHeight(12)
         self.goal_bar.setTextVisible(False)
         self.goal_bar.setValue(0)
-        self.goal_bar.setAccessibleName("学习目标进度")
-        self.goal_bar.setAccessibleDescription("当前学习目标的完成进度")
+        self.goal_bar.setAccessibleName(tr("dashboard.goal_progress_name"))
+        self.goal_bar.setAccessibleDescription(tr("dashboard.goal_progress_desc"))
         layout.addWidget(self.goal_bar)
 
         self._goal_target = 0
@@ -356,16 +361,16 @@ class DashboardWidget(QWidget):
         layout.setSpacing(14)
 
         quick_tooltips = {
-            1: "跳转到学习路径页面",
-            2: "跳转到练习中心",
-            3: "跳转到融合项目",
-            4: "跳转到算法动画",
+            1: tr("dashboard.quick_learn_tip"),
+            2: tr("dashboard.quick_practice_tip"),
+            3: tr("dashboard.quick_projects_tip"),
+            4: tr("dashboard.quick_algo_tip"),
         }
         actions = [
-            ("继续学习", 1),
-            ("去练习", 2),
-            ("看项目", 3),
-            ("算法动画", 4),
+            (tr("dashboard.quick_learn"), 1),
+            (tr("dashboard.quick_practice"), 2),
+            (tr("dashboard.quick_projects"), 3),
+            (tr("dashboard.quick_algo"), 4),
         ]
         for label, page_index in actions:
             btn = QPushButton(label)
@@ -427,7 +432,9 @@ class DashboardWidget(QWidget):
         # For simplicity, use total completed as proxy
         progress = min(100, int(completed_today / max(target, 1) * 100))
         self.goal_bar.setValue(progress)
-        self.goal_label.setText(f"当前目标：{label}（{target}课）| 进度：{completed_today}/{target} | {progress}%")
+        self.goal_label.setText(
+            tr("dashboard.goal_status", label=label, target=target, completed=completed_today, pct=progress)
+        )
 
     # ── refresh ──────────────────────────────────────────────────────────────
 
@@ -447,7 +454,7 @@ class DashboardWidget(QWidget):
             streak = self.db.active_days_streak()
         except Exception as exc:
             logger.error("刷新仪表板数据失败: %s", exc, exc_info=True)
-            self.welcome_sub.setText("加载学习数据时出现问题。请检查数据目录是否正常，或尝试重启应用。")
+            self.welcome_sub.setText(tr("dashboard.load_error"))
             return
 
         self._update_stat(self.stat_lessons, completed)
@@ -500,13 +507,19 @@ class DashboardWidget(QWidget):
             progress = min(100, int(completed / max(self._goal_target, 1) * 100))
             self.goal_bar.setValue(progress)
             self.goal_label.setText(
-                f"当前目标：{self._goal_label_text} | 进度：{completed}/{self._goal_target} | {progress}%"
+                tr(
+                    "dashboard.goal_status",
+                    label=self._goal_label_text,
+                    target=self._goal_target,
+                    completed=completed,
+                    pct=progress,
+                )
             )
 
         # Welcome text
         if completed == 0:
-            self.welcome_sub.setText("还没有开始学习，选一条路线开始吧！")
+            self.welcome_sub.setText(tr("dashboard.welcome_empty"))
         else:
             self.welcome_sub.setText(
-                f"你已完成 {completed}/{total} 节课程，平均分 {avg_score}，连续学习 {streak} 天。继续加油！"
+                tr("dashboard.welcome_summary", completed=completed, total=total, avg=avg_score, streak=streak)
             )

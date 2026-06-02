@@ -9,7 +9,6 @@ Format: ``"section.component.description": "Chinese text"``
 TRANSLATIONS: dict[str, str] = {
     # ── Application ───────────────────────────────────────────────────────
     "app.subtitle": "Python / 数据库 / 融合项目一体化学习平台",
-
     # ── Window / Shell ────────────────────────────────────────────────────
     "window.status_bar": "v{version} | Ctrl+Enter 提交 | Ctrl+N 下一题 | Ctrl+H 提示 | Ctrl+/ 快捷键帮助",
     "window.page_switched": "已切换到：{title}",
@@ -47,7 +46,6 @@ TRANSLATIONS: dict[str, str] = {
     "window.whats_new_title": "DevLearner AI v{version} -- 新版本内容",
     "window.whats_new_empty": "暂无更新说明。",
     "window.ask_ai_prompt": "请帮我分析这段代码，并指出如何改进：\n{code}",
-
     # Page descriptions (sidebar)
     "page.home": "首页",
     "page.home.desc": "总览今天学什么、练了什么、下一步去哪里。",
@@ -61,7 +59,6 @@ TRANSLATIONS: dict[str, str] = {
     "page.algo.desc": "把抽象步骤变成更容易看懂的过程。",
     "page.ai": "AI 工作台",
     "page.ai.desc": "把对话、知识库和学习上下文放进一个真正可工作的 AI 页面。",
-
     # ── Dashboard ─────────────────────────────────────────────────────────
     "dashboard.welcome": "欢迎回来",
     "dashboard.loading": "正在加载学习数据...",
@@ -104,7 +101,6 @@ TRANSLATIONS: dict[str, str] = {
     "dashboard.streak_unit": "天连续",
     "dashboard.chart_data_label": "数据值: {values}",
     "dashboard.weekday_labels": "一,二,三,四,五,六,日",
-
     # ── Learn Widget ──────────────────────────────────────────────────────
     "learn.title": "学习路径",
     "learn.subtitle": "按主线进入模块，再从模块里递进学习课程。",
@@ -164,7 +160,6 @@ TRANSLATIONS: dict[str, str] = {
     "learn.lesson_meta": "模块：{module} · 难度：{difficulty} · 预计 {minutes} 分钟 · 标签：{tags}",
     "learn.complete_hint": "已标记完成。你可以继续下一课，或者回到模块层换一个方向。",
     "learn.note_saved_hint": "笔记已保存。继续用自己的话总结，会记得更牢。",
-
     # ── Practice Widget ───────────────────────────────────────────────────
     "practice.badge": "训练工作台",
     "practice.title": "练习中心",
@@ -274,7 +269,6 @@ TRANSLATIONS: dict[str, str] = {
     "practice.eval_error": "评测过程出错: {error}。请检查代码后重试。",
     "practice.score_status": "{label} | {pass_status} | 用时 {seconds}s",
     "practice.no_extra_output": "本次判题没有额外标准输出。",
-
     # ── Algo Visualizer ───────────────────────────────────────────────────
     "algo.title": "算法动画",
     "algo.subtitle": "把排序、查找这些基础算法拆成可视化步骤，先看懂过程，再回去写代码。",
@@ -314,7 +308,7 @@ TRANSLATIONS: dict[str, str] = {
     "algo.algo_linear": "线性查找",
     "algo.algo_binary": "二分查找",
     "algo.desc_bubble": "一轮轮比较相邻元素，把更大的数慢慢推到右边。适合练熟双层循环、比较和交换。",
-    "algo.desc_selection": "每轮从未排序区域里挑出最小值，放到左侧。适合理解"先找再换"的过程。",
+    "algo.desc_selection": "每轮从未排序区域里挑出最小值，放到左侧。适合理解「先找再换」的过程。",
     "algo.desc_insertion": "把当前值插入左边已经有序的区域。适合理解局部有序如何逐步扩大。",
     "algo.desc_merge": "先递归拆分，再把两个有序片段合并起来。适合理解分治法。",
     "algo.desc_quick": "围绕基准值分区，再递归处理左右两边。适合理解 partition 思想。",
@@ -323,7 +317,6 @@ TRANSLATIONS: dict[str, str] = {
     "algo.target_label": "目标值：{value}",
     "algo.animating": "演示中...",
     "algo.continue_btn": "继续",
-
     # ── Projects Widget ───────────────────────────────────────────────────
     "projects.title": "融合项目",
     "projects.subtitle": "从单点知识走向能交付的小作品，重点练范围控制、结构设计和真实落地。",
@@ -337,7 +330,6 @@ TRANSLATIONS: dict[str, str] = {
     "projects.reader_tip": "在独立窗口中放大阅读项目文档",
     "projects.tip_text": "建议先完成：{module}\n做完后应该得到：{summary}\n推进建议：先收窄 MVP，再按 数据结构 → 核心流程 → 存储 → 体验优化 的顺序推进。",
     "projects.module_meta": "模块：{module} · 难度：{difficulty} · 预计 {minutes} 分钟",
-
     # ── Bookmarks Widget ──────────────────────────────────────────────────
     "bookmarks.title": "我的收藏",
     "bookmarks.search_placeholder": "搜索书签...",
@@ -351,7 +343,6 @@ TRANSLATIONS: dict[str, str] = {
     "bookmarks.list_desc": "已收藏的课程和练习项目列表",
     "bookmarks.type_lesson": "课程",
     "bookmarks.type_exercise": "练习",
-
     # ── Achievements Widget ───────────────────────────────────────────────
     "achievements.title": "成就殿堂",
     "achievements.unlocked": "{current}/{total} 已解锁",
@@ -367,7 +358,6 @@ TRANSLATIONS: dict[str, str] = {
     "achievements.cat_feature": "功能",
     "achievements.cat_special": "特殊",
     "achievements.default_title": "成就",
-
     # ── Learning Path Widget ──────────────────────────────────────────────
     "learning_path.title": "学习路径可视化",
     "learning_path.pct": "总进度: {pct}%",
@@ -376,7 +366,6 @@ TRANSLATIONS: dict[str, str] = {
     "learning_path.legend_not_started": "未开始",
     "learning_path.legend_recommended": "推荐下一步",
     "learning_path.recommended_badge": "推荐",
-
     # ── Export/Import Dialog ──────────────────────────────────────────────
     "export_import.title": "数据导出 / 导入",
     "export_import.header": "学习数据管理",
@@ -421,7 +410,6 @@ TRANSLATIONS: dict[str, str] = {
     "export_import.restore_success_msg": "已恢复 {count} 条记录。建议重启应用以刷新界面。",
     "export_import.restore_success_log": "已从备份恢复 {count} 条记录: {path}",
     "export_import.restore_fail_log": "恢复失败: {error}",
-
     # ── Reader Dialog ─────────────────────────────────────────────────────
     "reader.title_default": "放大阅读",
     "reader.toc_title": "目录",
@@ -435,7 +423,6 @@ TRANSLATIONS: dict[str, str] = {
     "reader.zoom_out_btn": "缩小字体",
     "reader.zoom_out_name": "缩小阅读字体",
     "reader.close_btn": "关闭",
-
     # ── AI Mentor ─────────────────────────────────────────────────────────
     "ai.title_page": "AI 工作台",
     "ai.title_dock": "AI 助手",
@@ -513,7 +500,7 @@ TRANSLATIONS: dict[str, str] = {
     "ai.kb_file_add_dialog": "选择要加入扩展知识库的文件",
     "ai.kb_file_filter": "文本与代码文件 (*.txt *.md *.py *.c *.h *.cpp *.hpp *.cs *.json *.sql *.log *.csv);;所有文件 (*.*)",
     "ai.kb_file_remove_confirm": "确认移除",
-    "ai.kb_file_remove_msg": "确定要移除知识文件"{name}"吗？",
+    "ai.kb_file_remove_msg": '确定要移除知识文件"{name}"吗？',
     "ai.kb_file_size": "{size} 字节",
     "ai.kb_file_size_unknown": "未知大小",
     "ai.kb_file_not_found": "文件不存在",
@@ -533,7 +520,7 @@ TRANSLATIONS: dict[str, str] = {
     "ai.settings_tab_kb": "知识库",
     "ai.settings_close": "关闭",
     "ai.dock_title": "AI 助手",
-    "ai.session_empty_hint": "这里会保留你和 AI 的对话记录。建议按主题拆分会话，比如"Python 调试""数据库报表""项目拆解"。",
+    "ai.session_empty_hint": '这里会保留你和 AI 的对话记录。建议按主题拆分会话，比如"Python 调试""数据库报表""项目拆解"。',
     "ai.session_no_record": "还没有聊天记录。",
     "ai.session_snapshot_hint": "还没有聊天记录，适合先用它拆学习计划或整理报错。",
     "ai.session_prefix_user": "你：",
@@ -550,7 +537,7 @@ TRANSLATIONS: dict[str, str] = {
     "ai.session_delete_confirm_msg": "确定删除当前会话及其聊天记录吗？",
     "ai.session_keep_one": "至少保留一个会话，不能全部删除。",
     "ai.legacy_cleaned": "这条旧消息因早期编码问题已自动清理。你可以重新描述一次，我会继续帮你。",
-    "ai.not_configured": "你还没有配置好 Host、Key 和模型。先到"AI 设置"里填好这些，我就能联网帮你了。",
+    "ai.not_configured": '你还没有配置好 Host、Key 和模型。先到"AI 设置"里填好这些，我就能联网帮你了。',
     "ai.error_parse": "AI 服务响应解析失败，请稍后重试。",
     "ai.error_401": "AI 密钥无效或已过期，请到 AI 设置里更新密钥。",
     "ai.error_429": "请求过于频繁，请稍等片刻后重试。",
@@ -558,16 +545,13 @@ TRANSLATIONS: dict[str, str] = {
     "ai.error_connection": "AI 服务连接失败，请检查设置或网络连接。",
     "ai.system_prompt": "你是 DevLearner 的学习型 AI 助手。回答时请优先结合当前课程体系、学习进度和做题表现，给出清晰、分步骤、有同理心的中文建议。\n如果用户在问编程问题，请先解释思路、常见错误和下一步练习建议，而不是只给结论。",
     "ai.session_summary_prefix": "当前会话摘要：",
-
     # ── Score labels ──────────────────────────────────────────────────────
     "score.excellent": "优秀",
     "score.good": "良好",
     "score.pass": "及格",
     "score.fail": "需努力",
-
     # ── Splash screen ─────────────────────────────────────────────────────
     "splash.loading": "正在加载...",
-
     # ── Config ────────────────────────────────────────────────────────────
     "config.language": "语言",
     "config.language_tip": "切换界面语言（需要重启应用）",

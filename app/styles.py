@@ -123,13 +123,15 @@ def score_color(score: int) -> str:
 
 def score_label(score: int) -> str:
     """Return a short human-readable label for a score."""
+    from app.i18n import tr
+
     if score >= SCORE_EXCELLENT:
-        return "优秀"
+        return tr("score.excellent")
     if score >= SCORE_GOOD:
-        return "良好"
+        return tr("score.good")
     if score >= SCORE_PASS:
-        return "及格"
-    return "需努力"
+        return tr("score.pass")
+    return tr("score.fail")
 
 
 # ── Dynamic stylesheet builder ───────────────────────────────────────────────
