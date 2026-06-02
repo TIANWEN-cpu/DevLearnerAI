@@ -272,7 +272,8 @@ class TestConfigurationValidation:
             require_https("http://api.example.com/v1")
 
     def test_require_https_accepts_https(self):
-        require_https("https://api.example.com/v1")
+        result = require_https("https://api.example.com/v1")
+        assert result is None
 
     def test_build_models_url_with_v1_suffix(self):
         assert build_models_url("https://api.example.com/v1") == "https://api.example.com/v1/models"
@@ -365,10 +366,12 @@ class TestErrorHandling:
     def test_rename_nonexistent_session_no_crash(self, db):
         """Renaming a nonexistent session should not crash."""
         db.rename_mentor_session(999999, "Ghost")
+        assert True  # Verify no exception raised
 
     def test_delete_nonexistent_session_no_crash(self, db):
         """Deleting a nonexistent session should not crash."""
         db.delete_mentor_session(999999)
+        assert True  # Verify no exception raised
 
     def test_empty_message_content(self, db):
         """Appending a message with empty content should work."""

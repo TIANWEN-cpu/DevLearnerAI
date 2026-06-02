@@ -31,6 +31,9 @@ if "PyQt5" not in sys.modules:
             "WA_OpaquePaintEvent": 1,
             "WA_StaticContents": 2,
             "UserRole": 256,
+            "PointingHandCursor": 13,
+            "WaitCursor": 3,
+            "ArrowCursor": 0,
         },
     )()
     _pyqt5.QtCore.pyqtSignal = lambda *a, **k: MagicMock()

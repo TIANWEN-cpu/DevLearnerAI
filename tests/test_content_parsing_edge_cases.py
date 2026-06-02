@@ -670,3 +670,4 @@ class TestPreloadAdjacentLessons:
         cs = ContentService(metadata_path=p)
         # Should not raise
         cs.preload_adjacent_lessons("nonexistent")
+        assert cs._markdown_cache == {}

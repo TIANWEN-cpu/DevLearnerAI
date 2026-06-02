@@ -208,7 +208,8 @@ class TestFileSystemAccessEscape:
 
     def test_open_sandboxed_to_workdir(self):
         """Opening system files passes AST check but is blocked at runtime by _safe_open_factory."""
-        _validate_code_safety("f = open('test.txt')\nprint(f.read())")
+        result = _validate_code_safety("f = open('test.txt')\nprint(f.read())")
+        assert result is None
 
     def test_open_dotdot_escape_blocked(self):
         """Path traversal is blocked by _safe_open_factory."""

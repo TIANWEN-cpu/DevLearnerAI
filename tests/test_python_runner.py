@@ -32,17 +32,21 @@ class TestValidateCodeSafety:
     # -- safe code passes ------------------------------------------------
 
     def test_simple_print_passes(self):
-        _validate_code_safety("print('hello')")
+        result = _validate_code_safety("print('hello')")
+        assert result is None
 
     def test_arithmetic_passes(self):
-        _validate_code_safety("x = 1 + 2\nprint(x)")
+        result = _validate_code_safety("x = 1 + 2\nprint(x)")
+        assert result is None
 
     def test_function_def_passes(self):
         code = "def add(a, b):\n    return a + b\nprint(add(1, 2))"
-        _validate_code_safety(code)
+        result = _validate_code_safety(code)
+        assert result is None
 
     def test_list_comprehension_passes(self):
-        _validate_code_safety("result = [x * 2 for x in range(5)]\nprint(result)")
+        result = _validate_code_safety("result = [x * 2 for x in range(5)]\nprint(result)")
+        assert result is None
 
     # -- import statements blocked ---------------------------------------
 

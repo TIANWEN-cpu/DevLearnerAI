@@ -49,6 +49,10 @@ class TestConnectionRecovery:
 
         # Next get_connection should recover
         conn2 = get_connection(str(db_path))
+        assert conn2 is not None
+        result = conn2.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+        assert len(result) >= 1
+        conn2 = get_connection(str(db_path))
         # Should work after recovery
         conn2.execute("SELECT 1")
 

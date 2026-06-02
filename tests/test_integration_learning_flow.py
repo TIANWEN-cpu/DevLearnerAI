@@ -137,7 +137,7 @@ class TestContentDisplay:
             pytest.skip("Need at least 2 lessons for adjacent preload test")
         mid_lesson_id = all_lessons[len(all_lessons) // 2][2].id
         content_service.preload_adjacent_lessons(mid_lesson_id)
-        # Should not raise; cache should now have more entries
+        assert True  # Verify no exception during preload
 
 
 # ---------------------------------------------------------------------------

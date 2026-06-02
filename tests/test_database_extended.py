@@ -243,6 +243,7 @@ class TestKnowledgeFilesExtended:
     def test_remove_nonexistent_file_no_error(self, db):
         # Should not raise
         db.remove_knowledge_file(999)
+        assert db.get_knowledge_file(999) is None
 
     def test_multiple_knowledge_files_ordered_by_id_desc(self, db):
         db.add_knowledge_file("First", "/a", "e1")

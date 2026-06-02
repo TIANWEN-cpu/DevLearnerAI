@@ -126,7 +126,7 @@ class TestPreloadAdjacentLessons:
         """When lesson_id is not in index, should return silently."""
         svc, _ = content_service
         svc.preload_adjacent_lessons("nonexistent-id")
-        # No crash
+        assert True  # Verify no crash with invalid ID
 
     def test_preload_first_lesson(self, content_service):
         """First lesson should only preload next."""

@@ -74,6 +74,12 @@ class DevLearnerWindow(QMainWindow):
         self.practice_service = PracticeService()
         startup_breakdown.end("core_services")
 
+        # Analytics collector (privacy-first, local only)
+        from app.utils.analytics import AnalyticsCollector
+
+        self.analytics = AnalyticsCollector(self.db)
+        self.analytics.cleanup_old_data()
+
         # Critical widgets (visible at startup)
         startup_breakdown.begin("critical_widgets")
         self.dashboard = DashboardWidget(self.content_service, self.db)
@@ -444,6 +450,26 @@ class DevLearnerWindow(QMainWindow):
         whats_new_btn.clicked.connect(self._show_whats_new)
         settings_layout.addWidget(whats_new_btn)
 
+        # ── Demo data button ───────────────────────────────────────────────
+        demo_btn = QPushButton(tr("demo.load_btn"))
+        demo_btn.setProperty("variant", "ghost")
+        demo_btn.setCursor(Qt.PointingHandCursor)
+        demo_btn.setToolTip(tr("demo.load_tip"))
+        demo_btn.setAccessibleName(tr("demo.load_btn"))
+        demo_btn.setAccessibleDescription(tr("demo.load_tip"))
+        demo_btn.clicked.connect(self._load_demo_data)
+        settings_layout.addWidget(demo_btn)
+
+        # ── Export / Import button ───────────────────────────────────────────
+        export_btn = QPushButton(tr("window.export_import", fallback="数据管理"))
+        export_btn.setProperty("variant", "ghost")
+        export_btn.setCursor(Qt.PointingHandCursor)
+        export_btn.setToolTip(tr("window.export_import_tip", fallback="导出、导入或备份学习数据"))
+        export_btn.setAccessibleName(tr("window.export_import", fallback="数据管理"))
+        export_btn.setAccessibleDescription(tr("window.export_import_tip", fallback="导出、导入或备份学习数据"))
+        export_btn.clicked.connect(self._show_export_import)
+        settings_layout.addWidget(export_btn)
+
         layout.addWidget(self._sidebar_settings)
         return self.sidebar
 
@@ -785,6 +811,35 @@ class DevLearnerWindow(QMainWindow):
         msg.setText(f"<h3>{tr('window.shortcuts_heading')}</h3>{shortcuts_html}")
         msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()
+
+    def _load_demo_data(self) -> None:
+        """Load demo data into the database for demonstration purposes."""
+        from PyQt5.QtWidgets import QMessageBox
+
+        from app.demo_data import has_demo_data, load_demo_data
+
+        if has_demo_data(self.db):
+            QMessageBox.information(self, tr("demo.load_btn"), tr("demo.already_loaded"))
+            return
+
+        reply = QMessageBox.question(
+            self,
+            tr("demo.load_btn"),
+            tr("demo.load_confirm"),
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes,
+        )
+        if reply != QMessageBox.Yes:
+            return
+
+        try:
+            load_demo_data(self.db)
+            self.dashboard.refresh()
+            self.status.showMessage(tr("demo.loaded"), 5000)
+            QMessageBox.information(self, tr("demo.load_btn"), tr("demo.loaded"))
+        except Exception:
+            logger.exception("Failed to load demo data")
+            QMessageBox.warning(self, tr("demo.load_btn"), tr("demo.load_error"))
 
 
 def run():

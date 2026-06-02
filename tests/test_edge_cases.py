@@ -36,18 +36,22 @@ class TestEmptyCodeSubmission:
 
     def test_empty_string_passes_safety_check(self):
         """Empty code should pass safety validation."""
-        _validate_code_safety("")
+        result = _validate_code_safety("")
+        assert result is None
 
     def test_whitespace_only_passes_safety_check(self):
-        _validate_code_safety("   \n\n   \n  ")
+        result = _validate_code_safety("   \n\n   \n  ")
+        assert result is None
 
     def test_empty_code_executes_ok(self):
         """Empty code should pass AST validation (execution has known Windows tempfile issue)."""
-        _validate_code_safety("")
+        result = _validate_code_safety("")
+        assert result is None
 
     def test_whitespace_only_executes_ok(self):
         """Whitespace-only code should pass AST validation."""
-        _validate_code_safety("   \n\n   \n  ")
+        result = _validate_code_safety("   \n\n   \n  ")
+        assert result is None
 
     def test_empty_code_evaluate_passes_syntax(self):
         from app.python_runner import _evaluate_code_impl
@@ -63,7 +67,8 @@ class TestEmptyCodeSubmission:
 
     def test_empty_comment_only_passes(self):
         """Comment-only code should pass AST validation."""
-        _validate_code_safety("# just a comment\n# another comment")
+        result = _validate_code_safety("# just a comment\n# another comment")
+        assert result is None
 
 
 # ---------------------------------------------------------------------------
@@ -74,11 +79,13 @@ class TestVeryLongCode:
 
     def test_long_code_passes_safety_check(self):
         code = "x = 1\n" * 20000
-        _validate_code_safety(code)
+        result = _validate_code_safety(code)
+        assert result is None
 
     def test_long_code_with_many_functions(self):
         funcs = "\n".join(f"def func_{i}(): return {i}" for i in range(1000))
-        _validate_code_safety(funcs)
+        result = _validate_code_safety(funcs)
+        assert result is None
 
     def test_long_code_output_truncation(self):
         buf = LimitedBuffer(limit=100)
@@ -90,13 +97,15 @@ class TestVeryLongCode:
     def test_long_print_output_is_limited(self):
         """LimitedBuffer correctly limits output length."""
         code = "print('A' * 20000)"
-        _validate_code_safety(code)  # passes safety check
+        result = _validate_code_safety(code)  # passes safety check
+        assert result is None
 
     def test_long_code_evaluation_completes(self):
         """Long code with many functions passes AST validation."""
         funcs = "\n".join(f"def func_{i}(): return {i}" for i in range(100))
         code = funcs + "\nresult = func_99()"
-        _validate_code_safety(code)
+        result = _validate_code_safety(code)
+        assert result is None
 
     def test_limited_buffer_at_exact_limit(self):
         buf = LimitedBuffer(limit=1000)
@@ -112,7 +121,8 @@ class TestVeryLongCode:
     def test_very_large_output_caught(self):
         """Code with massive output passes AST validation."""
         code = "for i in range(100000): print(i)"
-        _validate_code_safety(code)
+        result = _validate_code_safety(code)
+        assert result is None
 
 
 # ---------------------------------------------------------------------------
@@ -122,29 +132,35 @@ class TestUnicodeInCode:
     """Test Unicode handling throughout the sandbox."""
 
     def test_chinese_variable_names_passes(self):
-        _validate_code_safety("名前 = '测试'\nprint(名前)")
+        result = _validate_code_safety("名前 = '测试'\nprint(名前)")
+        assert result is None
 
     def test_chinese_string_in_print(self):
         """Chinese strings pass AST validation."""
-        _validate_code_safety("print('你好世界')")
+        result = _validate_code_safety("print('你好世界')")
+        assert result is None
 
     def test_emoji_in_output(self):
         """Emoji in strings passes AST validation."""
-        _validate_code_safety("print('hello \\U0001f600 world')")
+        result = _validate_code_safety("print('hello \\U0001f600 world')")
+        assert result is None
 
     def test_unicode_in_function_names(self):
         """Chinese function names pass AST validation."""
         code = "def 计算(x, y):\n    return x + y\nprint(计算(3, 4))"
-        _validate_code_safety(code)
+        result = _validate_code_safety(code)
+        assert result is None
 
     def test_unicode_in_variable_values(self):
         """Chinese variable names and values pass AST validation."""
         code = "data = {'名字': '小明', '年龄': 18}\nprint(data['名字'])"
-        _validate_code_safety(code)
+        result = _validate_code_safety(code)
+        assert result is None
 
     def test_unicode_escaped_sequences(self):
         """Unicode escape sequences pass AST validation."""
-        _validate_code_safety("print('\\u4f60\\u597d')")
+        result = _validate_code_safety("print('\\u4f60\\u597d')")
+        assert result is None
 
     def test_safe_open_unicode_filename(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -168,12 +184,14 @@ class TestUnicodeInCode:
     def test_unicode_evaluation_feedback(self):
         """Unicode code passes AST validation."""
         code = "def greet(name):\n    return f'你好, {name}!'\nresult = greet('世界')"
-        _validate_code_safety(code)
+        result = _validate_code_safety(code)
+        assert result is None
 
     def test_mixed_encoding_in_strings(self):
         """Multi-script strings pass AST validation."""
         code = "text = 'Hello 你好 Bonjour こんにちは'\nprint(len(text.split()))"
-        _validate_code_safety(code)
+        result = _validate_code_safety(code)
+        assert result is None
 
 
 # ---------------------------------------------------------------------------

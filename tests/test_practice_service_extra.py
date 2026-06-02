@@ -442,14 +442,17 @@ class TestSqlQueryFixturesData:
 
     def test_fixtures_setup_executes(self):
         """Each fixture's setup SQL should execute without error."""
+        count = 0
         for fixture_id, data in _get_sql_query_fixtures().items():
             conn = sqlite3.connect(":memory:")
             try:
                 conn.executescript(data["setup"])
+                count += 1
             except Exception as exc:
                 pytest.fail(f"{fixture_id} setup failed: {exc}")
             finally:
                 conn.close()
+        assert count > 0
 
 
 # ---------------------------------------------------------------------------

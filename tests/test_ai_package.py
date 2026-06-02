@@ -116,7 +116,8 @@ class TestRequireHttps:
     def test_https_passes(self):
         from app.ai.api_client import require_https
 
-        require_https("https://api.example.com")  # no exception
+        result = require_https("https://api.example.com")
+        assert result is None
 
     def test_http_raises(self):
         from app.ai.api_client import require_https
