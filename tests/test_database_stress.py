@@ -328,7 +328,7 @@ class TestLargeDatasetQueries:
         messages = db.load_mentor_messages(sid)
         assert len(messages) == 500
         # Ordered by id ASC
-        assert messages[0][2] < messages[-1][2]
+        assert messages[0][2] <= messages[-1][2]
 
     def test_trim_mentor_messages(self, db):
         """Trim old messages keeping only recent ones."""

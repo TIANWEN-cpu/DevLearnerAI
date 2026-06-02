@@ -1151,22 +1151,7 @@ class DashboardWidget(QWidget):
 
         # ── Analytics section ─────────────────────────────────────────────────
         try:
-            from app.utils.analytics import AnalyticsCollector
-
-            collector = AnalyticsCollector(self.db)
-            weekly = collector.generate_weekly_report()
-            if hasattr(self, "analytics_time_label"):
-                from app.i18n import tr as _tr
-
-                self.analytics_time_label.setText(f"{weekly['total_learning_time_min']} {_tr('analytics.unit_min')}")
-            for obj_name, value in [
-                ("analytics_mini_lessons", str(weekly["total_lessons_completed"])),
-                ("analytics_mini_exercises", str(weekly["total_exercises_completed"])),
-                ("analytics_mini_score", str(weekly["average_score"])),
-            ]:
-                lbl = self.findChild(QLabel, obj_name)
-                if lbl:
-                    lbl.setText(value)
+            self._refresh_analytics_preview()
         except Exception as exc:
             logger.warning("刷新分析预览失败: %s", exc)
 
@@ -1178,76 +1163,98 @@ class DashboardWidget(QWidget):
 
         # ── Achievements section ─────────────────────────────────────────────
         try:
-            achievements = self.db.list_achievements()
-            unlocked_count = sum(1 for a in achievements if a["unlocked"])
-            total_achievements = len(achievements)
-            self.achievement_count.setText(f"{unlocked_count}/{total_achievements}")
-
-            # Clear old badges
-            while self.achievement_row.count():
-                item = self.achievement_row.takeAt(0)
-                w = item.widget()
-                if w:
-                    w.deleteLater()
-            self._achievement_badges = []
-
-            # Show recent unlocked or closest-to-unlock achievements
-            from app.widgets.achievements import AchievementBadge
-
-            # First show unlocked ones (up to 4), then fill with close-to-unlock
-            unlocked_achs = [a for a in achievements if a["unlocked"]][:3]
-            locked_achs = [a for a in achievements if not a["unlocked"]]
-            locked_achs.sort(key=lambda a: a.get("current_value", 0) / max(a.get("threshold", 1), 1), reverse=True)
-            display_achs = unlocked_achs + locked_achs[: max(0, 4 - len(unlocked_achs))]
-            for ach in display_achs[:4]:
-                badge = AchievementBadge(ach)
-                badge.setFixedSize(120, 140)
-                self.achievement_row.addWidget(badge)
-                self._achievement_badges.append(badge)
-            if not display_achs:
-                placeholder = QLabel("还没有成就记录，继续学习吧！")
-                placeholder.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 18px;")
-                self.achievement_row.addWidget(placeholder)
+            self._refresh_achievements_section()
         except Exception as exc:
             logger.warning("刷新成就数据失败: %s", exc)
 
         # ── Bookmarks section ────────────────────────────────────────────────
         try:
-            bookmarks = self.db.list_bookmarks()
-            bm_count = len(bookmarks)
-            self.bookmark_count_label.setText(f"共 {bm_count} 个收藏")
-
-            # Clear old items
-            while self.bookmark_items_layout.count():
-                item = self.bookmark_items_layout.takeAt(0)
-                w = item.widget()
-                if w:
-                    w.deleteLater()
-
-            # Show up to 5 recent bookmarks
-            for bm in bookmarks[:5]:
-                _id, item_type, item_id, title, track_id, note, created_at = bm
-                type_label = "课程" if item_type == "lesson" else "练习"
-                type_color = ACCENT if item_type == "lesson" else "#8b5cf6"
-                row = QHBoxLayout()
-                row.setSpacing(8)
-                badge = QLabel(type_label)
-                badge.setFixedSize(36, 24)
-                badge.setAlignment(Qt.AlignCenter)
-                badge.setStyleSheet(
-                    f"background: {ACCENT_SOFT if item_type == 'lesson' else '#f3e8ff'}; "
-                    f"color: {type_color}; border-radius: 6px; font-size: 13px; font-weight: 600;"
-                )
-                row.addWidget(badge)
-                title_lbl = QLabel(title)
-                title_lbl.setStyleSheet(f"color: {TEXT_MAIN}; font-size: 17px; font-weight: 600;")
-                row.addWidget(title_lbl, 1)
-                self.bookmark_items_layout.addLayout(row)
-
-            if not bookmarks:
-                placeholder = QLabel("还没有收藏。在学习或练习时点击「收藏」按钮添加。")
-                placeholder.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 18px;")
-                placeholder.setWordWrap(True)
-                self.bookmark_items_layout.addWidget(placeholder)
+            self._refresh_bookmarks_section()
         except Exception as exc:
             logger.warning("刷新收藏数据失败: %s", exc)
+
+    def _refresh_analytics_preview(self) -> None:
+        """刷新分析预览区域。"""
+        from app.utils.analytics import AnalyticsCollector
+
+        collector = AnalyticsCollector(self.db)
+        weekly = collector.generate_weekly_report()
+        if hasattr(self, "analytics_time_label"):
+            from app.i18n import tr as _tr
+
+            self.analytics_time_label.setText(f"{weekly['total_learning_time_min']} {_tr('analytics.unit_min')}")
+        for obj_name, value in [
+            ("analytics_mini_lessons", str(weekly["total_lessons_completed"])),
+            ("analytics_mini_exercises", str(weekly["total_exercises_completed"])),
+            ("analytics_mini_score", str(weekly["average_score"])),
+        ]:
+            lbl = self.findChild(QLabel, obj_name)
+            if lbl:
+                lbl.setText(value)
+
+    def _refresh_achievements_section(self) -> None:
+        """刷新成就区域。"""
+        achievements = self.db.list_achievements()
+        unlocked_count = sum(1 for a in achievements if a["unlocked"])
+        total_achievements = len(achievements)
+        self.achievement_count.setText(f"{unlocked_count}/{total_achievements}")
+
+        while self.achievement_row.count():
+            item = self.achievement_row.takeAt(0)
+            w = item.widget()
+            if w:
+                w.deleteLater()
+        self._achievement_badges = []
+
+        from app.widgets.achievements import AchievementBadge
+
+        unlocked_achs = [a for a in achievements if a["unlocked"]][:3]
+        locked_achs = [a for a in achievements if not a["unlocked"]]
+        locked_achs.sort(key=lambda a: a.get("current_value", 0) / max(a.get("threshold", 1), 1), reverse=True)
+        display_achs = unlocked_achs + locked_achs[: max(0, 4 - len(unlocked_achs))]
+        for ach in display_achs[:4]:
+            badge = AchievementBadge(ach)
+            badge.setFixedSize(120, 140)
+            self.achievement_row.addWidget(badge)
+            self._achievement_badges.append(badge)
+        if not display_achs:
+            placeholder = QLabel("还没有成就记录，继续学习吧！")
+            placeholder.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 18px;")
+            self.achievement_row.addWidget(placeholder)
+
+    def _refresh_bookmarks_section(self) -> None:
+        """刷新收藏区域。"""
+        bookmarks = self.db.list_bookmarks()
+        bm_count = len(bookmarks)
+        self.bookmark_count_label.setText(f"共 {bm_count} 个收藏")
+
+        while self.bookmark_items_layout.count():
+            item = self.bookmark_items_layout.takeAt(0)
+            w = item.widget()
+            if w:
+                w.deleteLater()
+
+        for bm in bookmarks[:5]:
+            _id, item_type, item_id, title, track_id, note, created_at = bm
+            type_label = "课程" if item_type == "lesson" else "练习"
+            type_color = ACCENT if item_type == "lesson" else "#8b5cf6"
+            row = QHBoxLayout()
+            row.setSpacing(8)
+            badge = QLabel(type_label)
+            badge.setFixedSize(36, 24)
+            badge.setAlignment(Qt.AlignCenter)
+            badge.setStyleSheet(
+                f"background: {ACCENT_SOFT if item_type == 'lesson' else '#f3e8ff'}; "
+                f"color: {type_color}; border-radius: 6px; font-size: 13px; font-weight: 600;"
+            )
+            row.addWidget(badge)
+            title_lbl = QLabel(title)
+            title_lbl.setStyleSheet(f"color: {TEXT_MAIN}; font-size: 17px; font-weight: 600;")
+            row.addWidget(title_lbl, 1)
+            self.bookmark_items_layout.addLayout(row)
+
+        if not bookmarks:
+            placeholder = QLabel("还没有收藏。在学习或练习时点击「收藏」按钮添加。")
+            placeholder.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 18px;")
+            placeholder.setWordWrap(True)
+            self.bookmark_items_layout.addWidget(placeholder)
