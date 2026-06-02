@@ -400,19 +400,19 @@ class TestLanguageHighlighterRegistration:
         from app.highlighter import PythonHighlighter
 
         source = __import__("inspect").getsource(PythonHighlighter.__init__)
-        assert r'#[^\n]*' in source
+        assert r"#[^\n]*" in source
 
     def test_clike_comment_pattern_is_double_slash(self):
         from app.highlighter import CLikeHighlighter
 
         source = __import__("inspect").getsource(CLikeHighlighter.__init__)
-        assert r'//[^\n]*' in source
+        assert r"//[^\n]*" in source
 
     def test_sql_comment_pattern_is_double_dash(self):
         from app.highlighter import SqlHighlighter
 
         source = __import__("inspect").getsource(SqlHighlighter.__init__)
-        assert r'--[^\n]*' in source
+        assert r"--[^\n]*" in source
 
     def test_c_language_has_struct_keyword(self):
         from app.highlighter import CLikeHighlighter
