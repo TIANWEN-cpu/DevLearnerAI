@@ -4,124 +4,97 @@
 
 ---
 
-## [Unreleased] -- Sprint 11~15 后续迭代
+## [1.1.0] - 2026-06-02
 
-v1.1.0 发布后的持续改进，聚焦 AI 功能增强、数据分析、测试质量提升和代码清理。
+基于 v1.0.0 发布后的全面成熟度升级（Sprint 4-27），涵盖模块拆分、功能增强、安全加固、测试覆盖、UX 打磨与文档完善。
 
 ### 新功能
 
-- **Onboarding Store** -- 新用户引导状态管理，记录引导完成状态 (Sprint 11)
-- **代码执行安全沙箱** -- 隔离执行环境，防止代码逃逸 (Sprint 11)
-- **性能监控** -- 慢操作追踪、IPC 通信跟踪、启动耗时插桩 (Sprint 5)
-- **AI 代码分析** -- chat_handler 新增代码分析方法，练习组件集成"分析代码"按钮，学习组件集成"解释"按钮 (Sprint 13)
-- **知识引擎** -- 知识图谱可视化 (KnowledgeGraph)、自动标签 (AutoTagger)、RAG 上下文服务 (Sprint 13)
-- **分析仪表板** -- 分析数据收集器 (AnalyticsCollector)、分析视图组件、数据库分析表 (Sprint 12/13)
-- **图表组件包** -- 折线图、柱状图、雷达图、热力图等可复用图表 widget (Sprint 13)
+- **欢迎向导 (WelcomeWizard)** -- 5 步首次启动引导流程，帮助用户完成初始配置
+- **功能导览 (Feature Tour)** -- 全屏聚光灯式交互功能介绍
+- **设置检查清单 (SetupChecklist)** -- 仪表板环境检查与 API Key 配置引导，读取真实数据库状态
+- **代码分析器 (Code Analyzer)** -- AI 驱动的 4 标签页代码分析面板（解释/审查/查错/复杂度）
+- **渐进式提示系统 (Hint System)** -- 3 级渐进提示（概念/方法/伪代码），带延迟展示
+- **学习推荐 (Learning Recommendations)** -- 下一课推荐、复习计划、薄弱点识别
+- **分析工具模块 (Analytics)** -- 用户行为数据采集、数据库表、分析视图组件、周报
+- **知识图谱 (KnowledgeGraph)** -- 力导向图可视化，展示知识节点与概念关系
+- **自动标签 (AutoTagger)** -- AI 驱动的知识条目自动分类
+- **RAG 上下文服务** -- AI 对话时自动注入相关知识库上下文
+- **纯 QPainter 图表组件** -- 折线图、柱状图、雷达图、热力图，零外部依赖
+- **i18n 国际化** -- 400+ 翻译键，中英文运行时切换
+- **共享类型定义 (app/types.py)** -- Protocol 类、TypedDict 类、类型别名
+- **练习提示按钮** -- 练习组件集成渐进式提示
+- **课程代码解释按钮** -- 一键获取 AI 代码解释
+- **AI 导师上下文帮助** -- 与 AI mentor 联动的上下文感知帮助
 
 ### 改进
 
-- **统计数据迁移至 SQLite** -- 方案设计完成，从 localStorage 迁移到持久化存储 (进行中)
-- **Monaco Editor 优化** -- Worker 优化、懒加载、配置缓存 (进行中)
-- **问题 Store 测试** -- problemStore.ts 单元测试编写 (进行中)
-- **SnippetManager** -- 代码片段 CRUD 组件完善 (进行中)
-- **demo 数据与 README 润色** -- 改善首次体验 (进行中)
-- **仪表板增强** -- 新增交互式图表、目标设定、数据导出功能 (Sprint 13)
-- **代码质量统一** -- 全量 Ruff format 统一代码格式，Ruff check --fix 修复 lint 问题 (Sprint 12)
+- **模块拆分** -- `ai_mentor.py`（1230 行）拆为 `app/ai/` 包（api_client/chat_handler/markdown_renderer/models），`practice_service.py`（1301 行）拆为 `app/practice/` 包（evaluator/exercise_loader/models/normalizer）
+- **数据外部化** -- 练习数据迁移至独立 JSON 文件
+- **统一构建脚本** -- 整合 3 个构建脚本为 `scripts/build/build.py`，支持 release/dev/codex 三种变体
+- **版本号单一来源** -- `pyproject.toml` 为唯一真相源，`config.py` 通过 `importlib.metadata` 动态读取
+- **数据库优化** -- WAL 模式 + PRAGMA 调优（cache_size=-8000, temp_store=MEMORY, mmap_size=256MB）+ 15 个索引 + ANALYZE + 连接池
+- **内容服务优化** -- 延迟加载 + LRU Markdown 缓存（64 条）+ 搜索索引 + 相邻预加载 + 内存压力驱逐
+- **AI 通信优化** -- HTTPS 强制 + 请求去重 + 连接状态缓存 + 流式响应回退
+- **性能监控** -- 慢操作追踪、IPC 通信跟踪、启动耗时插桩
+- **结构化日志** -- `print()` 替换为 `logging` 模块 + RotatingFileHandler
+- **WCAG AA 对比度修复** -- styles.py 颜色方案无障碍改进
+- **键盘导航** -- Tab 顺序、快捷键、屏幕阅读器公告
+- **死代码清理** -- 删除 styles/ 目录、services/、events.py、middleware.py、plugins.py、container.py（~3,920 行）
+- **代码质量统一** -- Ruff format + Ruff check --fix，消除所有 lint 警告
+- **测试断言修复** -- 66+ 个空断言测试补充为精确断言
+- **仪表板增强** -- 交互式图表、目标设定、数据导出
+- **跨平台路径处理** -- 修复 config.py 中的跨平台路径兼容
+
+### 安全修复
+
+- **Python 沙箱增强** -- AST 预检新增 `__import__`、`__class__`、`__bases__`、`__subclasses__`、`__mro__`、`__globals__`、`__builtins__` 拦截
+- **SQL 安全加固** -- `ATTACH`/`DETACH` 拦截、SQL 注释剥离、危险 PRAGMA 过滤、5 秒执行超时
+- **路径遍历防护** -- 文件路径验证、异常处理修复
+- **凭证安全** -- keyring 跨平台支持 + base64 回退 + 文件权限限制（chmod 600）
+- **HTML 净化** -- 协议相对 URL 过滤（`//`）、扩展 STRIP_TAGS 列表、事件处理器剥离
+- **HTTPS 强制** -- AI API 通信拒绝 HTTP
+- **资源限制** -- 输出 12KB 上限，执行 3 秒超时
 
 ### Bug 修复
 
-- 修复 P0 质量问题：删除重复的 styles/highlighter.py 和 styles/ 目录 (Sprint 12)
-- 删除死代码：events.py、middleware.py、plugins.py、container.py、services/ (Sprint 12)
-- 修复 66 个缺少断言的测试用例 (Sprint 12)
-- 修复 AnalyticsCollector 缺失的数据库方法 (Sprint 12)
-- 修复 SQL 评测器未捕获 sqlite3.Warning 异常的问题 (Sprint 15)
-- 修复 AnalyticsCollector.get_skill_distribution 中的死 try/except (Sprint 15)
-- 移除不必要的 UTF-8 编码声明，添加 UP009 到 ruff 忽略规则 (Sprint 15)
-- 修复测试文件中缺失的导入 (sys, pytest) (Sprint 15)
-- 修复多进程 spawn 编码问题、重构仪表板分析、修复不稳定测试 (Sprint 15)
+- 修复数据库事务异常时未提交的问题
+- 修复 widget 销毁后信号发射的线程安全问题
+- 修复 safeStorage 明文回退警告
+- 修复 bare except 和吞没异常
+- 修复 AnalyticsCollector 缺失的数据库方法
+- 修复 SQL 评测器未捕获 sqlite3.Warning 异常
+- 修复多进程 spawn 编码问题
+- 修复 CI 中 Python 3.9 兼容性（PEP 604 语法）
+- 修复 CI 中 Windows 专属测试在 Linux 上的跳过
+- 修复 ruff 版本锁定问题
+- 修复测试断言位置偏移和字符串包含检查
 
 ### 测试
 
-- 新增 IPC 测试: chat / problems / rag / database / runner (约 80 个用例)
-- 新增 DB 测试: electron/db/index.ts
-- 新增集成测试: problemFlow / chatFlow / editorFlow / settingsFlow (4 个)
-- 新增性能监控测试
-- 修复 Sprint 15 测试质量：多进程 spawn 编码、仪表板分析重构、不稳定测试修复
+- 测试用例从 ~1,000 增长至 **1,334** 条
+- 新增沙箱安全测试：嵌套函数、装饰器、生成器、async/await、元类、描述符
+- 新增数据库边界测试：空操作、大数据集、并发写入、Unicode
+- 新增内容解析测试：畸形 Markdown、大文件、BOM、混合编码
+- 新增集成测试：learning_flow / practice_flow / database_flow / ai_flow
+- CI 测试矩阵支持 Python 3.9 + 3.12
+
+### 文档
+
+- 新增 CONTRIBUTING.md 贡献指南
+- 新增 CHANGELOG.md（Keep a Changelog 规范）
+- README.md 添加 CI / Release / License / Tests 徽章
+- 新增 `docs/` 文档体系：改进计划、成熟度计划、发布指南、功能展示、竞品对比
+- 新增 demo 数据和学习路径文档
 
 ### 工程改进
 
-- 4 套 CI 工作流: ci.yml / pr-check.yml / release.yml / dependabot-auto-merge.yml
-- Pre-commit hooks 集成
-- Electron Fuses 安全熔丝
-- Vite 构建配置优化
-- scripts/version-bump.js 版本管理
-- Windows 多进程兼容：UP009 加入 ruff 忽略规则 (Sprint 15)
-
-### 已知问题
-
-- 统计数据仍存储在 localStorage，换设备会丢失
-- Store 测试覆盖不完整 (5 个 Store 中仅部分有测试)
-- TypeScript 严格模式未完全开启
-- 生产代码中残留 console.log 语句
-
----
-
-## [1.1.0] - 2026-06-02
-
-基于 v1.0.0 的全面成熟度升级，涵盖架构重构、测试覆盖、工程化改进和文档完善。
-
-### Features
-
-- **模块拆分** -- 将 `ai_mentor.py`（1230 行）拆分为 `app/ai/` 包（api_client / chat_handler / markdown_renderer / models），将 `practice_service.py`（1301 行）拆分为 `app/practice/` 包（evaluator / exercise_loader / models / normalizer），保持向后兼容
-- **数据外部化** -- 新增 `exercise_fallbacks.json` 和 `sql_query_fixtures.json`，将硬编码练习数据迁移至独立 JSON 文件
-- **统一构建脚本** -- 整合 `build_exe.py`、`build_dev_exe.py`、`build_codex_switcher_exe.py` 为 `scripts/build/build.py`，支持 release / dev / codex 三种变体，自动生成 `.spec` 文件
-- **版本号单一来源** -- `pyproject.toml` 的 `version` 字段为唯一真相源，`app/config.py` 通过 `importlib.metadata` 动态读取
-- **CONTRIBUTING.md** -- 添加完整的贡献指南，包含开发环境搭建、分支策略、PR 流程和代码规范
-
-### Improvements
-
-- 引入 Ruff 统一完成 lint 与格式化（替代 flake8 + isort + black）
-- 添加 `Makefile` 封装 lint / format / test / coverage / build 命令
-- 添加 `pyproject.toml` 声明项目元数据、工具配置（ruff / pytest / coverage）
-- 添加 `requirements.txt` 和 `requirements-dev.txt` 明确依赖
-- GitHub Actions CI 支持 Python 3.9 + 3.12 矩阵测试
-- CI 覆盖率报告并设最低阈值（40%）
-- SQLite WAL 模式优化，提升并发读取性能
-- 数据库连接池化，提升访问性能
-- 内容服务延迟加载，减少启动耗时
-- `print()` 调用替换为结构化日志（`logging` 模块 + RotatingFileHandler）
-- 硬编码路径改为 `Path(__file__).resolve().parent` 相对定位
-- PyQt5 命名约定的 Ruff lint 忽略规则（N801 / N802 / N815）
-
-### Bug Fixes
-
-- 修复数据库事务异常时未提交的问题
-- 修复 widget 销毁后信号发射的线程安全问题
-- 移除 CI 中未使用的 import 和格式化问题
-- 移除 `getattr` 白名单中的潜在逃逸路径，增强 AST 校验
-- 整理重复的 `SAFE_BUILTINS` 定义，统一使用 `python_runner` 模块
-- 清理根目录冗余的构建脚本（`build_exe.py` 等 3 个文件）
-
-### Documentation
-
-- 添加 CHANGELOG.md 并采用 Keep a Changelog 规范
-- README.md 添加 CI / Release / License 徽章
-- 添加 `docs/improvement-plan.md` 改进路线图
-- 添加 `docs/maturity-plan.md` 成熟度计划
-- 添加 `docs/distribution.md` 构建与发布指南
-
-### Testing
-
-- 测试用例从 0 增长至 **1000+** 条
-- 沙箱安全测试：`test_python_runner.py` / `test_python_runner_extended.py` / `test_python_runner_extra.py` / `test_python_runner_subprocess.py`
-- 数据库测试：`test_database.py` / `test_database_extended.py` / `test_database_extra.py` / `test_database_coverage.py` / `test_database_stress.py`
-- 评测逻辑测试：`test_practice_service.py` / `test_practice_service_extended.py` / `test_practice_service_extra.py`
-- AI 模块测试：`test_ai_chat_handler.py` / `test_ai_package.py` / `test_api_client_extended.py` / `test_chat_handler_extended.py` / `test_markdown_renderer_extended.py`
-- 内容与凭证测试：`test_content_service.py` / `test_content_service_extended.py` / `test_credentials.py`
-- 集成测试：`test_integration_learning_flow.py` / `test_integration_practice_flow.py` / `test_integration_database_flow.py` / `test_integration_ai_flow.py`
-- 安全测试：`test_security_sandbox_escape.py`
-- 边界与压力测试：`test_edge_cases.py` / `test_content_parsing_edge_cases.py` / `test_evaluator_extended.py` / `test_exercise_loader_extended.py`
-- 配置测试：`test_config_extended.py`
+- GitHub Actions CI（Python 3.9/3.12 矩阵、lint、format check、pytest）
+- Ruff 统一 lint + format（替代 flake8 + isort + black）
+- Makefile 封装开发命令
+- PyInstaller 打包支持（.spec 自动生成）
+- GitHub Actions Release 工作流
+- pip-audit 安全审计集成
 
 ---
 

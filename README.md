@@ -8,7 +8,7 @@
   <a href="https://github.com/TIANWEN-cpu/DevLearnerAI/actions/workflows/ci.yml"><img src="https://github.com/TIANWEN-cpu/DevLearnerAI/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/TIANWEN-cpu/DevLearnerAI/releases"><img src="https://img.shields.io/github/v/release/TIANWEN-cpu/DevLearnerAI" alt="Release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/TIANWEN-cpu/DevLearnerAI" alt="License"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-1000%2B-brightgreen" alt="Tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-1334-passing-brightgreen" alt="Tests"></a>
   <a href="tests/"><img src="https://img.shields.io/badge/coverage-40%25%2B-yellowgreen" alt="Coverage"></a>
 </p>
 
@@ -163,7 +163,7 @@ python scripts/build/build_dev_exe.py
 | 凭证管理 | keyring / Windows Credential Manager |
 | 打包 | PyInstaller |
 | 代码检查 | Ruff（linter + formatter） |
-| 测试 | pytest + coverage（1000+ 测试用例） |
+| 测试 | pytest + coverage（1334 测试用例） |
 
 ---
 
