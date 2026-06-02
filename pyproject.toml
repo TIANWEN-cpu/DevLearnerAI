@@ -66,6 +66,7 @@ ignore = [
     "SIM108", # ternary operator -- sometimes less readable
     "SIM102", # nested if can be combined -- security-critical code prefers explicit nesting
     "SIM105", # contextlib.suppress -- except blocks may need logging or side-effects
+    "UP009",  # UTF-8 encoding declaration -- needed for Windows multiprocessing spawn with non-ASCII source
     "N801",   # class name should be PascalCase -- DATA_BLOB matches Win32 API struct name
     "N802",   # function name should be lowercase -- PyQt5 override methods MUST be camelCase
     "N815",   # mixedCase variable in class scope -- PyQt5 signal names are camelCase by convention
