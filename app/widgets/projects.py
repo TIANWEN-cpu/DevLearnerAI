@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
 )
 
 from app.content_service import ContentService
-from app.effects import optimize_scroll_widget
+from app.effects import optimize_scroll_widget, surface_panel
 from app.localized_inputs import LocalizedTextBrowser
 from app.reader_dialog import ReaderDialog
 from app.styles import F_SUB, F_TITLE, FONT
@@ -51,17 +51,7 @@ class ProjectsWidget(QWidget):
             self.project_list.setCurrentRow(0)
 
     def _surface_panel(self) -> QFrame:
-        panel = QFrame()
-        panel.setStyleSheet(
-            """
-            .QFrame {
-                background: rgba(255,253,248,0.96);
-                border: 1px solid rgba(37,99,235,0.08);
-                border-radius: 24px;
-            }
-            """
-        )
-        return panel
+        return surface_panel(self)
 
     def _project_category_theme(self, module_title: str):
         if module_title.startswith("基础模块"):
@@ -120,6 +110,8 @@ class ProjectsWidget(QWidget):
         self.project_list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.project_list.setWordWrap(True)
         self.project_list.setSpacing(10)
+        self.project_list.setAccessibleName("项目列表")
+        self.project_list.setAccessibleDescription("选择一个融合项目进行学习")
         self.project_list.setStyleSheet(
             """
             QListWidget { background: transparent; border: none; padding: 2px; }
@@ -268,6 +260,8 @@ class ProjectsWidget(QWidget):
         self.content_browser = LocalizedTextBrowser()
         self.content_browser.setOpenExternalLinks(False)
         self.content_browser.setMinimumHeight(540)
+        self.content_browser.setAccessibleName("项目文档")
+        self.content_browser.setAccessibleDescription("当前选择项目的详细文档内容")
         self.content_browser.viewport().installEventFilter(self)
         layout.addWidget(self.content_browser, 1)
 
@@ -275,6 +269,7 @@ class ProjectsWidget(QWidget):
         btn_row.addStretch()
         self.reader_btn = QPushButton("放大阅读")
         self.reader_btn.setProperty("variant", "secondary")
+        self.reader_btn.setToolTip("在独立窗口中放大阅读项目文档")
         btn_row.addWidget(self.reader_btn)
         layout.addLayout(btn_row)
         return panel

@@ -1,6 +1,10 @@
+import logging
+
 import mistune
 from PyQt5.QtCore import QEvent, QSize, Qt
 from PyQt5.QtGui import QFont
+
+logger = logging.getLogger(__name__)
 from PyQt5.QtWidgets import (
     QComboBox,
     QFrame,
@@ -16,7 +20,7 @@ from PyQt5.QtWidgets import (
 
 from app.content_service import ContentService
 from app.database import AppDatabase
-from app.effects import optimize_scroll_widget
+from app.effects import optimize_scroll_widget, surface_panel
 from app.localized_inputs import LocalizedLineEdit, LocalizedTextBrowser, LocalizedTextEdit
 from app.reader_dialog import ReaderDialog
 from app.styles import F_TITLE, FONT
@@ -69,17 +73,7 @@ class LearnWidget(QWidget):
                 return
 
     def _surface_panel(self) -> QFrame:
-        panel = QFrame()
-        panel.setStyleSheet(
-            """
-            .QFrame {
-                background: rgba(255,253,248,0.96);
-                border: 1px solid rgba(37,99,235,0.08);
-                border-radius: 24px;
-            }
-            """
-        )
-        return panel
+        return surface_panel(self)
 
     def _module_category_theme(self, module_key: str):
         module_key = module_key or ""
@@ -111,6 +105,7 @@ class LearnWidget(QWidget):
         picker_label = QLabel("切换主线")
         picker_label.setStyleSheet("color: #64748b; font-size: 18px; font-weight: 600;")
         self.track_combo = QComboBox()
+        self.track_combo.setToolTip("选择学习主线（技术栈）")
         for track in self.content_service.tracks:
             self.track_combo.addItem(f"{track.icon} {track.title}", track.id)
         self.track_combo.setMinimumWidth(280)
@@ -136,11 +131,15 @@ class LearnWidget(QWidget):
 
         self.search_input = LocalizedLineEdit()
         self.search_input.setPlaceholderText("搜索当前主线里的模块")
+        self.search_input.setToolTip("输入关键词搜索模块或课程")
+        self.search_input.setAccessibleName("搜索模块")
+        self.search_input.setAccessibleDescription("输入关键词搜索当前学习主线中的模块或课程")
         layout.addWidget(self.search_input)
 
         crumb_row = QHBoxLayout()
         self.back_btn = QPushButton("返回模块")
         self.back_btn.setProperty("variant", "secondary")
+        self.back_btn.setToolTip("返回到模块列表视图")
         self.back_btn.hide()
         self.panel_title = QLabel("模块列表")
         self.panel_title.setStyleSheet("color: #94a3b8; font-weight: 700; font-size: 18px;")
@@ -153,6 +152,8 @@ class LearnWidget(QWidget):
         self.browser_list.setWordWrap(True)
         self.browser_list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.browser_list.setSpacing(12)
+        self.browser_list.setAccessibleName("模块和课程列表")
+        self.browser_list.setAccessibleDescription("选择一个模块或课程进行学习")
         self.browser_list.setStyleSheet(
             """
             QListWidget { background: transparent; border: none; padding: 2px; }
@@ -184,6 +185,8 @@ class LearnWidget(QWidget):
         self.content_browser = LocalizedTextBrowser()
         self.content_browser.setOpenExternalLinks(False)
         self.content_browser.setMinimumHeight(520)
+        self.content_browser.setAccessibleName("课程内容")
+        self.content_browser.setAccessibleDescription("当前课程的详细内容")
         self.content_browser.viewport().installEventFilter(self)
         layout.addWidget(self.content_browser, 1)
 
@@ -191,11 +194,15 @@ class LearnWidget(QWidget):
         action_row.setSpacing(10)
         self.reader_btn = QPushButton("放大阅读")
         self.reader_btn.setProperty("variant", "secondary")
+        self.reader_btn.setToolTip("在独立窗口中放大阅读课程内容")
         self.prev_btn = QPushButton("上一课")
         self.prev_btn.setProperty("variant", "secondary")
+        self.prev_btn.setToolTip("切换到上一节课程")
         self.complete_btn = QPushButton("标记完成")
+        self.complete_btn.setToolTip("将当前课程标记为已完成")
         self.next_btn = QPushButton("下一课")
         self.next_btn.setProperty("variant", "secondary")
+        self.next_btn.setToolTip("切换到下一节课程")
         action_row.addWidget(self.reader_btn)
         action_row.addWidget(self.prev_btn)
         action_row.addWidget(self.complete_btn)
@@ -215,10 +222,13 @@ class LearnWidget(QWidget):
         self.note_edit = LocalizedTextEdit()
         self.note_edit.setMinimumHeight(180)
         self.note_edit.setPlaceholderText("把关键结论、自己的理解和易错点记在这里。")
+        self.note_edit.setAccessibleName("学习笔记")
+        self.note_edit.setAccessibleDescription("记录当前课程的学习笔记和心得体会")
         row = QHBoxLayout()
         row.addStretch()
         self.save_note_btn = QPushButton("保存笔记")
         self.save_note_btn.setProperty("variant", "secondary")
+        self.save_note_btn.setToolTip("保存当前课程的学习笔记")
         row.addWidget(self.save_note_btn)
         note_layout.addWidget(note_title)
         note_layout.addWidget(self.note_hint)
@@ -411,9 +421,15 @@ class LearnWidget(QWidget):
             self._open_lesson(identifier)
 
     def _open_lesson(self, lesson_id: str) -> None:
-        track, module, lesson = self.content_service.lesson_by_id(lesson_id)
-        if not lesson:
+        try:
+            result = self.content_service.lesson_by_id(lesson_id)
+            if not result:
+                return
+            track, module, lesson = result
+        except Exception as exc:
+            logger.error("加载课程信息失败 [%s]: %s", lesson_id, exc, exc_info=True)
             return
+
         self.current_track = track
         self.current_module = module
         self.current_lesson = lesson
@@ -421,11 +437,19 @@ class LearnWidget(QWidget):
         self.meta_meta.setText(
             f"模块：{module.title} · 难度：{lesson.difficulty} · 预计 {lesson.estimated_minutes} 分钟 · 标签：{' / '.join(lesson.tags or ['入门'])}"
         )
-        body = self.content_service.lesson_markdown(lesson)
+        try:
+            body = self.content_service.lesson_markdown(lesson)
+        except Exception as exc:
+            logger.error("加载课程内容失败 [%s]: %s", lesson_id, exc, exc_info=True)
+            body = f"# {lesson.title}\n\n加载文档时出现错误。请检查课程文件是否存在，或尝试重启应用。"
         self._current_html = self.markdown(body)
         self.content_browser.setHtml(self._current_html)
         self.note_hint.setText("把关键结论、自己的理解和易错点记在这里，会比重读更有效。")
-        saved = self.db.load_note(lesson.id)
+        try:
+            saved = self.db.load_note(lesson.id)
+        except Exception as exc:
+            logger.warning("加载课程笔记失败 [%s]: %s", lesson_id, exc)
+            saved = ""
         self.note_edit.setPlainText(saved if saved else "")
 
     def _jump_relative(self, step: int) -> None:

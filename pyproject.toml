@@ -1,23 +1,45 @@
 [project]
 name = "devlearner-ai"
-version = "7.0"
+version = "1.1.0"
 description = "AI 驱动的桌面编程学习平台 | Python / PyQt5 / SQLite"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9"
+authors = [
+    { name = "DevLearner Team" },
+]
+keywords = ["learning", "python", "ai", "education", "pyqt5"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
+]
 dependencies = [
     "PyQt5>=5.15",
     "mistune>=3.0",
-    "Pygments>=2.14",
     "keyring>=24.0",
-    "requests>=2.28",
 ]
+
+[project.gui-scripts]
+devlearner-ai = "main:main"
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0",
+    "pytest>=9.0",
     "ruff>=0.4",
     "coverage>=7.0",
+    "pyinstaller>=6.0",
+    "pytest-benchmark>=4.0",
+]
+build = [
+    "pyinstaller>=6.0",
 ]
 
 # ---------------------------------------------------------------------------
@@ -39,6 +61,7 @@ select = [
     "SIM",  # flake8-simplify
 ]
 ignore = [
+    "E402",   # module level import not at top -- logger-before-import pattern is intentional
     "E501",   # line too long (handled by formatter)
     "SIM108", # ternary operator -- sometimes less readable
     "SIM102", # nested if can be combined -- security-critical code prefers explicit nesting
@@ -46,6 +69,9 @@ ignore = [
     "N801",   # class name should be PascalCase -- DATA_BLOB matches Win32 API struct name
     "N802",   # function name should be lowercase -- PyQt5 override methods MUST be camelCase
     "N815",   # mixedCase variable in class scope -- PyQt5 signal names are camelCase by convention
+    "UP006",  # use type[] instead of Type[] -- requires Python 3.12+ for runtime use
+    "UP035",  # deprecated import -- needed for Python 3.9 compatibility
+    "UP045",  # use X | Y instead of Optional -- requires Python 3.10+
 ]
 
 [tool.ruff.lint.isort]
@@ -64,6 +90,7 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
+norecursedirs = ["tests/benchmark"]
 
 # ---------------------------------------------------------------------------
 # Coverage
@@ -85,3 +112,28 @@ omit = [
 [tool.coverage.report]
 show_missing = true
 skip_empty = true
+
+# ---------------------------------------------------------------------------
+# Mypy  -- static type checker
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unreachable = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "PyQt5.*",
+    "mistune.*",
+    "keyring.*",
+    "psutil.*",
+]
+ignore_missing_imports = true

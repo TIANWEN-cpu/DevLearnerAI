@@ -1,7 +1,12 @@
-"""Normalization helpers for exercise answer comparison."""
+"""练习答案比较的标准化工具模块。
+
+提供 SQL 结果集的标准化功能，支持有序和无序比较。
+"""
+
+from typing import Any
 
 
-def normalize_rows(rows: list, ordered: bool) -> list[tuple]:
+def normalize_rows(rows: list[Any], ordered: bool) -> list[tuple[Any, ...]]:
     """Normalize SQL result rows for comparison.
 
     Converts each row to a tuple and sorts them unless *ordered* is True.

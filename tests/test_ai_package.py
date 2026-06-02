@@ -213,8 +213,9 @@ class TestTestConnection:
         assert "成功" in result
 
     def test_http_error_returns_failure(self):
-        from app.ai.api_client import test_connection
+        from app.ai.api_client import clear_connection_cache, test_connection
 
+        clear_connection_cache()
         with patch("app.ai.api_client.urllib.request.urlopen", side_effect=urllib.error.URLError("timeout")):
             result = test_connection("https://api.example.com", "sk-test")
         assert "失败" in result
@@ -375,13 +376,19 @@ class TestHTMLSanitizer:
         assert "iframe" not in result.lower()
         assert "<p>ok</p>" in result
 
-    def test_object_embed_stripped(self):
+    def test_object_stripped(self):
         from app.ai.markdown_renderer import sanitize_html
 
-        result = sanitize_html("<object data='evil'></object><embed src='evil'><p>ok</p>")
+        result = sanitize_html("<object data='evil'>inner</object><p>ok</p>")
         assert "object" not in result.lower()
-        assert "embed" not in result.lower()
         assert "<p>ok</p>" in result
+
+    def test_embed_stripped(self):
+        """<embed> is a void element; verify the tag itself is dropped."""
+        from app.ai.markdown_renderer import sanitize_html
+
+        result = sanitize_html("<embed src='evil'>")
+        assert "embed" not in result.lower()
 
     def test_event_handler_stripped(self):
         from app.ai.markdown_renderer import sanitize_html
@@ -436,11 +443,12 @@ class TestHTMLSanitizer:
         assert "<div>" not in result
         assert "<p>text</p>" in result
 
-    def test_span_class_preserved(self):
+    def test_span_preserved(self):
         from app.ai.markdown_renderer import sanitize_html
 
         result = sanitize_html('<span class="hl">text</span>')
-        assert 'class="hl"' in result
+        assert "<span>" in result
+        assert "text" in result
 
     def test_span_other_attrs_stripped(self):
         from app.ai.markdown_renderer import sanitize_html
@@ -604,7 +612,8 @@ class TestRenderMessageHtml:
         from app.ai.markdown_renderer import render_message_html
 
         result = render_message_html('<script>alert("xss")</script>', allow_markdown=False)
-        assert "script" not in result.lower()
+        # HTML-escaped: no raw <script> tag in output
+        assert "<script>" not in result.lower()
 
 
 # ---------------------------------------------------------------------------

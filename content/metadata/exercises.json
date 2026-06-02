@@ -272,7 +272,7 @@
       "id": "py-build-user",
       "title": "构造可序列化用户对象",
       "track_id": "python",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "实现 build_user(name, age)，返回一个字典，包含 name、age、active 三个键，其中 active 固定为 True。",
       "lesson_id": "py-stdlib-testing",
       "hints": [
@@ -361,7 +361,7 @@
       "id": "db-join-user-order",
       "title": "连接用户表和订单表",
       "track_id": "database",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "表 users(id, name) 和 orders(user_id, amount) 中，查询每条订单对应的用户名和金额。",
       "lesson_id": "db-aggregation",
       "hints": [
@@ -388,7 +388,7 @@
       "id": "db-subquery-high-score",
       "title": "用子查询找高于平均分的学生",
       "track_id": "database",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "表 scores(student, score) 中，写 SQL 查询所有分数高于全班平均分的学生。",
       "lesson_id": "db-subqueries-sets",
       "hints": [
@@ -414,7 +414,7 @@
       "id": "db-case-report",
       "title": "按金额区间做订单报表",
       "track_id": "database",
-      "difficulty": "兴趣",
+      "difficulty": "基础",
       "prompt": "表 orders(amount) 中，写 SQL 用 CASE 把订单分成 low / medium / high 三档，并统计每档数量。",
       "lesson_id": "db-reporting-case",
       "hints": [
@@ -466,7 +466,7 @@
       "id": "c-pointer-swap",
       "title": "用指针交换两个整数",
       "track_id": "c",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "写一个 C 函数 void swap_int(int *a, int *b)，使用临时变量交换两个整数的值。",
       "lesson_id": "c-pointers-memory",
       "hints": [
@@ -494,7 +494,7 @@
       "id": "c-struct-book",
       "title": "定义一个图书结构体",
       "track_id": "c",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "定义一个 C 结构体 Book，至少包含 title 和 price 两个字段。",
       "lesson_id": "c-structs-files",
       "hints": [
@@ -571,7 +571,7 @@
       "id": "cs-linq-filter",
       "title": "用 LINQ 过滤大于 60 分的成绩",
       "track_id": "csharp",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "写一段 C# 代码，使用 LINQ 从 scores 集合中过滤出大于 60 的元素。",
       "lesson_id": "cs-linq-generics",
       "hints": [
@@ -663,7 +663,7 @@
       "id": "integration-log-summary",
       "title": "统计日志级别次数",
       "track_id": "integration",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "实现 summarize_levels(levels)，接收一个日志级别列表，返回一个字典，统计每种级别出现的次数。",
       "lesson_id": "project-log-analyzer",
       "hints": [
@@ -696,14 +696,14 @@
     },
     {
       "id": "py-squares-comprehension",
-      "title": "??????????",
+      "title": "用推导式生成奇数平方",
       "track_id": "python",
-      "difficulty": "??",
-      "prompt": "?? odd_squares(numbers)??? numbers ???????????",
+      "difficulty": "进阶",
+      "prompt": "实现 odd_squares(numbers)，返回 numbers 中所有奇数的平方列表。",
       "lesson_id": "py-list-comprehensions",
       "hints": [
-        "???????????",
-        "????????????"
+        "先筛选奇数，再做平方。",
+        "这道题很适合列表推导式。"
       ],
       "starter_code": "def odd_squares(numbers):\n    pass\n",
       "expected_nodes": [
@@ -732,14 +732,14 @@
     },
     {
       "id": "py-factorial-recursive",
-      "title": "??????",
+      "title": "递归实现阶乘",
       "track_id": "python",
-      "difficulty": "??",
-      "prompt": "?? factorial(n)??????? n ?????? 0 ? 1 ????? 1?",
+      "difficulty": "进阶",
+      "prompt": "实现 factorial(n)，使用递归返回 n 的阶乘。约定 0 和 1 的结果都为 1。",
       "lesson_id": "py-recursion-patterns",
       "hints": [
-        "?????????",
-        "?????? factorial(n) = n * factorial(n-1)?"
+        "先写清楚终止条件。",
+        "再写递归关系 factorial(n) = n * factorial(n-1)。"
       ],
       "starter_code": "def factorial(n):\n    pass\n",
       "expected_nodes": [
@@ -764,14 +764,14 @@
     },
     {
       "id": "py-save-user-payload",
-      "title": "????????",
+      "title": "构造用户资料字典",
       "track_id": "python",
-      "difficulty": "??",
-      "prompt": "?? build_user_payload(name, city)????? name?city?active ?????????? active ??? True?",
+      "difficulty": "进阶",
+      "prompt": "实现 build_user_payload(name, city)，返回包含 name、city、active 三个字段的字典，其中 active 固定为 True。",
       "lesson_id": "py-json-pathlib",
       "hints": [
-        "???????????",
-        "??????????????"
+        "返回值是一个字典对象。",
+        "键名建议直接使用字符串常量。"
       ],
       "starter_code": "def build_user_payload(name, city):\n    pass\n",
       "expected_nodes": [
@@ -800,14 +800,14 @@
     },
     {
       "id": "py-test-target-positive",
-      "title": "????????????",
+      "title": "编写可测试的正数判断函数",
       "track_id": "python",
-      "difficulty": "??",
-      "prompt": "?? is_positive(num)?? num ?? 0 ??? True????? False?",
+      "difficulty": "进阶",
+      "prompt": "实现 is_positive(num)，当 num 大于 0 时返回 True，否则返回 False。",
       "lesson_id": "py-unit-testing-workflow",
       "hints": [
-        "????????????",
-        "?? 0 ?????"
+        "返回值应该直接是布尔值。",
+        "注意 0 不算正数。"
       ],
       "starter_code": "def is_positive(num):\n    pass\n",
       "expected_nodes": [
@@ -832,14 +832,14 @@
     },
     {
       "id": "py-summarize-status",
-      "title": "????????",
+      "title": "统计状态出现次数",
       "track_id": "python",
-      "difficulty": "??",
-      "prompt": "?? summarize_status(items)????????????????????????",
+      "difficulty": "进阶",
+      "prompt": "实现 summarize_status(items)，统计列表中每种状态出现的次数，并返回一个字典。",
       "lesson_id": "py-json-pathlib",
       "hints": [
-        "?????????",
-        "??????????"
+        "可以边遍历边累加。",
+        "空列表时返回空字典。"
       ],
       "starter_code": "def summarize_status(items):\n    pass\n",
       "expected_nodes": [
@@ -867,14 +867,14 @@
     },
     {
       "id": "c-string-contains-zero",
-      "title": "???? C ???",
+      "title": "声明一个 C 字符串",
       "track_id": "c",
-      "difficulty": "??",
-      "prompt": "??? C ????????? name?????????? \\0 ??????????",
+      "difficulty": "进阶",
+      "prompt": "写一行 C 代码，声明字符数组 name，并让它保存一个带有 \\0 结尾的字符串字面量。",
       "lesson_id": "c-strings-pointers",
       "hints": [
-        "??????????????",
-        "??? char ???????"
+        "字符串字面量本身会带结尾符。",
+        "重点是 char 数组和双引号。"
       ],
       "starter_code": "char name[] = \"Tom\";\n",
       "expected_nodes": [],
@@ -892,14 +892,14 @@
     },
     {
       "id": "c-malloc-int-array",
-      "title": "?????????",
+      "title": "申请并释放整型数组",
       "track_id": "c",
-      "difficulty": "??",
-      "prompt": "???? C ????? malloc ?? 10 ? int ??????????? free ????",
+      "difficulty": "精选",
+      "prompt": "写出一段 C 代码：使用 malloc 申请 10 个 int 的空间，并在使用后调用 free 释放它。",
       "lesson_id": "c-dynamic-memory",
       "hints": [
-        "???? malloc ? free ?????",
-        "??? sizeof(int)?"
+        "先想清楚 malloc 和 free 成对出现。",
+        "别忘了 sizeof(int)。"
       ],
       "starter_code": "int *nums = ;\n",
       "expected_nodes": [],
@@ -918,14 +918,14 @@
     },
     {
       "id": "c-node-struct",
-      "title": "?????????",
+      "title": "定义链表节点结构体",
       "track_id": "c",
-      "difficulty": "??",
-      "prompt": "???? Node ???????? value ? next ??????? next ????? Node?",
+      "difficulty": "精选",
+      "prompt": "定义一个 Node 结构体，至少包含 value 和 next 两个字段，其中 next 指向另一个 Node。",
       "lesson_id": "c-linked-list-basics",
       "hints": [
-        "next ???? struct Node *next?",
-        "??????????"
+        "next 通常写成 struct Node *next。",
+        "先把结构体声明完整。"
       ],
       "starter_code": "struct Node {\n    \n};\n",
       "expected_nodes": [],
@@ -944,14 +944,14 @@
     },
     {
       "id": "c-gdb-break-main",
-      "title": "?? GDB ???????",
+      "title": "写出 GDB 的最小调试命令",
       "track_id": "c",
-      "difficulty": "??",
-      "prompt": "???? GDB ????? main ?????????????",
+      "difficulty": "精选",
+      "prompt": "写出两条 GDB 命令：先在 main 设置断点，再启动程序运行。",
       "lesson_id": "c-make-gdb",
       "hints": [
-        "?? break main?",
-        "?? run?"
+        "先写 break main。",
+        "再写 run。"
       ],
       "starter_code": "# gdb commands\n",
       "expected_nodes": [],
@@ -965,14 +965,14 @@
     },
     {
       "id": "cs-parse-score-safe",
-      "title": "?????????",
+      "title": "安全解析分数字符串",
       "track_id": "csharp",
-      "difficulty": "??",
-      "prompt": "??? C# ???? int.TryParse ???? scoreText???????? if ???",
+      "difficulty": "进阶",
+      "prompt": "写一段 C# 代码，用 int.TryParse 安全解析 scoreText，并在成功时进入 if 分支。",
       "lesson_id": "cs-exception-debugging",
       "hints": [
-        "TryParse ? Parse ???",
-        "??? if ????????"
+        "TryParse 比 Parse 更稳。",
+        "重点是 if 判断和输出变量。"
       ],
       "starter_code": "string scoreText = \"98\";\n",
       "expected_nodes": [],
@@ -990,14 +990,14 @@
     },
     {
       "id": "cs-declare-saved-event",
-      "title": "?? Saved ??",
+      "title": "声明 Saved 事件",
       "track_id": "csharp",
-      "difficulty": "??",
-      "prompt": "? C# ???????? Saved ???????? Action?",
+      "difficulty": "精选",
+      "prompt": "在 C# 类中声明一个名为 Saved 的事件，类型使用 Action。",
       "lesson_id": "cs-delegates-events",
       "hints": [
-        "?? event ????",
-        "??????? public event Action Saved;"
+        "要用 event 关键字。",
+        "标准写法通常是 public event Action Saved;"
       ],
       "starter_code": "class Tracker\n{\n    \n}\n",
       "expected_nodes": [],
@@ -1015,14 +1015,14 @@
     },
     {
       "id": "cs-save-json",
-      "title": "??????? JSON",
+      "title": "把对象序列化为 JSON",
       "track_id": "csharp",
-      "difficulty": "??",
-      "prompt": "??? C# ????? JsonSerializer.Serialize(task) ? task ?? JSON ????",
+      "difficulty": "精选",
+      "prompt": "写一段 C# 代码，调用 JsonSerializer.Serialize(task) 把 task 转成 JSON 字符串。",
       "lesson_id": "cs-entity-file-persistence",
       "hints": [
-        "????? JsonSerializer.Serialize?",
-        "??? task ???????"
+        "关键调用是 JsonSerializer.Serialize。",
+        "先确认 task 变量已经存在。"
       ],
       "starter_code": "var task = new { Title = \"Learn\" };\n",
       "expected_nodes": [],
@@ -1038,14 +1038,14 @@
     },
     {
       "id": "cs-mapget-ping",
-      "title": "???? ping ??",
+      "title": "声明一个 ping 接口",
       "track_id": "csharp",
-      "difficulty": "??",
-      "prompt": "????? API ?????? /ping ????????? MapGet ???",
+      "difficulty": "兴趣",
+      "prompt": "写一行最小 API 路由代码，为 /ping 声明一个返回对象的 MapGet 接口。",
       "lesson_id": "cs-webapi-intro",
       "hints": [
-        "??? MapGet?",
-        "???? new { ok = true }?"
+        "重点是 MapGet。",
+        "可以返回 new { ok = true }。"
       ],
       "starter_code": "// minimal api\n",
       "expected_nodes": [],
@@ -1062,14 +1062,14 @@
     },
     {
       "id": "db-design-enrollment-table",
-      "title": "???????",
+      "title": "设计选课关系表",
       "track_id": "database",
-      "difficulty": "??",
-      "prompt": "??????????????????????? student_id ? course_id ?????",
+      "difficulty": "精选",
+      "prompt": "写出一条建表语句，创建学生选课关系表，至少包含 student_id 和 course_id 两个字段。",
       "lesson_id": "db-schema-design",
       "hints": [
-        "????? enrollments?",
-        "????????"
+        "表名可以叫 enrollments。",
+        "这是一张关系表。"
       ],
       "starter_code": "CREATE TABLE ...;",
       "expected_nodes": [],
@@ -1086,14 +1086,14 @@
     },
     {
       "id": "db-rank-scores",
-      "title": "??????",
+      "title": "给成绩做排名",
       "track_id": "database",
-      "difficulty": "??",
-      "prompt": "??? SQL??? RANK() OVER ? score ? students ????????",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，使用 RANK() OVER 按 score 对 students 表进行降序排名。",
       "lesson_id": "db-window-functions",
       "hints": [
-        "?? rank() over?",
-        "??????? order by score desc?"
+        "先写 rank() over。",
+        "排序条件通常是 order by score desc。"
       ],
       "starter_code": "SELECT ...;",
       "expected_nodes": [],
@@ -1112,14 +1112,14 @@
     },
     {
       "id": "db-coalesce-phone",
-      "title": "? COALESCE ??????",
+      "title": "用 COALESCE 处理空手机号",
       "track_id": "database",
-      "difficulty": "??",
-      "prompt": "??? SQL?? users ??????????? phone ?????? unknown?",
+      "difficulty": "进阶",
+      "prompt": "写一条 SQL，从 users 表查询手机号字段；如果 phone 为空，就显示 unknown。",
       "lesson_id": "db-data-cleaning-sql",
       "hints": [
-        "?????? COALESCE?",
-        "?????????????"
+        "这道题核心是 COALESCE。",
+        "目标是把空值转成可读文本。"
       ],
       "starter_code": "SELECT ...;",
       "expected_nodes": [],
@@ -1137,14 +1137,14 @@
     },
     {
       "id": "db-postgres-connect",
-      "title": "?? PostgreSQL ???",
+      "title": "连接 PostgreSQL 数据库",
       "track_id": "database",
-      "difficulty": "??",
-      "prompt": "???? psql ??????? learn_db ? PostgreSQL ????",
+      "difficulty": "进阶",
+      "prompt": "写出一条 psql 命令，连接名为 learn_db 的 PostgreSQL 数据库。",
       "lesson_id": "db-postgresql-intro",
       "hints": [
-        "????? psql ???",
-        "???????????"
+        "命令通常以 psql 开头。",
+        "把数据库名写出来就行。"
       ],
       "starter_code": "psql ...",
       "expected_nodes": [],
@@ -1158,14 +1158,14 @@
     },
     {
       "id": "integration-add-item-record",
-      "title": "??????",
+      "title": "追加库存记录",
       "track_id": "integration",
-      "difficulty": "??",
-      "prompt": "?? add_item(items, name, count)?????? name ? count ????????????????????",
+      "difficulty": "综合",
+      "prompt": "实现 add_item(items, name, count)，把一条包含 name 和 count 的记录追加到列表中，并返回当前列表长度。",
       "lesson_id": "project-c-inventory",
       "hints": [
-        "items ??????",
-        "??????????"
+        "items 是一个列表。",
+        "先追加，再返回长度。"
       ],
       "starter_code": "def add_item(items, name, count):\n    pass\n",
       "expected_nodes": [
@@ -1193,14 +1193,14 @@
     },
     {
       "id": "integration-build-metric-row",
-      "title": "???????",
+      "title": "构造指标行数据",
       "track_id": "integration",
-      "difficulty": "??",
-      "prompt": "?? build_metric_row(name, value)??????? metric ? value ????????",
+      "difficulty": "综合",
+      "prompt": "实现 build_metric_row(name, value)，返回一个包含 metric 和 value 两个字段的字典。",
       "lesson_id": "project-sql-report-dashboard",
       "hints": [
-        "?????????",
-        "?????? metric ? value?"
+        "返回值是一个字典。",
+        "字段名固定为 metric 和 value。"
       ],
       "starter_code": "def build_metric_row(name, value):\n    pass\n",
       "expected_nodes": [
@@ -1228,14 +1228,14 @@
     },
     {
       "id": "integration-api-brief",
-      "title": "?? API ????",
+      "title": "生成 API 摘要文本",
       "track_id": "integration",
-      "difficulty": "??",
-      "prompt": "?? build_api_brief(source, count)????????:weather, ??:3????????",
+      "difficulty": "综合",
+      "prompt": "实现 build_api_brief(source, count)，返回形如“来源:weather, 数量:3”的摘要字符串。",
       "lesson_id": "project-api-client-tool",
       "hints": [
-        "???? f-string?",
-        "? source ? count ?????????"
+        "可以使用 f-string。",
+        "把 source 和 count 按固定格式拼起来。"
       ],
       "starter_code": "def build_api_brief(source, count):\n    pass\n",
       "expected_nodes": [
@@ -1260,14 +1260,14 @@
     },
     {
       "id": "integration-progress-badge",
-      "title": "????????",
+      "title": "生成进度徽章文本",
       "track_id": "integration",
-      "difficulty": "??",
-      "prompt": "?? build_badge(done, total)??????3/10 ?????????",
+      "difficulty": "综合",
+      "prompt": "实现 build_badge(done, total)，返回形如“3/10 已完成”的字符串。",
       "lesson_id": "project-algorithm-playground",
       "hints": [
-        "???????????????",
-        "??????????"
+        "把两个数字和状态文案组合起来。",
+        "注意返回值是字符串。"
       ],
       "starter_code": "def build_badge(done, total):\n    pass\n",
       "expected_nodes": [
@@ -1292,14 +1292,14 @@
     },
     {
       "id": "c-include-guard-header",
-      "title": "?????????",
+      "title": "写一个头文件保护宏",
       "track_id": "c",
-      "difficulty": "??",
-      "prompt": "?????????????? TASKS_H ? include guard?",
+      "difficulty": "精选",
+      "prompt": "写出一个最小头文件框架，包含 TASKS_H 的 include guard。",
       "lesson_id": "c-header-modules",
       "hints": [
-        "?????? ifndef?define?endif?",
-        "????????"
+        "三件套通常是 ifndef、define、endif。",
+        "宏名要前后一致。"
       ],
       "starter_code": "#ifndef TASKS_H\n#define TASKS_H\n\n\n#endif\n",
       "expected_nodes": [],
@@ -1318,14 +1318,14 @@
     },
     {
       "id": "c-free-null-safe",
-      "title": "????????",
+      "title": "释放后把指针置空",
       "track_id": "c",
-      "difficulty": "??",
-      "prompt": "???? C ?????? buffer??? buffer ?? NULL?",
+      "difficulty": "精选",
+      "prompt": "写出两行 C 代码：先释放 buffer，再把 buffer 置为 NULL。",
       "lesson_id": "c-memory-bug-patterns",
       "hints": [
-        "? free?????",
-        "NULL ????"
+        "先 free，再赋值。",
+        "NULL 要大写。"
       ],
       "starter_code": "free(buffer);\n",
       "expected_nodes": [],
@@ -1343,14 +1343,14 @@
     },
     {
       "id": "cs-interface-notifier",
-      "title": "声明通知接口",
+      "title": "声明 INotifier 接口",
       "track_id": "csharp",
-      "difficulty": "基础",
-      "prompt": "定义一个 INotifier 接口，包含 Send(string message) 方法。",
+      "difficulty": "精选",
+      "prompt": "写一个 C# 接口 INotifier，其中包含 `void Send(string message);` 方法签名。",
       "lesson_id": "cs-di-lifetimes",
       "hints": [
-        "接口名以 I 开头。",
-        "方法返回 void 即可。"
+        "关键字是 interface。",
+        "接口方法不需要方法体。"
       ],
       "starter_code": "public interface INotifier\n{\n    void Send(string message);\n}\n",
       "expected_nodes": [],
@@ -1364,14 +1364,14 @@
     },
     {
       "id": "cs-record-student",
-      "title": "?? Student record",
+      "title": "定义 Student record",
       "track_id": "csharp",
-      "difficulty": "??",
-      "prompt": "??? `record Student(string Name, int Score);`??????????",
+      "difficulty": "进阶",
+      "prompt": "写一个 `record Student(string Name, int Score);`，用于表示学生成绩。",
       "lesson_id": "cs-dictionary-records",
       "hints": [
-        "record ?????????",
-        "?????????"
+        "record 可以直接带主构造。",
+        "字段名注意大小写。"
       ],
       "starter_code": "public ",
       "expected_nodes": [],
@@ -1389,14 +1389,14 @@
     },
     {
       "id": "db-orders-foreign-key",
-      "title": "???????",
+      "title": "给订单表加外键",
       "track_id": "database",
-      "difficulty": "??",
-      "prompt": "??? CREATE TABLE ????? orders ???? user_id ?? FOREIGN KEY ?? users(id)?",
+      "difficulty": "进阶",
+      "prompt": "写一条 CREATE TABLE 语句，创建 orders 表，并让 user_id 通过 FOREIGN KEY 引用 users(id)。",
       "lesson_id": "db-constraints-foreign-keys",
       "hints": [
-        "??? user_id ??",
-        "?? FOREIGN KEY (user_id) REFERENCES users(id)?"
+        "先定义 user_id 列。",
+        "再写 FOREIGN KEY (user_id) REFERENCES users(id)。"
       ],
       "starter_code": "CREATE TABLE orders (...);",
       "expected_nodes": [],
@@ -1416,14 +1416,14 @@
     },
     {
       "id": "db-left-join-users-orders",
-      "title": "???????? LEFT JOIN",
+      "title": "写出用户与订单的 LEFT JOIN",
       "track_id": "database",
-      "difficulty": "??",
-      "prompt": "??? SQL?? users ?? orders ?? `users.id = orders.user_id` ? LEFT JOIN?",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，把 users 表和 orders 表按 `users.id = orders.user_id` 做 LEFT JOIN。",
       "lesson_id": "db-join-patterns",
       "hints": [
-        "???? LEFT JOIN?",
-        "??? ON ???"
+        "关键字是 LEFT JOIN。",
+        "别忘了 ON 条件。"
       ],
       "starter_code": "SELECT ...;",
       "expected_nodes": [],
@@ -1444,14 +1444,14 @@
     },
     {
       "id": "py-make-logger",
-      "title": "???????????",
+      "title": "构造一个最小日志装饰器",
       "track_id": "python",
-      "difficulty": "??",
-      "prompt": "?? make_logger(tag)?????????? log(message)???????? \"[TAG] message\" ?????",
+      "difficulty": "精选",
+      "prompt": "实现 make_logger(tag)，它返回一个内部函数 log(message)，调用后返回形如 \"[TAG] message\" 的字符串。",
       "lesson_id": "py-decorators-basics",
       "hints": [
-        "????????????",
-        "????????????? tag?"
+        "这题重点是函数返回函数。",
+        "可以在内部函数里访问外层的 tag。"
       ],
       "starter_code": "def make_logger(tag):\n    pass\n",
       "expected_nodes": [
@@ -1476,14 +1476,14 @@
     },
     {
       "id": "py-build-student-card",
-      "title": "????????",
+      "title": "构造学生数据卡片",
       "track_id": "python",
-      "difficulty": "??",
-      "prompt": "?? build_student_card(name, score)?????????? name?score?passed ??????? passed ?????????",
+      "difficulty": "精选",
+      "prompt": "实现 build_student_card(name, score)，返回一个字典，包含 name、score、passed 三个字段，其中 passed 表示分数是否及格。",
       "lesson_id": "py-type-hints-dataclasses",
       "hints": [
-        "???????",
-        "???? 60 ????"
+        "返回值是字典。",
+        "及格线按 60 分处理。"
       ],
       "starter_code": "def build_student_card(name, score):\n    pass\n",
       "expected_nodes": [
@@ -1516,14 +1516,14 @@
     },
     {
       "id": "c-bitmask-check-read",
-      "title": "?????? READ ???",
+      "title": "检查是否包含 READ 标志位",
       "track_id": "c",
-      "difficulty": "??",
-      "prompt": "??? C ??????????????? perms ???? READ ????",
+      "difficulty": "精选",
+      "prompt": "写一段 C 表达式或判断代码，用位运算检查 perms 是否包含 READ 标志位。",
       "lesson_id": "c-bitwise-flags",
       "hints": [
-        "????? &?",
-        "????? if (perms & READ) { ... }"
+        "这题核心是 &。",
+        "常见写法是 if (perms & READ) { ... }"
       ],
       "starter_code": "if (/* ?????? */) {\n    printf(\"read\\n\");\n}\n",
       "expected_nodes": [],
@@ -1538,14 +1538,14 @@
     },
     {
       "id": "c-main-argc-argv",
-      "title": "?????? main ????",
+      "title": "写出带参数的 main 函数入口",
       "track_id": "c",
-      "difficulty": "??",
-      "prompt": "???? C ?????????????????? argc ? argv?",
+      "difficulty": "进阶",
+      "prompt": "写出一个 C 程序入口函数声明，能够接收命令行参数 argc 和 argv。",
       "lesson_id": "c-command-args",
       "hints": [
-        "??? main ??????",
-        "argv ???? char *argv[]?"
+        "重点是 main 的函数签名。",
+        "argv 通常写成 char *argv[]。"
       ],
       "starter_code": "",
       "expected_nodes": [],
@@ -1560,14 +1560,14 @@
     },
     {
       "id": "cs-httpclient-get",
-      "title": "?????? GET ??",
+      "title": "发起一个最小 GET 请求",
       "track_id": "csharp",
-      "difficulty": "??",
-      "prompt": "??? C# ????? HttpClient ?????? URL???? await ?????",
+      "difficulty": "精选",
+      "prompt": "写一段 C# 代码，使用 HttpClient 异步请求一个 URL，并通过 await 获取结果。",
       "lesson_id": "cs-httpclient-json",
       "hints": [
-        "????? HttpClient?",
-        "??????? GetAsync ? GetStringAsync?"
+        "关键对象是 HttpClient。",
+        "关键调用通常是 GetAsync 或 GetStringAsync。"
       ],
       "starter_code": "",
       "expected_nodes": [],
@@ -1581,14 +1581,14 @@
     },
     {
       "id": "cs-xunit-assert-equal",
-      "title": "??? Assert.Equal ??",
+      "title": "写一条 Assert.Equal 断言",
       "track_id": "csharp",
-      "difficulty": "??",
-      "prompt": "??? xUnit ????? Add(2, 3) ????? 5?",
+      "difficulty": "精选",
+      "prompt": "写一条 xUnit 断言，验证 Add(2, 3) 的结果等于 5。",
       "lesson_id": "cs-testing-workflow",
       "hints": [
-        "????? Assert.Equal?",
-        "????????????"
+        "关键调用是 Assert.Equal。",
+        "先写预期值，再写实际值。"
       ],
       "starter_code": "",
       "expected_nodes": [],
@@ -1602,14 +1602,14 @@
     },
     {
       "id": "db-with-sales-cte",
-      "title": "????????? CTE",
+      "title": "写一个最小销售汇总 CTE",
       "track_id": "database",
-      "difficulty": "??",
-      "prompt": "??? SQL?? WITH sales_cte ??? orders ???????? sales_cte ??????",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，用 WITH sales_cte 先汇总 orders 表中的金额，再从 sales_cte 中查询结果。",
       "lesson_id": "db-cte-patterns",
       "hints": [
-        "???? WITH?SELECT?FROM?",
-        "??????? sales_cte?"
+        "至少要有 WITH、SELECT、FROM。",
+        "中间结果名写成 sales_cte。"
       ],
       "starter_code": "",
       "expected_nodes": [],
@@ -1625,14 +1625,14 @@
     },
     {
       "id": "db-group-having-order",
-      "title": "筛出订单数至少 2 的用户",
+      "title": "写出分组后筛选的报表查询骨架",
       "track_id": "database",
       "difficulty": "精选",
-      "prompt": "写一条 SQL，返回订单数至少为 2 的 user_id 和数量，并按 user_id 排序。",
+      "prompt": "写一条 SQL，要求包含 GROUP BY、HAVING 和 ORDER BY，用于统计订单数量并筛选高频用户。",
       "lesson_id": "db-aggregation",
       "hints": [
-        "这题关键是 group by + having。",
-        "最后 order by user_id。"
+        "这题重点是 WHERE 和 HAVING 的位置感。",
+        "至少把三段关键结构写出来。"
       ],
       "starter_code": "SELECT user_id, COUNT(*) AS order_count\nFROM orders\nGROUP BY user_id\nHAVING COUNT(*) >= 2\nORDER BY user_id;\n",
       "expected_nodes": [],
@@ -1647,14 +1647,14 @@
     },
     {
       "id": "integration-build-desktop-record",
-      "title": "???????",
+      "title": "构造桌面记录项",
       "track_id": "integration",
-      "difficulty": "??",
-      "prompt": "?? build_desktop_record(title, done, source)?????????? title?done?source ?????",
+      "difficulty": "综合",
+      "prompt": "实现 build_desktop_record(title, done, source)，返回一个字典，包含 title、done、source 三个字段。",
       "lesson_id": "project-csharp-sqlite-desktop",
       "hints": [
-        "???????",
-        "?????? title?done?source?"
+        "返回值是字典。",
+        "字段名固定为 title、done、source。"
       ],
       "starter_code": "def build_desktop_record(title, done, source):\n    pass\n",
       "expected_nodes": [
@@ -1687,14 +1687,14 @@
     },
     {
       "id": "integration-build-report-line",
-      "title": "???????",
+      "title": "生成报表摘要行",
       "track_id": "integration",
-      "difficulty": "??",
-      "prompt": "?? build_report_line(day, passed, total)????? \"2026-04-03 ? 8/10 ???\" ?????",
+      "difficulty": "综合",
+      "prompt": "实现 build_report_line(day, passed, total)，返回形如 \"2026-04-03 · 8/10 已通过\" 的字符串。",
       "lesson_id": "project-python-report-pipeline",
       "hints": [
-        "????? f-string?",
-        "??????????????"
+        "可以直接用 f-string。",
+        "注意输出格式里有圆点分隔符。"
       ],
       "starter_code": "def build_report_line(day, passed, total):\n    pass\n",
       "expected_nodes": [
@@ -1719,13 +1719,14 @@
     },
     {
       "id": "py-yield-range",
-      "title": "?",
+      "title": "写一个最小 yield 生成器",
       "track_id": "python",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "实现 count_up(n)，使用 yield 依次产生 1 到 n 的整数。",
       "lesson_id": "py-generators-iterators",
       "hints": [
-        "?"
+        "这题不是返回列表，而是逐个产出。",
+        "可以在循环里反复 yield 当前值。"
       ],
       "starter_code": "def count_up(n):\n    pass\n",
       "expected_nodes": [
@@ -1752,13 +1753,14 @@
     },
     {
       "id": "py-open-log-summary",
-      "title": "?",
+      "title": "用 with 读取日志首行",
       "track_id": "python",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一段 Python 代码，使用 with open(...) 读取文本文件的第一行并保存到变量 first_line。",
       "lesson_id": "py-context-managers",
       "hints": [
-        "?"
+        "重点是 with open 的结构。",
+        "读取一行通常可以用 readline。"
       ],
       "starter_code": "with open(\"demo.txt\", \"r\", encoding=\"utf-8\") as f:\n    first_line = None\n",
       "expected_nodes": [],
@@ -1774,13 +1776,14 @@
     },
     {
       "id": "c-save-record-line",
-      "title": "?",
+      "title": "写一条记录到文本文件",
       "track_id": "c",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一段 C 代码，使用 fprintf(fp, \"%s,%d\\n\", name, count); 把一条记录写入已打开的文件。",
       "lesson_id": "c-file-io-records",
       "hints": [
-        "?"
+        "这题核心是 fprintf。",
+        "假设 fp、name、count 已经存在。"
       ],
       "starter_code": "/* write here */\n",
       "expected_nodes": [],
@@ -1793,13 +1796,14 @@
     },
     {
       "id": "c-call-callback",
-      "title": "?",
+      "title": "通过函数指针调用回调",
       "track_id": "c",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "已知 `int (*fn)(int)` 指向一个函数，写一行 C 代码调用它并把结果保存到 result。",
       "lesson_id": "c-function-pointers",
       "hints": [
-        "?"
+        "函数指针调用写法和普通函数很像。",
+        "形如 result = fn(3);"
       ],
       "starter_code": "/* write here */\n",
       "expected_nodes": [],
@@ -1812,13 +1816,14 @@
     },
     {
       "id": "cs-await-delay",
-      "title": "?",
+      "title": "等待一个最小异步任务",
       "track_id": "csharp",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一行 C# 代码，使用 await Task.Delay(300); 表示等待 300 毫秒。",
       "lesson_id": "cs-async-task-workflow",
       "hints": [
-        "?"
+        "关键字是 await。",
+        "需要和 Task.Delay 搭配。"
       ],
       "starter_code": "// write here\n",
       "expected_nodes": [],
@@ -1832,13 +1837,14 @@
     },
     {
       "id": "cs-group-score-lines",
-      "title": "?",
+      "title": "按班级做最小分组",
       "track_id": "csharp",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一段 C# LINQ 代码，使用 GroupBy(x => x.ClassName) 按班级分组。",
       "lesson_id": "cs-linq-grouping",
       "hints": [
-        "?"
+        "核心调用是 GroupBy。",
+        "lambda 里返回分组键。"
       ],
       "starter_code": "// write here\n",
       "expected_nodes": [],
@@ -1851,13 +1857,14 @@
     },
     {
       "id": "db-transfer-transaction",
-      "title": "?",
+      "title": "写一个最小转账事务骨架",
       "track_id": "database",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写出一段 SQL 骨架，至少包含 BEGIN、两条 UPDATE 和 COMMIT，用于表达最小转账事务。",
       "lesson_id": "db-transactions-isolation",
       "hints": [
-        "?"
+        "事务开始于 BEGIN。",
+        "最后要有 COMMIT。"
       ],
       "starter_code": "-- write SQL here\n",
       "expected_nodes": [],
@@ -1871,13 +1878,14 @@
     },
     {
       "id": "db-create-index-users-email",
-      "title": "?",
+      "title": "给用户邮箱建索引",
       "track_id": "database",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，在 users 表的 email 列上创建索引。",
       "lesson_id": "db-index-design-patterns",
       "hints": [
-        "?"
+        "关键字是 CREATE INDEX。",
+        "要写出表名和列名。"
       ],
       "starter_code": "-- write SQL here\n",
       "expected_nodes": [],
@@ -1892,13 +1900,14 @@
     },
     {
       "id": "integration-build-log-entry",
-      "title": "?",
+      "title": "构造日志统计项",
       "track_id": "integration",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "综合",
+      "prompt": "实现 build_log_entry(level, count)，返回一个字典，包含 level 和 count 两个字段。",
       "lesson_id": "project-c-log-parser",
       "hints": [
-        "?"
+        "返回值是字典。",
+        "字段名固定为 level 和 count。"
       ],
       "starter_code": "def build_log_entry(level, count):\n    pass\n",
       "expected_nodes": [
@@ -1922,13 +1931,14 @@
     },
     {
       "id": "integration-build-dashboard-card",
-      "title": "?",
+      "title": "生成看板卡片标题",
       "track_id": "integration",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "综合",
+      "prompt": "实现 build_card_title(source, metric)，返回形如 \"weather · requests\" 的字符串。",
       "lesson_id": "project-csharp-api-dashboard",
       "hints": [
-        "?"
+        "可以直接用 f-string。",
+        "注意中间的分隔符是圆点。"
       ],
       "starter_code": "def build_card_title(source, metric):\n    pass\n",
       "expected_nodes": [
@@ -1949,13 +1959,14 @@
     },
     {
       "id": "py-safe-parse-int",
-      "title": "?",
+      "title": "安全解析整数并返回默认值",
       "track_id": "python",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "实现 safe_parse_int(text, default)，当 text 能转成整数时返回整数，否则返回 default。",
       "lesson_id": "py-error-handling-patterns",
       "hints": [
-        "?"
+        "核心是 try / except。",
+        "只需要处理整数解析失败这个场景。"
       ],
       "starter_code": "def safe_parse_int(text, default):\n    pass\n",
       "expected_nodes": [
@@ -1980,13 +1991,14 @@
     },
     {
       "id": "py-argparse-add-flag",
-      "title": "?",
+      "title": "给命令行工具加一个 --limit 参数",
       "track_id": "python",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一行 argparse 配置代码，给 parser 增加一个名为 --limit 的整数可选参数，默认值为 10。",
       "lesson_id": "py-cli-argparse",
       "hints": [
-        "?"
+        "核心是 add_argument。",
+        "别忘了 type=int 和 default=10。"
       ],
       "starter_code": "import argparse\nparser = argparse.ArgumentParser()\n# write here\n",
       "expected_nodes": [],
@@ -2002,13 +2014,14 @@
     },
     {
       "id": "c-open-binary-write",
-      "title": "?",
+      "title": "以二进制写模式打开文件",
       "track_id": "c",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一行 C 代码，使用 fopen 以二进制写模式打开 data.bin，并把结果保存到 fp。",
       "lesson_id": "c-binary-file-basics",
       "hints": [
-        "?"
+        "模式字符串是 wb。",
+        "结果要赋给 FILE * 变量。"
       ],
       "starter_code": "/* write here */\n",
       "expected_nodes": [],
@@ -2022,13 +2035,14 @@
     },
     {
       "id": "c-switch-task-state",
-      "title": "?",
+      "title": "根据枚举状态写 switch 分支",
       "track_id": "c",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一个最小 C switch 结构，根据状态 STATE_DONE 输出 \"done\"。",
       "lesson_id": "c-enum-state-machine",
       "hints": [
-        "?"
+        "核心是 switch / case。",
+        "你只需要表达出 STATE_DONE 这个分支。"
       ],
       "starter_code": "/* write here */\n",
       "expected_nodes": [],
@@ -2043,13 +2057,14 @@
     },
     {
       "id": "cs-ctor-inject-logger",
-      "title": "?",
+      "title": "通过构造函数注入 ILogger",
       "track_id": "csharp",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "给 UserService 写一个构造函数，接收 ILogger logger，并赋值给字段 _logger。",
       "lesson_id": "cs-dependency-injection-intro",
       "hints": [
-        "?"
+        "核心是构造函数参数。",
+        "把传入值保存到字段里。"
       ],
       "starter_code": "// write here\n",
       "expected_nodes": [],
@@ -2063,13 +2078,14 @@
     },
     {
       "id": "cs-repository-interface",
-      "title": "?",
+      "title": "定义最小任务仓储接口",
       "track_id": "csharp",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一个 C# 接口 ITaskRepository，至少包含 `void Add(TaskItem item);` 方法签名。",
       "lesson_id": "cs-repository-pattern-intro",
       "hints": [
-        "?"
+        "关键字是 interface。",
+        "方法签名不需要方法体。"
       ],
       "starter_code": "// write here\n",
       "expected_nodes": [],
@@ -2083,14 +2099,14 @@
     },
     {
       "id": "db-exists-active-users",
-      "title": "???????????",
+      "title": "写一个最小 EXISTS 条件查询",
       "track_id": "database",
-      "difficulty": "?",
-      "prompt": "??? SQL????????? active ???????",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，从 users 表查询至少有一条订单的用户，要求使用 EXISTS。",
       "lesson_id": "db-subqueries-exists",
       "hints": [
-        "???? EXISTS?",
-        "??? users???? sessions?"
+        "外层查 users。",
+        "子查询里按 user_id 关联 orders。"
       ],
       "starter_code": "-- write SQL here\n",
       "expected_nodes": [],
@@ -2105,14 +2121,14 @@
     },
     {
       "id": "db-create-user-view",
-      "title": "????????",
+      "title": "创建一个最小用户汇总视图",
       "track_id": "database",
-      "difficulty": "?",
-      "prompt": "??? CREATE VIEW ????? active_users ?????? status=active ????????",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，创建视图 user_summary，来源是对 users 表的最小 SELECT 查询。",
       "lesson_id": "db-views-materialization",
       "hints": [
-        "????? active_users?",
-        "????? name ? status ???"
+        "关键字是 CREATE VIEW。",
+        "先写最小可运行骨架。"
       ],
       "starter_code": "-- write SQL here\n",
       "expected_nodes": [],
@@ -2126,13 +2142,14 @@
     },
     {
       "id": "integration-build-audit-item",
-      "title": "?",
+      "title": "构造结构审计项",
       "track_id": "integration",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "综合",
+      "prompt": "实现 build_audit_item(table_name, has_pk)，返回一个字典，包含 table_name 和 has_pk 两个字段。",
       "lesson_id": "project-database-audit-tool",
       "hints": [
-        "?"
+        "返回值是字典。",
+        "字段名固定。"
       ],
       "starter_code": "def build_audit_item(table_name, has_pk):\n    pass\n",
       "expected_nodes": [
@@ -2156,13 +2173,14 @@
     },
     {
       "id": "integration-build-cli-help",
-      "title": "?",
+      "title": "生成命令行帮助摘要",
       "track_id": "integration",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "综合",
+      "prompt": "实现 build_help_line(command, desc)，返回形如 \"scan: 检查数据库结构\" 的字符串。",
       "lesson_id": "project-python-cli-packager",
       "hints": [
-        "?"
+        "可以直接拼接字符串。",
+        "注意冒号和空格的格式。"
       ],
       "starter_code": "def build_help_line(command, desc):\n    pass\n",
       "expected_nodes": [
@@ -2183,13 +2201,14 @@
     },
     {
       "id": "py-configure-basic-logger",
-      "title": "?",
+      "title": "配置一个最小日志输出",
       "track_id": "python",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一行 Python 代码，调用 logging.basicConfig(level=logging.INFO) 配置最小日志级别。",
       "lesson_id": "py-logging-debugging",
       "hints": [
-        "?"
+        "关键对象是 logging。",
+        "关键调用是 basicConfig。"
       ],
       "starter_code": "import logging\n# write here\n",
       "expected_nodes": [],
@@ -2203,13 +2222,14 @@
     },
     {
       "id": "py-build-package-entry",
-      "title": "?",
+      "title": "设计一个最小项目入口骨架",
       "track_id": "python",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写出一个最小项目目录骨架，至少包含 app/main.py 和 tests/ 两个部分。",
       "lesson_id": "py-project-structure",
       "hints": [
-        "?"
+        "这题重点是结构表达。",
+        "可以用文本树形结构回答。"
       ],
       "starter_code": "# write structure here\n",
       "expected_nodes": [],
@@ -2224,13 +2244,14 @@
     },
     {
       "id": "c-define-max-macro",
-      "title": "?",
+      "title": "定义一个 MAX_ITEMS 宏",
       "track_id": "c",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一行 C 代码，使用 #define 定义名为 MAX_ITEMS 的宏，值为 128。",
       "lesson_id": "c-preprocessor-macros",
       "hints": [
-        "?"
+        "关键字是 #define。",
+        "宏名通常用大写。"
       ],
       "starter_code": "/* write here */\n",
       "expected_nodes": [],
@@ -2245,13 +2266,14 @@
     },
     {
       "id": "c-qsort-compare-int",
-      "title": "?",
+      "title": "写一个最小整数比较器骨架",
       "track_id": "c",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写出 C 函数签名 `int compare_ints(const void *a, const void *b)`，用于给 qsort 传比较函数。",
       "lesson_id": "c-qsort-comparator",
       "hints": [
-        "?"
+        "这题重点是函数签名。",
+        "参数类型要是 const void *。"
       ],
       "starter_code": "/* write here */\n",
       "expected_nodes": [],
@@ -2265,14 +2287,14 @@
     },
     {
       "id": "cs-read-config-value",
-      "title": "读取配置值",
+      "title": "读取一个 ApiHost 配置值",
       "track_id": "csharp",
-      "difficulty": "进阶",
-      "prompt": "写一段代码，从 IConfiguration 读取 Api:BaseUrl。",
+      "difficulty": "精选",
+      "prompt": "写一行 C# 代码，从配置对象中读取键名为 `ApiHost` 的值，并保存到变量 host。",
       "lesson_id": "cs-options-validation",
       "hints": [
-        "索引器写法很常见。",
-        "也可以用 GetSection。"
+        "这题重点是“读取配置”的表达。",
+        "变量名固定为 host。"
       ],
       "starter_code": "string? baseUrl = configuration[\"Api:BaseUrl\"];\n",
       "expected_nodes": [],
@@ -2286,13 +2308,14 @@
     },
     {
       "id": "cs-map-route-id",
-      "title": "?",
+      "title": "声明一个带 id 的最小路由",
       "track_id": "csharp",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一行 C# Minimal API 代码，声明 `/users/{id}` 路由，并返回包含 id 的匿名对象。",
       "lesson_id": "cs-minimal-api-routing",
       "hints": [
-        "?"
+        "关键调用是 MapGet。",
+        "路由里要有 {id}。"
       ],
       "starter_code": "// write here\n",
       "expected_nodes": [],
@@ -2306,13 +2329,14 @@
     },
     {
       "id": "db-explain-users-query",
-      "title": "?",
+      "title": "给用户查询加 EXPLAIN",
       "track_id": "database",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，在 `SELECT * FROM users WHERE email = 'a@example.com'` 前加上 EXPLAIN。",
       "lesson_id": "db-explain-query-plans",
       "hints": [
-        "?"
+        "这题只需要在查询前加 EXPLAIN。",
+        "保持原查询主体即可。"
       ],
       "starter_code": "-- write SQL here\n",
       "expected_nodes": [],
@@ -2327,13 +2351,14 @@
     },
     {
       "id": "db-add-column-migration",
-      "title": "?",
+      "title": "写一个给 users 加列的迁移",
       "track_id": "database",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "精选",
+      "prompt": "写一条 SQL，给 users 表新增 `last_login` 文本列。",
       "lesson_id": "db-migrations-basics",
       "hints": [
-        "?"
+        "关键字是 ALTER TABLE 和 ADD COLUMN。",
+        "列名固定为 last_login。"
       ],
       "starter_code": "-- write SQL here\n",
       "expected_nodes": [],
@@ -2348,13 +2373,14 @@
     },
     {
       "id": "integration-build-kpi-row",
-      "title": "?",
+      "title": "构造学习指标行",
       "track_id": "integration",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "综合",
+      "prompt": "实现 build_kpi_row(name, value)，返回一个字典，包含 name 和 value 两个字段。",
       "lesson_id": "project-sql-learning-analytics",
       "hints": [
-        "?"
+        "返回值是字典。",
+        "字段名固定。"
       ],
       "starter_code": "def build_kpi_row(name, value):\n    pass\n",
       "expected_nodes": [
@@ -2378,13 +2404,14 @@
     },
     {
       "id": "integration-build-note-summary",
-      "title": "?",
+      "title": "生成笔记摘要标题",
       "track_id": "integration",
-      "difficulty": "?",
-      "prompt": "?",
+      "difficulty": "综合",
+      "prompt": "实现 build_note_summary(title, keyword_count)，返回形如 \"Python 迭代器 · 3 个关键词\" 的字符串。",
       "lesson_id": "project-csharp-notes-manager",
       "hints": [
-        "?"
+        "可以用 f-string。",
+        "注意中间的分隔符和中文量词。"
       ],
       "starter_code": "def build_note_summary(title, keyword_count):\n    pass\n",
       "expected_nodes": [
@@ -2473,7 +2500,7 @@
       "id": "db-window-running-total",
       "title": "做销售额累计和",
       "track_id": "database",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "写一条 SQL，返回 day、amount 和按日期累加的 running_total。",
       "lesson_id": "db-window-functions",
       "hints": [
@@ -2495,7 +2522,7 @@
       "id": "db-exists-high-value-users",
       "title": "找出有高金额订单的用户",
       "track_id": "database",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "写一条 SQL，返回至少存在一笔 amount>100 订单的用户名。",
       "lesson_id": "db-subqueries-exists",
       "hints": [
@@ -2516,7 +2543,7 @@
       "id": "db-upsert-daily-kpi",
       "title": "用 UPSERT 更新日报 KPI",
       "track_id": "database",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "写一条 SQL，把 day=2026-04-01 的 total 更新成 8；如果不存在就插入。",
       "lesson_id": "db-upsert-merge-patterns",
       "hints": [
@@ -2538,7 +2565,7 @@
       "id": "db-cte-top-users",
       "title": "用 CTE 统计高价值用户总额",
       "track_id": "database",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "写一条 SQL，先用 CTE 聚合每个 user_id 的总金额，再返回 user_id 和 total。",
       "lesson_id": "db-cte-patterns",
       "hints": [
@@ -2560,7 +2587,7 @@
       "id": "db-row-number-latest-log",
       "title": "取每个用户最新一条日志",
       "track_id": "database",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "写一条 SQL，返回每个 user_id 最新一条日志的时间和分数。",
       "lesson_id": "db-window-functions",
       "hints": [
@@ -2582,7 +2609,7 @@
       "id": "db-join-course-enrollment-count",
       "title": "统计课程报名人数",
       "track_id": "database",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "写一条 SQL，返回课程标题和报名人数，没报名的课程也要显示为 0。",
       "lesson_id": "db-join-patterns",
       "hints": [
@@ -2604,7 +2631,7 @@
       "id": "db-subquery-above-course-average",
       "title": "找出高于课程平均分的学生",
       "track_id": "database",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "写一条 SQL，返回成绩高于本课程平均分的学生姓名。",
       "lesson_id": "db-subqueries-exists",
       "hints": [
@@ -2625,7 +2652,7 @@
       "id": "db-create-covering-index-report",
       "title": "给报表表加组合索引",
       "track_id": "database",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "写一条 CREATE INDEX 语句，给 reports(created_at, status) 建组合索引。",
       "lesson_id": "db-covering-indexes",
       "hints": [
@@ -2670,7 +2697,7 @@
       "id": "db-create-enrollment-foreign-key",
       "title": "创建带外键的选课表",
       "track_id": "database",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "写一段建表脚本，创建 enrollments 表，并让 student_id / course_id 分别引用 students / courses。",
       "lesson_id": "db-constraints-foreign-keys",
       "hints": [
@@ -2693,7 +2720,7 @@
       "id": "db-left-join-course-report",
       "title": "课程报名报表（左连接）",
       "track_id": "database",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "写一条 SQL，返回每门课程标题和报名人数，包含没人报名的课程。",
       "lesson_id": "db-join-patterns",
       "hints": [
@@ -3522,7 +3549,7 @@
       "id": "algo-max-subarray-sum",
       "title": "最大子数组和",
       "track_id": "algorithms",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "实现 max_subarray(nums)，返回连续子数组的最大和。",
       "lesson_id": "algo-prefix-sum-window",
       "hints": [
@@ -3618,7 +3645,7 @@
       "id": "algo-count-islands",
       "title": "岛屿数量",
       "track_id": "algorithms",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "实现 count_islands(grid)，返回二维网格中的岛屿数量。网格里 1 表示陆地，0 表示水。",
       "lesson_id": "algo-graph-shortest-path",
       "hints": [
@@ -3650,7 +3677,7 @@
       "id": "algo-top-k-frequency",
       "title": "前 K 个高频元素",
       "track_id": "algorithms",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "实现 top_k_frequent(nums, k)，返回出现频率最高的 k 个元素。",
       "lesson_id": "algo-arrays-hashing",
       "hints": [
@@ -3687,7 +3714,7 @@
       "id": "algo-merge-intervals",
       "title": "合并区间",
       "track_id": "algorithms",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "实现 merge_intervals(intervals)，合并所有重叠区间并返回结果。",
       "lesson_id": "algo-binary-search-greedy",
       "hints": [
@@ -3737,7 +3764,7 @@
       "id": "algo-min-coins",
       "title": "零钱兑换最少硬币数",
       "track_id": "algorithms",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "实现 min_coins(coins, amount)，返回凑成 amount 所需最少硬币数，无法凑成则返回 -1。",
       "lesson_id": "algo-dynamic-programming-intuition",
       "hints": [
@@ -3769,7 +3796,7 @@
       "id": "algo-product-except-self",
       "title": "除自身以外数组的乘积",
       "track_id": "algorithms",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "实现 product_except_self(nums)，返回每个位置除自身外其他元素的乘积。",
       "lesson_id": "algo-prefix-sum-window",
       "hints": [
@@ -3811,7 +3838,7 @@
       "id": "algo-search-rotated-array",
       "title": "搜索旋转有序数组",
       "track_id": "algorithms",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "实现 search_rotated(nums, target)，在旋转有序数组中查找 target。",
       "lesson_id": "algo-binary-search-greedy",
       "hints": [
@@ -3843,7 +3870,7 @@
       "id": "algo-shortest-path-grid",
       "title": "网格最短路径步数",
       "track_id": "algorithms",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "实现 shortest_path_grid(grid)，返回从左上角到右下角的最短步数，只能走上下左右，1 表示可走，0 表示障碍。无法到达返回 -1。",
       "lesson_id": "algo-graph-shortest-path",
       "hints": [
@@ -3875,7 +3902,7 @@
       "id": "algo-min-window-len",
       "title": "最短满足条件子数组",
       "track_id": "algorithms",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "实现 min_window_len(target, nums)，返回和至少为 target 的最短连续子数组长度，不存在则返回 0。",
       "lesson_id": "algo-prefix-sum-window",
       "hints": [
@@ -3907,7 +3934,7 @@
       "id": "algo-level-order-values",
       "title": "二叉树层序遍历结果",
       "track_id": "algorithms",
-      "difficulty": "精选",
+      "difficulty": "进阶",
       "prompt": "实现 level_order_values(root)，返回二叉树层序遍历的每层节点值。root 节点有 val、left、right 属性。",
       "lesson_id": "algo-tree-bfs-dfs",
       "hints": [
@@ -4312,6 +4339,387 @@
         "print",
         "def"
       ]
+    },
+    {
+      "id": "proj-todo-add-task",
+      "title": "实现添加任务功能",
+      "track_id": "projects",
+      "difficulty": "基础",
+      "prompt": "实现 add_task(tasks, title) 函数，把一个包含 title 和 done(False) 两个字段的字典追加到 tasks 列表中，并返回当前任务总数。",
+      "lesson_id": "project-todo-cli",
+      "hints": [
+        "先构造一个字典 {'title': title, 'done': False}",
+        "追加到列表后用 len 返回长度"
+      ],
+      "starter_code": "def add_task(tasks, title):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "add_task"
+      ],
+      "tests": [
+        {
+          "expression": "add_task([], 'Buy milk')",
+          "expected": 1
+        },
+        {
+          "expression": "(lambda t: [add_task(t, 'A'), add_task(t, 'B'), len(t)])([])",
+          "expected": [
+            1,
+            2,
+            2
+          ]
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "proj-todo-filter-done",
+      "title": "筛选已完成的任务",
+      "track_id": "projects",
+      "difficulty": "基础",
+      "prompt": "实现 filter_done(tasks)，返回一个新列表，只包含 tasks 中 done 为 True 的任务。",
+      "lesson_id": "project-todo-cli",
+      "hints": [
+        "可以用列表推导式",
+        "条件是 task['done'] == True"
+      ],
+      "starter_code": "def filter_done(tasks):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "filter_done"
+      ],
+      "tests": [
+        {
+          "expression": "filter_done([{'title':'A','done':True},{'title':'B','done':False}])",
+          "expected": [
+            {
+              "title": "A",
+              "done": true
+            }
+          ]
+        },
+        {
+          "expression": "filter_done([])",
+          "expected": []
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "proj-crawler-download-list",
+      "title": "构造下载链接列表",
+      "track_id": "projects",
+      "difficulty": "进阶",
+      "prompt": "实现 build_urls(base, names)，返回一个列表，每个元素是 base + name 拼接而成的完整 URL 字符串。",
+      "lesson_id": "project-crawler",
+      "hints": [
+        "可以用列表推导式",
+        "拼接时注意 base 末尾是否需要 /"
+      ],
+      "starter_code": "def build_urls(base, names):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_urls"
+      ],
+      "tests": [
+        {
+          "expression": "build_urls('http://img.com/', ['a.jpg', 'b.jpg'])",
+          "expected": [
+            "http://img.com/a.jpg",
+            "http://img.com/b.jpg"
+          ]
+        },
+        {
+          "expression": "build_urls('http://img.com/', [])",
+          "expected": []
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "proj-orm-build-query",
+      "title": "构造简单 SELECT 查询",
+      "track_id": "projects",
+      "difficulty": "进阶",
+      "prompt": "实现 build_select(table, columns)，返回形如 'SELECT col1, col2 FROM table' 的 SQL 字符串。columns 是一个列表。",
+      "lesson_id": "project-orm",
+      "hints": [
+        "用 ', '.join(columns) 拼接列名",
+        "用 f-string 构造完整 SQL"
+      ],
+      "starter_code": "def build_select(table, columns):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_select"
+      ],
+      "tests": [
+        {
+          "expression": "build_select('users', ['name', 'age'])",
+          "expected": "SELECT name, age FROM users"
+        },
+        {
+          "expression": "build_select('orders', ['id'])",
+          "expected": "SELECT id FROM orders"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "proj-analysis-top-n",
+      "title": "取列表中最大的 N 个值",
+      "track_id": "projects",
+      "difficulty": "基础",
+      "prompt": "实现 top_n(values, n)，返回 values 中最大的 n 个值，按从大到小排列。",
+      "lesson_id": "project-data-analysis",
+      "hints": [
+        "可以先排序再切片",
+        "也可以用 sorted + reverse"
+      ],
+      "starter_code": "def top_n(values, n):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "top_n"
+      ],
+      "tests": [
+        {
+          "expression": "top_n([3, 1, 4, 1, 5, 9], 3)",
+          "expected": [
+            9,
+            5,
+            4
+          ]
+        },
+        {
+          "expression": "top_n([1], 1)",
+          "expected": [
+            1
+          ]
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "proj-fastapi-validate-amount",
+      "title": "验证账目金额",
+      "track_id": "projects",
+      "difficulty": "进阶",
+      "prompt": "实现 validate_amount(amount)，当 amount 大于 0 时返回 True，否则返回 False。用于 API 层的参数校验。",
+      "lesson_id": "project-fastapi-ledger",
+      "hints": [
+        "判断 amount > 0",
+        "返回布尔值"
+      ],
+      "starter_code": "def validate_amount(amount):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "validate_amount"
+      ],
+      "tests": [
+        {
+          "expression": "validate_amount(100)",
+          "expected": true
+        },
+        {
+          "expression": "validate_amount(-5)",
+          "expected": false
+        },
+        {
+          "expression": "validate_amount(0)",
+          "expected": false
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "proj-redis-serialize-payload",
+      "title": "构造任务队列消息体",
+      "track_id": "projects",
+      "difficulty": "综合",
+      "prompt": "实现 build_task_message(task_id, action)，返回一个包含 task_id、action 和 status('pending') 三个字段的字典。",
+      "lesson_id": "project-celery-redis",
+      "hints": [
+        "status 固定为 'pending'",
+        "返回字典"
+      ],
+      "starter_code": "def build_task_message(task_id, action):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_task_message"
+      ],
+      "tests": [
+        {
+          "expression": "build_task_message(1, 'resize')",
+          "expected": {
+            "task_id": 1,
+            "action": "resize",
+            "status": "pending"
+          }
+        },
+        {
+          "expression": "build_task_message(2, 'upload')['status']",
+          "expected": "pending"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "proj-django-slugify-title",
+      "title": "将标题转换为 URL slug",
+      "track_id": "projects",
+      "difficulty": "进阶",
+      "prompt": "实现 slugify_title(title)，将标题转为小写，空格替换为连字符，并去掉首尾空格。",
+      "lesson_id": "project-django-blog",
+      "hints": [
+        "先 strip 再 lower",
+        "用 replace 将空格替换为 -"
+      ],
+      "starter_code": "def slugify_title(title):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "slugify_title"
+      ],
+      "tests": [
+        {
+          "expression": "slugify_title('Hello World')",
+          "expected": "hello-world"
+        },
+        {
+          "expression": "slugify_title('  My Blog Post  ')",
+          "expected": "my-blog-post"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "proj-player-playlist-duration",
+      "title": "计算播放列表总时长",
+      "track_id": "projects",
+      "difficulty": "基础",
+      "prompt": "实现 total_duration(durations)，接收一个整数列表（秒），返回总秒数。",
+      "lesson_id": "project-pyqt5-player",
+      "hints": [
+        "用 sum 求和",
+        "空列表返回 0"
+      ],
+      "starter_code": "def total_duration(durations):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "total_duration"
+      ],
+      "tests": [
+        {
+          "expression": "total_duration([180, 240, 200])",
+          "expected": 620
+        },
+        {
+          "expression": "total_duration([])",
+          "expected": 0
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "proj-selenium-build-selector",
+      "title": "构造 CSS 选择器",
+      "track_id": "projects",
+      "difficulty": "进阶",
+      "prompt": "实现 build_css_selector(tag, class_name)，返回形如 'tag.class_name' 的 CSS 选择器字符串。",
+      "lesson_id": "project-selenium-test",
+      "hints": [
+        "用 f-string 拼接",
+        "中间用 . 连接"
+      ],
+      "starter_code": "def build_css_selector(tag, class_name):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_css_selector"
+      ],
+      "tests": [
+        {
+          "expression": "build_css_selector('div', 'container')",
+          "expected": "div.container"
+        },
+        {
+          "expression": "build_css_selector('input', 'btn-primary')",
+          "expected": "input.btn-primary"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
+    },
+    {
+      "id": "proj-ai-build-prompt",
+      "title": "构造对话 prompt",
+      "track_id": "projects",
+      "difficulty": "综合",
+      "prompt": "实现 build_prompt(system, user)，返回一个包含 system 和 user 两个字段的字典，用于 Claude API 对话。",
+      "lesson_id": "project-ai-chatbot",
+      "hints": [
+        "返回字典",
+        "字段名固定为 system 和 user"
+      ],
+      "starter_code": "def build_prompt(system, user):\n    pass\n",
+      "expected_nodes": [
+        "FunctionDef",
+        "Return"
+      ],
+      "required_names": [
+        "build_prompt"
+      ],
+      "tests": [
+        {
+          "expression": "build_prompt('You are helpful', 'Hello')",
+          "expected": {
+            "system": "You are helpful",
+            "user": "Hello"
+          }
+        },
+        {
+          "expression": "build_prompt('Bot', 'Hi')['user']",
+          "expected": "Hi"
+        }
+      ],
+      "required_keywords": [],
+      "forbidden_keywords": []
     }
   ]
 }

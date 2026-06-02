@@ -1,7 +1,14 @@
-"""Markdown rendering and HTML sanitization for AI chat bubbles."""
+"""Markdown 渲染和 HTML 净化模块。
 
+提供 Markdown 到 HTML 的渲染（基于 mistune）、白名单 HTML 净化（防止 XSS）
+以及聊天消息气泡 HTML 构建功能。
+"""
+
+import logging
 from html import escape
 from html.parser import HTMLParser
+
+logger = logging.getLogger(__name__)
 
 from app.ai.models import (
     ALLOWED_TAGS,
@@ -15,6 +22,7 @@ from app.ai.models import (
 try:
     import mistune
 except Exception:  # pragma: no cover
+    logger.info("mistune 不可用，Markdown 渲染将使用纯文本回退")
     mistune = None
 
 
@@ -29,7 +37,11 @@ class _HTMLSanitizer(HTMLParser):
     # -- helpers ----------------------------------------------------------
 
     def _safe_attrs(self, tag: str, attrs: list[tuple[str, str | None]]) -> str:
-        """Return a string of sanitized attributes for *tag*."""
+        """返回标签的安全属性字符串。
+
+        过滤规则：移除所有 on* 事件处理器；<a> 标签仅保留安全的 href；
+        <span> 仅保留 class；其他标签移除所有属性。
+        """
         safe_parts: list[str] = []
         for name, value in attrs:
             name_lower = name.lower()
@@ -115,6 +127,14 @@ class _HTMLSanitizer(HTMLParser):
     # -- public API -------------------------------------------------------
 
     def sanitize(self, html: str) -> str:
+        """对 HTML 字符串执行白名单净化。
+
+        Args:
+            html: 原始 HTML 字符串。
+
+        Returns:
+            净化后的安全 HTML 字符串。
+        """
         self._result = []
         self._skip_depth = 0
         self.feed(html)
@@ -138,8 +158,8 @@ def render_message_html(content: str, allow_markdown: bool = True) -> str:
             rendered = mistune.html(text)
             rendered = rendered.replace("<table>", "<table cellspacing='0' cellpadding='6'>")
             return sanitize_html(rendered)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Markdown 渲染失败，回退到纯文本: %s", exc)
     return escape(text).replace("\n", "<br>")
 
 
@@ -161,6 +181,61 @@ def bubble_html(role: str, content: str) -> str:
         color: #0f172a;
         line-height: 1.72;
         font-size: 15px;
-      ">{body}</div>
+      ">
+        <style>
+          pre {{
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin: 10px 0;
+            border: 1px solid rgba(59,130,246,0.15);
+          }}
+          code {{
+            background: #f0f4ff;
+            border-radius: 4px;
+            padding: 1px 4px;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            color: #2563eb;
+          }}
+          pre code {{
+            background: transparent;
+            color: #e2e8f0;
+            padding: 0;
+          }}
+          table {{
+            border-collapse: collapse;
+            margin: 10px 0;
+            width: 100%;
+          }}
+          th {{
+            background: #f1f5f9;
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+            font-weight: 700;
+          }}
+          td {{
+            padding: 6px 12px;
+            border-bottom: 1px solid #f1f5f9;
+          }}
+          blockquote {{
+            border-left: 3px solid #2563eb;
+            background: #eff6ff;
+            padding: 8px 14px;
+            margin: 10px 0;
+            border-radius: 0 8px 8px 0;
+            color: #1e40af;
+          }}
+          ul, ol {{ padding-left: 20px; }}
+          a {{ color: #2563eb; }}
+        </style>
+        {body}
+      </div>
     </div>
     """

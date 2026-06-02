@@ -1,4 +1,8 @@
-"""Exercise loading, fallback resolution, and JSON resource management."""
+"""练习数据加载、回退处理和 JSON 资源管理模块。
+
+提供练习元数据的加载和解析、编码损坏数据的自动修复（使用回退值）、
+SQL 查询 fixture 的加载和缓存等功能。
+"""
 
 import functools
 import json
@@ -61,7 +65,7 @@ def load_exercises(metadata_path: Optional[Path] = None) -> list[Exercise]:
 
     fallbacks = get_exercise_fallbacks()
     exercises: list[Exercise] = []
-    for item in raw["exercises"]:
+    for item in raw.get("exercises", []):
         fallback = fallbacks.get(item["id"], {})
         patched = dict(item)
         for field_name in ("title", "difficulty", "prompt"):

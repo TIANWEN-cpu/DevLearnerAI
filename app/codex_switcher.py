@@ -1,6 +1,7 @@
 import base64
 import ctypes
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -10,6 +11,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
@@ -197,6 +200,7 @@ def decode_jwt_payload(token: str) -> dict[str, str]:
         raw = base64.urlsafe_b64decode(payload.encode("ascii"))
         return json.loads(raw.decode("utf-8"))
     except Exception:
+        logger.debug("JWT payload 解码失败", exc_info=True)
         return {}
 
 
@@ -389,7 +393,8 @@ class CodexAccountService:
                 try:
                     subprocess.Popen([str(candidate)])
                     return True
-                except Exception:
+                except Exception as exc:
+                    logger.warning("启动 Codex 失败 [%s]: %s", candidate, exc)
                     continue
         return False
 
@@ -527,7 +532,8 @@ class CodexSwitcherWindow(QMainWindow):
         try:
             active = self.service.get_active_account()
         except Exception as exc:
-            self.active_account_label.setText(f"读取当前登录信息失败：{exc}")
+            logger.error("读取当前登录信息失败: %s", exc, exc_info=True)
+            self.active_account_label.setText("读取当前登录信息失败，请确认 Codex 认证文件完好。")
             return
 
         if not active:
@@ -607,7 +613,8 @@ class CodexSwitcherWindow(QMainWindow):
                 return
             profile = self.service.save_current_as_profile(alias)
         except Exception as exc:
-            QMessageBox.critical(self, APP_TITLE, f"保存失败：{exc}")
+            logger.error("保存账号档案失败: %s", exc, exc_info=True)
+            QMessageBox.critical(self, APP_TITLE, "保存失败，请检查 Codex 认证文件是否正常。")
             return
 
         self.refresh_all()
@@ -637,7 +644,8 @@ class CodexSwitcherWindow(QMainWindow):
             self.service.restore_profile(str(profile.get("id", "")))
             reopened = self.service.start_codex()
         except Exception as exc:
-            QMessageBox.critical(self, APP_TITLE, f"切换失败：{exc}")
+            logger.error("切换账号失败: %s", exc, exc_info=True)
+            QMessageBox.critical(self, APP_TITLE, "切换失败，请检查档案文件和 Codex 认证文件是否完好。")
             return
 
         self.refresh_all()
@@ -669,7 +677,8 @@ class CodexSwitcherWindow(QMainWindow):
         try:
             self.service.delete_profile(str(profile.get("id", "")))
         except Exception as exc:
-            QMessageBox.critical(self, APP_TITLE, f"删除失败：{exc}")
+            logger.error("删除账号档案失败: %s", exc, exc_info=True)
+            QMessageBox.critical(self, APP_TITLE, "删除失败，请稍后重试。")
             return
         self.refresh_all()
 
@@ -678,7 +687,8 @@ class CodexSwitcherWindow(QMainWindow):
             self.service.stop_codex()
             reopened = self.service.start_codex()
         except Exception as exc:
-            QMessageBox.critical(self, APP_TITLE, f"操作失败：{exc}")
+            logger.error("重启 Codex 失败: %s", exc, exc_info=True)
+            QMessageBox.critical(self, APP_TITLE, "操作失败，请稍后重试。")
             return
 
         if reopened:

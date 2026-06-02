@@ -1,4 +1,10 @@
-"""Code evaluation logic: SQL checking, keyword validation, Python execution."""
+"""代码评测逻辑模块。
+
+提供多语言的练习代码评测功能：
+- SQL 评测：基于内存 SQLite 的真实执行和结果比对
+- C/C# 评测：关键字和结构检查
+- Python 评测：通过 python_runner 沙箱执行和测试验证
+"""
 
 import logging
 import re
@@ -277,8 +283,8 @@ def evaluate_python(exercise: Exercise, code: str) -> EvaluationResult:
     )
     return EvaluationResult(
         passed=bool(result["passed"]),
-        score=int(result["score"]),
-        feedback_lines=list(result["feedback_lines"]),
+        score=int(result["score"]),  # type: ignore[call-overload]
+        feedback_lines=list(result["feedback_lines"]),  # type: ignore[call-overload]
         stdout=str(result.get("stdout", "")),
-        duration_sec=int(result.get("duration_sec", 0)),
+        duration_sec=int(result.get("duration_sec", 0)),  # type: ignore[call-overload]
     )

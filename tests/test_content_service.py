@@ -62,8 +62,9 @@ class TestLooksCorrupt:
     def test_qi_char_corrupt(self):
         assert _looks_corrupt("绮") is True
 
-    def test_lu_char_corrupt(self):
-        assert _looks_corrupt("路") is True
+    def test_lu_char_not_corrupt(self):
+        """路 is a common Chinese character (road), not mojibake."""
+        assert _looks_corrupt("路") is False
 
     def test_mixed_text_with_corrupt_token(self):
         assert _looks_corrupt("hello ??? world") is True

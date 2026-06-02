@@ -37,11 +37,15 @@ from app.ai.api_client import (
     send_chat as api_send_chat,
 )
 from app.ai.api_client import (
+    send_chat_stream as api_send_chat_stream,
+)
+from app.ai.api_client import (
     test_connection as api_test_connection,
 )
 from app.ai.markdown_renderer import bubble_html as _bubble_html
 from app.content_service import ContentService
 from app.database import AppDatabase
+from app.effects import AnimatedDotsLabel, LoadingSpinner
 from app.localized_inputs import (
     LocalizedLineEdit,
     LocalizedTextBrowser,
@@ -68,6 +72,7 @@ class AIMentorPanel(QWidget):
     response_ready = pyqtSignal(int)
     models_ready = pyqtSignal(list)
     status_ready = pyqtSignal(str)
+    stream_chunk_ready = pyqtSignal(str)  # streaming text chunk
 
     def __init__(
         self,
@@ -80,14 +85,15 @@ class AIMentorPanel(QWidget):
         self.db = db
         self.content_service = content_service
         self.mode = mode
-        self.current_session_id = None
-        self.settings_dialog = None
-        self._request_in_flight = False
-        self._is_valid = True
+        self.current_session_id: Optional[int] = None
+        self.settings_dialog: Optional[QDialog] = None
+        self._request_in_flight: bool = False
+        self._is_valid: bool = True
 
         self.response_ready.connect(self._handle_response_ready)
         self.models_ready.connect(self._populate_models)
         self.status_ready.connect(self._set_settings_status)
+        self.stream_chunk_ready.connect(self._handle_stream_chunk)
 
         self._build_ui()
         self._build_settings_widgets()
@@ -296,7 +302,26 @@ class AIMentorPanel(QWidget):
             }}
             """
         )
+        # Loading indicator row
+        self.loading_row = QHBoxLayout()
+        self.loading_row.setSpacing(8)
+        self.spinner = LoadingSpinner(size=24)
+        self.spinner.hide()
+        self.loading_dots = AnimatedDotsLabel("AI thinking")
+        self.loading_dots.hide()
+        self.loading_row.addWidget(self.spinner)
+        self.loading_row.addWidget(self.loading_dots, 1)
+
+        # Retry button (hidden by default)
+        self.retry_btn = QPushButton("retry")
+        self.retry_btn.setProperty("variant", "secondary")
+        self.retry_btn.setFixedHeight(40)
+        self.retry_btn.hide()
+        self.retry_btn.clicked.connect(self.retry_last_message)
+        self.loading_row.addWidget(self.retry_btn)
+
         self.chat_layout.addWidget(self.thinking_hint)
+        self.chat_layout.addLayout(self.loading_row)
 
         input_row = QHBoxLayout()
         input_row.setSpacing(10)
@@ -551,6 +576,8 @@ class AIMentorPanel(QWidget):
             self.session_list.blockSignals(False)
 
         self.current_session_id = active_id
+        # Auto-trim old messages to prevent memory bloat
+        self.db.trim_mentor_messages(active_id, keep_last=200)
         self._sync_session_header()
         self._render_messages()
 
@@ -572,6 +599,7 @@ class AIMentorPanel(QWidget):
             return
         self.current_session_id = self.session_combo.itemData(index)
         self.db.set_active_mentor_session(self.current_session_id)
+        self.db.trim_mentor_messages(self.current_session_id, keep_last=200)
         self._sync_session_header()
         self._render_messages()
 
@@ -583,6 +611,7 @@ class AIMentorPanel(QWidget):
             return
         self.current_session_id = item.data(Qt.UserRole)
         self.db.set_active_mentor_session(self.current_session_id)
+        self.db.trim_mentor_messages(self.current_session_id, keep_last=200)
         self._sync_session_header()
         self._render_messages()
 
@@ -660,9 +689,17 @@ class AIMentorPanel(QWidget):
 
     def _handle_response_ready(self, session_id: int) -> None:
         self._set_pending(False)
+        self.retry_btn.hide()
         self._reload_sessions()
         if self.current_session_id == session_id:
             self._render_messages()
+
+    def _handle_stream_chunk(self, chunk: str) -> None:
+        """Handle a streaming text chunk by appending to the chat display."""
+        self._stream_buffer = getattr(self, "_stream_buffer", "") + chunk
+        # Show streaming progress in thinking hint
+        preview = self._stream_buffer[-80:] if len(self._stream_buffer) > 80 else self._stream_buffer
+        self.thinking_hint.setText(f"AI 正在回复... {preview}")
 
     def _set_settings_status(self, message: str) -> None:
         self.settings_status.setText(message)
@@ -685,7 +722,17 @@ class AIMentorPanel(QWidget):
         threading.Thread(target=self._test_connection_worker, args=(host, api_key), daemon=True).start()
 
     def _test_connection_worker(self, host: str, api_key: str) -> None:
-        message = api_test_connection(host, api_key)
+        try:
+            message = api_test_connection(host, api_key)
+        except ConnectionError:
+            message = "无法连接到服务器，请检查 Host 地址和网络连接。"
+        except TimeoutError:
+            message = "连接超时，服务器响应时间过长。"
+        except ValueError as exc:
+            message = str(exc)
+        except Exception as exc:
+            logger.warning("连接测试失败: %s", exc, exc_info=True)
+            message = "连接测试失败，请检查 Host 地址和 API Key 是否正确。"
         self.status_ready.emit(message)
 
     def fetch_models(self) -> None:
@@ -702,8 +749,17 @@ class AIMentorPanel(QWidget):
             models = api_fetch_models(host, api_key)
             self.models_ready.emit(models)
             self.status_ready.emit(f"已获取 {len(models)} 个模型。")
+        except urllib.error.HTTPError as exc:
+            logger.warning("获取模型列表 HTTP 错误: %s", exc.code, exc_info=True)
+            if exc.code == 401:
+                self.status_ready.emit("获取模型失败：API 密钥无效或已过期。")
+            elif exc.code == 403:
+                self.status_ready.emit("获取模型失败：没有访问权限，请检查 API 密钥。")
+            else:
+                self.status_ready.emit(f"获取模型失败：服务器返回 HTTP {exc.code}，请稍后重试。")
         except Exception as exc:
-            self.status_ready.emit(f"获取模型失败：{exc}")
+            logger.warning("获取模型列表失败: %s", exc, exc_info=True)
+            self.status_ready.emit("获取模型失败，请检查 Host 地址和网络连接。")
 
     def _populate_models(self, models) -> None:
         current = self.model_combo.currentText().strip()
@@ -813,9 +869,11 @@ class AIMentorPanel(QWidget):
             try:
                 raw = Path(path).read_text(encoding="gbk")
                 return raw[:6000]
-            except Exception:
+            except Exception as exc:
+                logger.warning("读取知识库文件失败（GBK 回退）[%s]: %s", path, exc)
                 return ""
-        except Exception:
+        except Exception as exc:
+            logger.warning("读取知识库文件失败 [%s]: %s", path, exc)
             return ""
 
     def _base_knowledge_text(self) -> str:
@@ -946,11 +1004,24 @@ class AIMentorPanel(QWidget):
             self.thinking_hint.clear()
 
     def _chat_worker(self, host: str, api_key: str, model: str, system_context: str, session_id: int) -> None:
+        self._stream_buffer = ""
         try:
             api_messages = [{"role": "system", "content": system_context}]
             for role, content, _created_at in self.db.load_mentor_messages(session_id)[-12:]:
                 api_messages.append({"role": role, "content": content})
-            reply = api_send_chat(host, api_key, model, api_messages)
+
+            def _on_chunk(chunk_text: str) -> None:
+                try:
+                    self.stream_chunk_ready.emit(chunk_text)
+                except RuntimeError:
+                    pass
+
+            try:
+                reply = api_send_chat_stream(host, api_key, model, api_messages, _on_chunk)
+            except Exception as exc:
+                logger.info("流式传输失败，回退到普通请求: %s", exc)
+                # Fall back to non-streaming if streaming fails
+                reply = api_send_chat(host, api_key, model, api_messages)
         except ValueError as exc:
             logger.error("AI mentor ValueError: %s", exc, exc_info=True)
             reply = "AI 服务响应解析失败，请稍后重试。"
@@ -960,7 +1031,12 @@ class AIMentorPanel(QWidget):
                 logger.error("AI mentor HTTP %s: %s", exc.code, error_body, exc_info=True)
             except Exception:
                 logger.error("AI mentor HTTP %s: %s", exc.code, exc, exc_info=True)
-            reply = f"AI 服务请求失败（HTTP {exc.code}），请检查设置或稍后重试。"
+            if exc.code == 401:
+                reply = "AI 密钥无效或已过期，请到 AI 设置里更新密钥。"
+            elif exc.code == 429:
+                reply = "请求过于频繁，请稍等片刻后重试。"
+            else:
+                reply = f"AI 服务请求失败（HTTP {exc.code}），请检查设置或稍后重试。"
         except Exception as exc:
             logger.error("AI mentor unexpected error: %s", exc, exc_info=True)
             reply = "AI 服务连接失败，请检查设置或网络连接。"

@@ -1,14 +1,26 @@
+"""Python 代码执行沙箱模块。
+
+提供安全的 Python 代码执行和评测环境，通过 AST 预检、受限内置函数、
+临时目录隔离、输出限制、超时控制和进程隔离等多层防护机制，确保用户
+提交的练习代码不会对宿主系统造成损害。
+"""
+
 import ast
 import io
 import json
+import logging
 import multiprocessing as mp
 import os
 import subprocess
 import sys
 import tempfile
 import time
+from collections.abc import Callable
 from contextlib import redirect_stdout
 from pathlib import Path
+from typing import Any
+
+logger = logging.getLogger(__name__)
 
 ALLOWED_IMPORTS = {
     "argparse",
@@ -160,7 +172,7 @@ _DANGEROUS_BUILTINS_CALLS = frozenset(
 )
 
 
-def _validate_code_safety(code_str: str):
+def _validate_code_safety(code_str: str) -> None:
     """Raise SyntaxError if *code_str* contains patterns unsafe for the sandbox."""
     tree = ast.parse(code_str)
     for node in ast.walk(tree):
@@ -236,11 +248,25 @@ SAFE_BUILTINS = {
 
 
 class LimitedBuffer(io.StringIO):
+    """限制写入量的字符串缓冲区。
+
+    当写入数据超过指定限制时抛出 RuntimeError，防止标准输出过大
+    导致内存滥用。
+
+    Attributes:
+        limit: 最大写入字节数，默认 12000。
+    """
+
     def __init__(self, limit: int = 12000):
+        """初始化限制缓冲区。
+
+        Args:
+            limit: 最大写入字节数，默认 12000。
+        """
         super().__init__()
         self.limit = limit
 
-    def write(self, data):
+    def write(self, data: str) -> int:
         remaining = self.limit - self.tell()
         if remaining <= 0:
             raise RuntimeError("标准输出过长，已被截断。")
@@ -250,15 +276,37 @@ class LimitedBuffer(io.StringIO):
         return super().write(data)
 
 
-def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
+def _safe_import(
+    name: str,
+    globals: dict[str, Any] | None = None,
+    locals: dict[str, Any] | None = None,
+    fromlist: tuple[str, ...] = (),
+    level: int = 0,
+) -> Any:
+    """受限的 __import__ 替代函数。
+
+    仅允许导入白名单中的模块，拒绝其他模块的导入请求。
+    """
     root = name.split(".")[0]
     if root not in ALLOWED_IMPORTS:
         raise ImportError(f"当前练习环境不允许导入模块: {root}")
     return __import__(name, globals, locals, fromlist, level)
 
 
-def _safe_open_factory(workdir: Path):
-    def _safe_open(file, mode="r", *args, **kwargs):
+def _safe_open_factory(workdir: Path) -> Callable[..., Any]:
+    """创建受限的 open() 函数工厂。
+
+    返回的 open 函数仅允许访问指定工作目录内的文件，
+    拒绝目录逃逸的访问请求。
+
+    Args:
+        workdir: 允许访问的工作目录路径。
+
+    Returns:
+        受限的 open 函数。
+    """
+
+    def _safe_open(file: str | Path, mode: str = "r", *args: Any, **kwargs: Any) -> Any:
         target = Path(file)
         if target.is_absolute():
             resolved = target.resolve()
@@ -276,13 +324,33 @@ def _safe_open_factory(workdir: Path):
     return _safe_open
 
 
-def _safe_builtins(workdir: Path):
+def _safe_builtins(workdir: Path) -> dict[str, Any]:
+    """构建受限的内置函数字典。
+
+    基于 SAFE_BUILTINS 白名单，并将 open() 替换为受限版本。
+
+    Args:
+        workdir: 文件操作允许的工作目录。
+
+    Returns:
+        受限内置函数字典。
+    """
     builtins = dict(SAFE_BUILTINS)
     builtins["open"] = _safe_open_factory(workdir)
     return builtins
 
 
-def _execute_code_impl(code: str):
+def _execute_code_impl(code: str) -> dict[str, Any]:
+    """在受限环境中执行 Python 代码（实际实现）。
+
+    执行流程: 安全验证 -> 创建临时目录 -> 受限环境执行 -> 收集输出。
+
+    Args:
+        code: 要执行的 Python 代码字符串。
+
+    Returns:
+        包含 ok、stdout、error、duration_sec 键的结果字典。
+    """
     started_at = time.time()
     previous_cwd = Path.cwd()
     try:
@@ -297,13 +365,13 @@ def _execute_code_impl(code: str):
             }
             with redirect_stdout(stdout_buffer):
                 exec(compile(code, "<exercise-run>", "exec"), namespace, namespace)
-            os.chdir(previous_cwd)
             return {
                 "ok": True,
                 "stdout": stdout_buffer.getvalue().strip(),
                 "duration_sec": int(time.time() - started_at),
             }
     except Exception as exc:
+        logger.debug("代码执行异常: %s", exc)
         return {
             "ok": False,
             "stdout": "",
@@ -314,7 +382,26 @@ def _execute_code_impl(code: str):
         os.chdir(previous_cwd)
 
 
-def _evaluate_code_impl(code: str, expected_nodes, required_names, tests):
+def _evaluate_code_impl(
+    code: str,
+    expected_nodes: list[str],
+    required_names: list[str],
+    tests: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """在受限环境中评测 Python 代码（实际实现）。
+
+    评测流程: 语法检查 -> 结构检查 -> 安全执行 -> 对象检查 -> 测试用例求值。
+    评分维度: 语法 20 分 + 结构 20 分 + 执行 10 分 + 对象 10 分 + 测试 40 分。
+
+    Args:
+        code: 要评测的 Python 代码字符串。
+        expected_nodes: 期望的 AST 节点类型列表。
+        required_names: 期望在命名空间中定义的名称列表。
+        tests: 测试用例列表，每项包含 expression 和 expected。
+
+    Returns:
+        包含 passed、score、feedback_lines、stdout、duration_sec 键的结果字典。
+    """
     started_at = time.time()
     previous_cwd = Path.cwd()
     feedback = []
@@ -360,8 +447,8 @@ def _evaluate_code_impl(code: str, expected_nodes, required_names, tests):
             stdout = stdout_buffer.getvalue().strip()
             score += 10
             feedback.append("代码可成功执行。")
-            os.chdir(previous_cwd)
     except Exception as exc:
+        logger.debug("代码评测执行异常: %s", exc)
         return {
             "passed": False,
             "score": score,
@@ -405,17 +492,30 @@ def _evaluate_code_impl(code: str, expected_nodes, required_names, tests):
     }
 
 
-def _run_exec_worker(conn, code: str):
+def _run_exec_worker(conn: Any, code: str) -> None:
+    """子进程工作函数：执行代码并通过 Pipe 返回结果。"""
     conn.send(_execute_code_impl(code))
     conn.close()
 
 
-def _evaluate_worker(conn, code: str, expected_nodes, required_names, tests):
+def _evaluate_worker(
+    conn: Any,
+    code: str,
+    expected_nodes: list[str],
+    required_names: list[str],
+    tests: list[dict[str, Any]],
+) -> None:
+    """子进程工作函数：评测代码并通过 Pipe 返回结果。"""
     conn.send(_evaluate_code_impl(code, expected_nodes, required_names, tests))
     conn.close()
 
 
 def _should_use_subprocess_fallback() -> bool:
+    """判断是否需要使用子进程回退方案。
+
+    当无法使用 multiprocessing（如在交互式环境或某些嵌入场景中）时，
+    回退到 subprocess 方案。
+    """
     main_file = getattr(sys.modules.get("__main__"), "__file__", "")
     is_frozen = getattr(sys, "frozen", False)
     if is_frozen:
@@ -423,7 +523,7 @@ def _should_use_subprocess_fallback() -> bool:
     return not main_file or str(main_file).startswith("<")
 
 
-def _run_via_subprocess(mode: str, args, timeout_sec: int):
+def _run_via_subprocess(mode: str, args: tuple[Any, ...], timeout_sec: int) -> dict[str, Any]:
     payload = {"mode": mode, "args": args}
     with tempfile.TemporaryDirectory(prefix="devlearner-runner-") as temp_dir:
         payload_path = Path(temp_dir) / "payload.json"
@@ -466,10 +566,15 @@ def _run_via_subprocess(mode: str, args, timeout_sec: int):
                 "error": completed.stderr.strip() or "子进程执行失败。",
                 "duration_sec": timeout_sec,
             }
-        return json.loads(completed.stdout)
+        return json.loads(completed.stdout)  # type: ignore[no-any-return]
 
 
-def _run_with_timeout(target, mode: str, args, timeout_sec: int):
+def _run_with_timeout(
+    target: Callable[..., None],
+    mode: str,
+    args: tuple[Any, ...],
+    timeout_sec: int,
+) -> dict[str, Any]:
     if _should_use_subprocess_fallback():
         return _run_via_subprocess(mode, args, timeout_sec)
 
@@ -481,7 +586,7 @@ def _run_with_timeout(target, mode: str, args, timeout_sec: int):
 
     try:
         if parent_conn.poll(timeout_sec):
-            return parent_conn.recv()
+            return parent_conn.recv()  # type: ignore[no-any-return]
         process.terminate()
         process.join(2)
         if process.is_alive():
@@ -500,11 +605,43 @@ def _run_with_timeout(target, mode: str, args, timeout_sec: int):
         parent_conn.close()
 
 
-def run_python_code(code: str, timeout_sec: int = 3):
+def run_python_code(code: str, timeout_sec: int = 3) -> dict[str, Any]:
+    """在沙箱中执行 Python 代码。
+
+    通过子进程隔离执行，支持超时控制。
+
+    Args:
+        code: 要执行的 Python 代码字符串。
+        timeout_sec: 执行超时秒数，默认 3 秒。
+
+    Returns:
+        包含 ok、stdout、error、duration_sec 键的结果字典。
+    """
     return _run_with_timeout(_run_exec_worker, "run", (code,), timeout_sec)
 
 
-def evaluate_python_code(code: str, expected_nodes, required_names, tests, timeout_sec: int = 4):
+def evaluate_python_code(
+    code: str,
+    expected_nodes: list[str],
+    required_names: list[str],
+    tests: list[dict[str, object]],
+    timeout_sec: int = 4,
+) -> dict[str, object]:
+    """在沙箱中评测 Python 代码。
+
+    执行语法检查、结构检查、安全执行和测试用例验证，
+    返回综合评测结果。
+
+    Args:
+        code: 要评测的 Python 代码字符串。
+        expected_nodes: 期望的 AST 节点类型列表。
+        required_names: 期望在命名空间中定义的名称列表。
+        tests: 测试用例列表，每项包含 expression 和 expected。
+        timeout_sec: 评测超时秒数，默认 4 秒。
+
+    Returns:
+        包含 passed、score、feedback_lines、stdout、duration_sec 键的结果字典。
+    """
     return _run_with_timeout(
         _evaluate_worker,
         "evaluate",
@@ -513,7 +650,11 @@ def evaluate_python_code(code: str, expected_nodes, required_names, tests, timeo
     )
 
 
-def cli_main():
+def cli_main() -> None:
+    """命令行入口点，供子进程回退方案调用。
+
+    从 JSON payload 文件读取模式和参数，执行对应操作后输出 JSON 结果。
+    """
     payload_path = Path(sys.argv[-1])
     payload = json.loads(payload_path.read_text(encoding="utf-8"))
     mode = payload["mode"]

@@ -18,9 +18,12 @@ def _read_package_version() -> str:
         from importlib.metadata import PackageNotFoundError, version
 
         return version("devlearner-ai")
-    except (PackageNotFoundError, Exception):
+    except PackageNotFoundError:
         logger.debug("importlib.metadata 查不到 devlearner-ai 版本，使用回退值")
-        return "7.0"
+        return "1.1.0"
+    except Exception:
+        logger.debug("读取 devlearner-ai 版本时发生异常，使用回退值", exc_info=True)
+        return "1.1.0"
 
 
 APP_VERSION = _read_package_version()

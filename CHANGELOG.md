@@ -4,9 +4,68 @@
 
 ---
 
-## [7.0.0] - 2026-06-02
+## [1.1.0] - 2026-06-02
 
-DevLearnerAI 首个正式版本发布。基于 Python + PyQt5 + SQLite 构建的 AI 驱动桌面编程学习平台（v7.0）。
+基于 v1.0.0 的全面成熟度升级，涵盖架构重构、测试覆盖、工程化改进和文档完善。
+
+### Features
+
+- **模块拆分** -- 将 `ai_mentor.py`（1230 行）拆分为 `app/ai/` 包（api_client / chat_handler / markdown_renderer / models），将 `practice_service.py`（1301 行）拆分为 `app/practice/` 包（evaluator / exercise_loader / models / normalizer），保持向后兼容
+- **数据外部化** -- 新增 `exercise_fallbacks.json` 和 `sql_query_fixtures.json`，将硬编码练习数据迁移至独立 JSON 文件
+- **统一构建脚本** -- 整合 `build_exe.py`、`build_dev_exe.py`、`build_codex_switcher_exe.py` 为 `scripts/build/build.py`，支持 release / dev / codex 三种变体，自动生成 `.spec` 文件
+- **版本号单一来源** -- `pyproject.toml` 的 `version` 字段为唯一真相源，`app/config.py` 通过 `importlib.metadata` 动态读取
+- **CONTRIBUTING.md** -- 添加完整的贡献指南，包含开发环境搭建、分支策略、PR 流程和代码规范
+
+### Improvements
+
+- 引入 Ruff 统一完成 lint 与格式化（替代 flake8 + isort + black）
+- 添加 `Makefile` 封装 lint / format / test / coverage / build 命令
+- 添加 `pyproject.toml` 声明项目元数据、工具配置（ruff / pytest / coverage）
+- 添加 `requirements.txt` 和 `requirements-dev.txt` 明确依赖
+- GitHub Actions CI 支持 Python 3.9 + 3.12 矩阵测试
+- CI 覆盖率报告并设最低阈值（40%）
+- SQLite WAL 模式优化，提升并发读取性能
+- 数据库连接池化，提升访问性能
+- 内容服务延迟加载，减少启动耗时
+- `print()` 调用替换为结构化日志（`logging` 模块 + RotatingFileHandler）
+- 硬编码路径改为 `Path(__file__).resolve().parent` 相对定位
+- PyQt5 命名约定的 Ruff lint 忽略规则（N801 / N802 / N815）
+
+### Bug Fixes
+
+- 修复数据库事务异常时未提交的问题
+- 修复 widget 销毁后信号发射的线程安全问题
+- 移除 CI 中未使用的 import 和格式化问题
+- 移除 `getattr` 白名单中的潜在逃逸路径，增强 AST 校验
+- 整理重复的 `SAFE_BUILTINS` 定义，统一使用 `python_runner` 模块
+- 清理根目录冗余的构建脚本（`build_exe.py` 等 3 个文件）
+
+### Documentation
+
+- 添加 CHANGELOG.md 并采用 Keep a Changelog 规范
+- README.md 添加 CI / Release / License 徽章
+- 添加 `docs/improvement-plan.md` 改进路线图
+- 添加 `docs/maturity-plan.md` 成熟度计划
+- 添加 `docs/distribution.md` 构建与发布指南
+
+### Testing
+
+- 测试用例从 0 增长至 **1000+** 条
+- 沙箱安全测试：`test_python_runner.py` / `test_python_runner_extended.py` / `test_python_runner_extra.py` / `test_python_runner_subprocess.py`
+- 数据库测试：`test_database.py` / `test_database_extended.py` / `test_database_extra.py` / `test_database_coverage.py` / `test_database_stress.py`
+- 评测逻辑测试：`test_practice_service.py` / `test_practice_service_extended.py` / `test_practice_service_extra.py`
+- AI 模块测试：`test_ai_chat_handler.py` / `test_ai_package.py` / `test_api_client_extended.py` / `test_chat_handler_extended.py` / `test_markdown_renderer_extended.py`
+- 内容与凭证测试：`test_content_service.py` / `test_content_service_extended.py` / `test_credentials.py`
+- 集成测试：`test_integration_learning_flow.py` / `test_integration_practice_flow.py` / `test_integration_database_flow.py` / `test_integration_ai_flow.py`
+- 安全测试：`test_security_sandbox_escape.py`
+- 边界与压力测试：`test_edge_cases.py` / `test_content_parsing_edge_cases.py` / `test_evaluator_extended.py` / `test_exercise_loader_extended.py`
+- 配置测试：`test_config_extended.py`
+
+---
+
+## [1.0.0] - 2026-06-02
+
+DevLearnerAI 首个正式版本发布。基于 Python + PyQt5 + SQLite 构建的 AI 驱动桌面编程学习平台。
 
 ### 核心功能
 

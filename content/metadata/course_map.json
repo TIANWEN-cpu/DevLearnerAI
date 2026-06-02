@@ -2773,6 +2773,243 @@
           ]
         }
       ]
+    },
+    {
+      "id": "projects",
+      "title": "实战项目集",
+      "icon": "🎯",
+      "summary": "综合运用各语言能力，完成 10 个由浅入深的真实项目。",
+      "modules": [
+        {
+          "id": "projects-beginner",
+          "title": "入门项目 · 命令行与数据处理",
+          "summary": "用 Python 完成 4 个基础项目，巩固语法、文件 I/O 和数据处理能力。",
+          "lessons": [
+            {
+              "id": "project-todo-cli",
+              "title": "Todo 命令行工具",
+              "summary": "实现通过命令行管理待办事项的工具，支持增删改查和 JSON 持久化。",
+              "path": "projects/p1_todo.md",
+              "difficulty": "基础",
+              "estimated_minutes": 120,
+              "tags": [
+                "CLI",
+                "JSON",
+                "argparse"
+              ],
+              "prerequisites": [],
+              "outcomes": [
+                "能用 argparse 构建命令行工具",
+                "会用 json 模块做数据持久化",
+                "理解 try-except 处理文件异常"
+              ]
+            },
+            {
+              "id": "project-crawler",
+              "title": "多线程图片爬虫",
+              "summary": "实现一个多线程图片下载爬虫，掌握并发编程和网络请求。",
+              "path": "projects/p2_crawler.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 150,
+              "tags": [
+                "爬虫",
+                "多线程",
+                "requests"
+              ],
+              "prerequisites": [
+                "project-todo-cli"
+              ],
+              "outcomes": [
+                "能用 requests 库下载网络资源",
+                "理解多线程并发下载",
+                "会处理网络异常和重试"
+              ]
+            },
+            {
+              "id": "project-orm",
+              "title": "简易 ORM 框架",
+              "summary": "实现一个简化版 ORM，理解 SQLAlchemy 的设计思想。",
+              "path": "projects/p3_orm.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 180,
+              "tags": [
+                "ORM",
+                "SQLite",
+                "元编程"
+              ],
+              "prerequisites": [
+                "project-todo-cli"
+              ],
+              "outcomes": [
+                "理解 ORM 的映射原理",
+                "会用 Python 描述符做属性代理",
+                "知道 SQL 生成的基本方法"
+              ]
+            },
+            {
+              "id": "project-data-analysis",
+              "title": "数据分析与可视化",
+              "summary": "使用 pandas 和 matplotlib 完成数据分析与图表绘制。",
+              "path": "projects/p4_analyze.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 150,
+              "tags": [
+                "pandas",
+                "matplotlib",
+                "数据分析"
+              ],
+              "prerequisites": [
+                "project-todo-cli"
+              ],
+              "outcomes": [
+                "会用 pandas 读取和处理数据",
+                "能用 matplotlib 绘制常用图表",
+                "理解数据分析的基本流程"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "projects-intermediate",
+          "title": "中级项目 · Web 与后端",
+          "summary": "完成 4 个 Web 后端项目，掌握 API 设计、数据库集成和异步任务。",
+          "lessons": [
+            {
+              "id": "project-fastapi-ledger",
+              "title": "个人记账本 API",
+              "summary": "用 FastAPI 实现个人记账本的 RESTful API。",
+              "path": "projects/p5_fastapi.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 180,
+              "tags": [
+                "FastAPI",
+                "REST",
+                "SQLite"
+              ],
+              "prerequisites": [
+                "project-data-analysis"
+              ],
+              "outcomes": [
+                "会用 FastAPI 设计 RESTful API",
+                "能集成 SQLAlchemy 操作数据库",
+                "理解请求验证和错误处理"
+              ]
+            },
+            {
+              "id": "project-celery-redis",
+              "title": "Redis 缓存与 Celery 异步任务",
+              "summary": "使用 Redis 和 Celery 实现异步任务队列。",
+              "path": "projects/p6_celery.md",
+              "difficulty": "综合",
+              "estimated_minutes": 180,
+              "tags": [
+                "Redis",
+                "Celery",
+                "异步"
+              ],
+              "prerequisites": [
+                "project-fastapi-ledger"
+              ],
+              "outcomes": [
+                "理解消息队列的概念",
+                "会用 Celery 配置异步任务",
+                "知道 Redis 的缓存策略"
+              ]
+            },
+            {
+              "id": "project-django-blog",
+              "title": "Django 个人博客系统",
+              "summary": "用 Django 框架搭建一个完整的博客系统。",
+              "path": "projects/p7_django.md",
+              "difficulty": "综合",
+              "estimated_minutes": 240,
+              "tags": [
+                "Django",
+                "MVC",
+                "模板"
+              ],
+              "prerequisites": [
+                "project-fastapi-ledger"
+              ],
+              "outcomes": [
+                "会用 Django 搭建 Web 应用",
+                "理解 MTV 架构模式",
+                "能实现用户认证和权限管理"
+              ]
+            },
+            {
+              "id": "project-pyqt5-player",
+              "title": "PyQt5 音乐播放器",
+              "summary": "用 PyQt5 实现一个带界面的音乐播放器。",
+              "path": "projects/p8_player.md",
+              "difficulty": "综合",
+              "estimated_minutes": 200,
+              "tags": [
+                "PyQt5",
+                "GUI",
+                "多媒体"
+              ],
+              "prerequisites": [
+                "project-data-analysis"
+              ],
+              "outcomes": [
+                "会用 PyQt5 构建桌面应用",
+                "理解信号与槽机制",
+                "能集成多媒体播放功能"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "projects-advanced",
+          "title": "高级项目 · 测试与 AI",
+          "summary": "完成 2 个高级项目，掌握自动化测试和 AI 应用开发。",
+          "lessons": [
+            {
+              "id": "project-selenium-test",
+              "title": "Selenium 自动化测试助手",
+              "summary": "用 Selenium 实现 Web 自动化测试框架。",
+              "path": "projects/p9_selenium.md",
+              "difficulty": "综合",
+              "estimated_minutes": 180,
+              "tags": [
+                "Selenium",
+                "自动化测试",
+                "WebDriver"
+              ],
+              "prerequisites": [
+                "project-django-blog"
+              ],
+              "outcomes": [
+                "会用 Selenium 操作浏览器",
+                "能编写自动化测试脚本",
+                "理解 Page Object 设计模式"
+              ]
+            },
+            {
+              "id": "project-ai-chatbot",
+              "title": "Claude AI 智能对话助理",
+              "summary": "集成 Claude API 构建智能对话助理应用。",
+              "path": "projects/p10_ai.md",
+              "difficulty": "综合",
+              "estimated_minutes": 180,
+              "tags": [
+                "AI",
+                "Claude API",
+                "对话系统"
+              ],
+              "prerequisites": [
+                "project-fastapi-ledger"
+              ],
+              "outcomes": [
+                "会调用 Claude API 进行对话",
+                "理解 prompt 工程基础",
+                "能构建带上下文的对话系统"
+              ]
+            }
+          ]
+        }
+      ]
     }
   ]
 }

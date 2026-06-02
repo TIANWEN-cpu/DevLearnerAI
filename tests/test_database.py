@@ -16,6 +16,9 @@ def db(tmp_path):
     # get_connection() opens a fresh one pointing at our temp database.
     close_connection()
     db_path = tmp_path / "test.db"
+    # Touch the file so _migrate_legacy_db_if_needed sees it already exists
+    # and skips copying the legacy database (which has an outdated schema).
+    db_path.touch()
     database = AppDatabase(db_path=db_path)
     database.init_db()
     # Clear any data migrated from the legacy database so each test

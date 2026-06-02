@@ -1,8 +1,11 @@
+import logging
 import threading
 import time
 
 from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QFont
+
+logger = logging.getLogger(__name__)
 from PyQt5.QtWidgets import (
     QComboBox,
     QFrame,
@@ -13,6 +16,7 @@ from PyQt5.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QMessageBox,
+    QProgressBar,
     QPushButton,
     QSplitter,
     QVBoxLayout,
@@ -21,7 +25,7 @@ from PyQt5.QtWidgets import (
 
 from app.content_service import ContentService
 from app.database import AppDatabase
-from app.effects import optimize_scroll_widget
+from app.effects import optimize_scroll_widget, surface_panel
 from app.highlighter import CLikeHighlighter, PythonHighlighter, SqlHighlighter
 from app.localized_inputs import LocalizedCodeEditor, LocalizedTextEdit
 from app.practice_service import PracticeService
@@ -40,6 +44,8 @@ from app.styles import (
     TEXT_MAIN,
     TEXT_MUTED,
     TEXT_SUB,
+    score_color,
+    score_label,
 )
 
 
@@ -99,17 +105,7 @@ class PracticeWidget(QWidget):
         self.refresh_exercises()
 
     def _surface_panel(self) -> QFrame:
-        panel = QFrame()
-        panel.setStyleSheet(
-            f"""
-            QFrame {{
-                background: {BG_CARD};
-                border: 1px solid {BORDER};
-                border-radius: 24px;
-            }}
-            """
-        )
-        return panel
+        return surface_panel(self, bg=BG_CARD, border=BORDER)
 
     def _build_hero(self) -> QFrame:
         hero = self._surface_panel()
@@ -178,6 +174,7 @@ class PracticeWidget(QWidget):
         track_label = QLabel("\u8def\u7ebf:")
         track_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 13px;")
         self.track_combo = QComboBox()
+        self.track_combo.setToolTip("\u6309\u6280\u672f\u6808\u7b5b\u9009\u7ec3\u4e60")
         self.track_combo.addItem("\u5168\u90e8\u8def\u7ebf", "all")
         for track in self.content_service.tracks:
             self.track_combo.addItem(track.title, track.id)
@@ -185,6 +182,7 @@ class PracticeWidget(QWidget):
         diff_label = QLabel("\u96be\u5ea6:")
         diff_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 13px;")
         self.diff_combo = QComboBox()
+        self.diff_combo.setToolTip("\u6309\u96be\u5ea6\u7b5b\u9009\u7ec3\u4e60")
         self.diff_combo.addItem("\u5168\u90e8\u96be\u5ea6", "all")
         self.diff_combo.addItem("\u57fa\u7840", "\u57fa\u7840")
         self.diff_combo.addItem("\u8fdb\u9636", "\u8fdb\u9636")
@@ -194,6 +192,7 @@ class PracticeWidget(QWidget):
         topic_label = QLabel("\u4e13\u9898:")
         topic_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 13px;")
         self.topic_combo = QComboBox()
+        self.topic_combo.setToolTip("\u6309\u4e13\u9898\u7b5b\u9009\u7ec3\u4e60")
         self.topic_combo.addItem("\u5168\u90e8\u4e13\u9898", "all")
         row.addWidget(track_label)
         row.addWidget(self.track_combo)
@@ -205,6 +204,11 @@ class PracticeWidget(QWidget):
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("\u641c\u7d22\u9898\u76ee\u540d\u79f0\u6216\u63cf\u8ff0...")
+        self.search_input.setToolTip("\u8f93\u5165\u5173\u952e\u8bcd\u641c\u7d22\u7ec3\u4e60\u9898\u76ee")
+        self.search_input.setAccessibleName("\u641c\u7d22\u7ec3\u4e60\u9898\u76ee")
+        self.search_input.setAccessibleDescription(
+            "\u8f93\u5165\u5173\u952e\u8bcd\u641c\u7d22\u7ec3\u4e60\u9898\u76ee\u540d\u79f0\u6216\u63cf\u8ff0"
+        )
         self.search_input.setStyleSheet(
             f"QLineEdit {{ background: {BG_CARD}; border: 1px solid {BORDER}; border-radius: 12px; padding: 8px 14px; color: {TEXT_MAIN}; font-size: 13px; }}"
         )
@@ -231,6 +235,8 @@ class PracticeWidget(QWidget):
 
         self.exercise_list = QListWidget()
         self.exercise_list.setSpacing(10)
+        self.exercise_list.setAccessibleName("练习题目列表")
+        self.exercise_list.setAccessibleDescription("选择一道练习题目开始作答")
         self.exercise_list.setStyleSheet(
             """
             QListWidget {
@@ -264,11 +270,15 @@ class PracticeWidget(QWidget):
         self.prompt_box = LocalizedTextEdit()
         self.prompt_box.setReadOnly(True)
         self.prompt_box.setMinimumHeight(180)
+        self.prompt_box.setAccessibleName("题目说明")
+        self.prompt_box.setAccessibleDescription("当前练习题目的描述和要求")
 
         editor_title = QLabel("代码编辑区")
         editor_title.setStyleSheet(f"font-weight: 700; color: {TEXT_MAIN};")
         self.editor = LocalizedCodeEditor()
         self.editor.setFont(QFont(MONO_FONT, F_CODE))
+        self.editor.setAccessibleName("代码编辑区")
+        self.editor.setAccessibleDescription("在此编写代码解答当前练习题目")
         self.editor.setStyleSheet(
             """
             QPlainTextEdit {
@@ -290,14 +300,19 @@ class PracticeWidget(QWidget):
         btn_row.setSpacing(10)
         self.hint_btn = QPushButton("\u67e5\u770b\u63d0\u793a")
         self.hint_btn.setProperty("variant", "secondary")
+        self.hint_btn.setToolTip(
+            "\u9010\u6b65\u663e\u793a\u63d0\u793a\uff0c\u6bcf\u6b21\u70b9\u51fb\u5c55\u5f00\u4e00\u6761 (Ctrl+H)"
+        )
         self.run_btn = QPushButton("\u8fd0\u884c\u4ee3\u7801")
         self.run_btn.setProperty("variant", "secondary")
+        self.run_btn.setToolTip("\u5728\u9694\u79bb\u6c99\u7bb1\u4e2d\u8fd0\u884c\u4ee3\u7801\u67e5\u770b\u8f93\u51fa")
         self.reset_btn = QPushButton("\u91cd\u7f6e\u4ee3\u7801")
         self.reset_btn.setProperty("variant", "secondary")
         self.reset_btn.setToolTip("\u6062\u590d\u5230\u9898\u76ee\u521d\u59cb\u4ee3\u7801")
         self.reset_btn.clicked.connect(self._reset_code)
         self.check_btn = QPushButton("\u63d0\u4ea4\u5e76\u5224\u9898")
         self.check_btn.setMinimumWidth(180)
+        self.check_btn.setToolTip("\u63d0\u4ea4\u4ee3\u7801\u8fdb\u884c\u81ea\u52a8\u8bc4\u6d4b (Ctrl+Enter)")
         btn_row.addWidget(self.hint_btn)
         btn_row.addWidget(self.reset_btn)
         btn_row.addWidget(self.run_btn)
@@ -335,18 +350,77 @@ class PracticeWidget(QWidget):
         guide_layout.addWidget(self.draft_status)
         layout.addWidget(guide_box)
 
+        # Score visualization card
+        self.score_card = QFrame()
+        self.score_card.setStyleSheet(
+            f"""
+            QFrame {{
+                background: {BG_CARD_SOFT};
+                border: 1px solid {BORDER};
+                border-radius: 16px;
+            }}
+            """
+        )
+        score_layout = QVBoxLayout(self.score_card)
+        score_layout.setContentsMargins(16, 14, 16, 14)
+        score_layout.setSpacing(8)
+
+        score_title = QLabel("得分")
+        score_title.setStyleSheet(f"font-weight: 700; color: {TEXT_MAIN};")
+        score_layout.addWidget(score_title)
+
+        self.score_display = QLabel("--")
+        self.score_display.setAlignment(Qt.AlignCenter)
+        self.score_display.setFont(QFont(FONT, F_TITLE - 8, QFont.Bold))
+        self.score_display.setStyleSheet(f"color: {TEXT_MUTED};")
+        self.score_display.setAccessibleName("得分显示")
+        self.score_display.setAccessibleDescription("当前练习的得分")
+        score_layout.addWidget(self.score_display)
+
+        self.score_label_display = QLabel("")
+        self.score_label_display.setAlignment(Qt.AlignCenter)
+        self.score_label_display.setStyleSheet(f"color: {TEXT_SUB}; font-size: 18px;")
+        self.score_label_display.setAccessibleName("得分等级")
+        score_layout.addWidget(self.score_label_display)
+
+        self.score_bar = QProgressBar()
+        self.score_bar.setFixedHeight(10)
+        self.score_bar.setTextVisible(False)
+        self.score_bar.setValue(0)
+        self.score_bar.setAccessibleName("得分进度条")
+        self.score_bar.setAccessibleDescription("当前练习得分的可视化进度")
+        score_layout.addWidget(self.score_bar)
+
+        layout.addWidget(self.score_card)
+
         self.run_group = QGroupBox("运行输出")
         run_layout = QVBoxLayout(self.run_group)
         self.output_box = LocalizedTextEdit()
         self.output_box.setReadOnly(True)
         self.output_box.setMinimumHeight(180)
+        self.output_box.setAccessibleName("运行输出")
+        self.output_box.setAccessibleDescription("代码运行的标准输出结果")
         run_layout.addWidget(self.output_box)
         layout.addWidget(self.run_group)
+
+        # Inline test results area
+        self.test_results_group = QGroupBox("测试用例结果")
+        test_results_layout = QVBoxLayout(self.test_results_group)
+        self.test_results_box = LocalizedTextEdit()
+        self.test_results_box.setReadOnly(True)
+        self.test_results_box.setMinimumHeight(100)
+        self.test_results_box.setAccessibleName("测试用例结果")
+        self.test_results_box.setAccessibleDescription("各测试用例的通过或失败状态")
+        test_results_layout.addWidget(self.test_results_box)
+        self.test_results_group.setVisible(False)
+        layout.addWidget(self.test_results_group)
 
         self.feedback_group = QGroupBox("判题反馈")
         feedback_layout = QVBoxLayout(self.feedback_group)
         self.feedback_box = LocalizedTextEdit()
         self.feedback_box.setReadOnly(True)
+        self.feedback_box.setAccessibleName("判题反馈")
+        self.feedback_box.setAccessibleDescription("代码提交后的评分和反馈信息")
         feedback_layout.addWidget(self.feedback_box)
         layout.addWidget(self.feedback_group, 1)
         return panel
@@ -565,6 +639,7 @@ class PracticeWidget(QWidget):
             return
 
         self.current_exercise = exercise
+        self._hint_index = 0  # Reset progressive hint index
         self._apply_editor_mode(exercise.track_id)
         self.start_time = time.time()
         self._loading_exercise = True
@@ -621,7 +696,19 @@ class PracticeWidget(QWidget):
         if not self.current_exercise:
             return
         hints = self.current_exercise.hints or ["这道题没有额外提示，先把输入输出和边界情况想清楚。"]
-        self.feedback_box.setPlainText("提示：\n" + "\n".join(f"- {item}" for item in hints))
+        # Progressive hint system: reveal one hint at a time
+        if not hasattr(self, "_hint_index"):
+            self._hint_index = 0
+        self._hint_index = min(self._hint_index, len(hints) - 1)
+        shown = hints[: self._hint_index + 1]
+        remaining = len(hints) - self._hint_index - 1
+        text = "提示（逐步揭示）：\n" + "\n".join(f"- {item}" for item in shown)
+        if remaining > 0:
+            text += f"\n\n还有 {remaining} 条提示，再次点击「查看提示」可继续展开。"
+        else:
+            text += "\n\n已显示全部提示。"
+        self.feedback_box.setPlainText(text)
+        self._hint_index = min(self._hint_index + 1, len(hints) - 1)
 
     def _schedule_draft_save(self) -> None:
         if self._loading_exercise or not self.current_exercise:
@@ -663,10 +750,20 @@ class PracticeWidget(QWidget):
         )
         self._run_thread = threading.Thread(target=self._run_code_worker, args=(code,), daemon=True)
         self._run_thread.start()
+        # Stop and disconnect any previous timeout timer before creating a new one
+        if hasattr(self, "_run_timeout_timer") and self._run_timeout_timer:
+            self._run_timeout_timer.stop()
+            try:
+                self._run_timeout_timer.timeout.disconnect(self._handle_run_timeout)
+            except (RuntimeError, TypeError):
+                pass
         self._run_timeout_timer = QTimer(self)
         self._run_timeout_timer.setSingleShot(True)
         self._run_timeout_timer.timeout.connect(self._handle_run_timeout)
         self._run_timeout_timer.start(10000)
+        # Clean up any previous cancel button before creating a new one
+        if hasattr(self, "cancel_btn") and self.cancel_btn:
+            self.cancel_btn.deleteLater()
         self.cancel_btn = QPushButton("\u53d6\u6d88\u8fd0\u884c", self)
         self.cancel_btn.setStyleSheet(
             "QPushButton { background: #ef4444; color: white; border: none; border-radius: 12px; padding: 8px 16px; font-size: 13px; }"
@@ -691,7 +788,11 @@ class PracticeWidget(QWidget):
         )
 
     def _run_code_worker(self, code: str) -> None:
-        result = run_python_code(code)
+        try:
+            result = run_python_code(code)
+        except Exception as exc:
+            logger.error("代码运行过程发生异常: %s", exc, exc_info=True)
+            result = {"ok": False, "error": f"运行环境出错: {exc}", "stdout": ""}
         self.run_ready.emit(result)
 
     def _handle_run_ready(self, result) -> None:
@@ -703,8 +804,24 @@ class PracticeWidget(QWidget):
         if result.get("ok"):
             output = result.get("stdout", "").strip() or "(没有标准输出)"
             self.output_box.setPlainText(f"运行成功：\n{output}")
+            # Show a brief success indicator in feedback
+            self.feedback_box.setPlainText("代码运行正常。如果结果符合预期，可以点击「提交并判题」进行正式评测。")
             return
-        self.output_box.setPlainText(f"运行失败：\n{result.get('error', '未知错误')}")
+        error = result.get("error", "未知错误")
+        # User-friendly error message
+        if "SyntaxError" in error:
+            friendly = "语法错误：代码中有拼写或格式问题，请检查括号、冒号和缩进。"
+        elif "IndentationError" in error:
+            friendly = "缩进错误：请检查代码的缩进层级是否一致。"
+        elif "NameError" in error:
+            friendly = "名称错误：使用了未定义的变量或函数名，请检查拼写。"
+        elif "TypeError" in error:
+            friendly = "类型错误：对不兼容的类型进行了操作，请检查变量类型。"
+        elif "Timeout" in error or "超时" in error:
+            friendly = "运行超时：代码执行时间过长，可能存在死循环。"
+        else:
+            friendly = f"运行时错误：{error}"
+        self.output_box.setPlainText(f"运行失败：\n{friendly}\n\n原始信息：\n{error}")
 
     def evaluate_code(self) -> None:
         if not self.current_exercise:
@@ -723,7 +840,18 @@ class PracticeWidget(QWidget):
         ).start()
 
     def _evaluate_worker(self, exercise, code: str, started_at: float) -> None:
-        result = self.practice_service.evaluate(exercise, code)
+        try:
+            result = self.practice_service.evaluate(exercise, code)
+        except Exception as exc:
+            logger.error("评测过程发生异常: %s", exc, exc_info=True)
+            from app.practice.models import EvaluationResult
+
+            result = EvaluationResult(
+                passed=False,
+                score=0,
+                feedback_lines=[f"评测过程出错: {exc}。请检查代码后重试。"],
+                duration_sec=int(time.time() - started_at),
+            )
         elapsed = int(time.time() - started_at)
         self.evaluation_ready.emit((exercise.id, exercise.title, exercise.track_id, code, result, elapsed))
 
@@ -745,9 +873,40 @@ class PracticeWidget(QWidget):
         if not self.current_exercise or self.current_exercise.id != exercise_id:
             return
 
+        # Score visualization
+        color = score_color(result.score)
+        self.score_display.setText(str(result.score))
+        self.score_display.setStyleSheet(f"color: {color};")
+        self.score_label_display.setText(
+            f"{score_label(result.score)} | {'通过' if result.passed else '未通过'} | 用时 {elapsed}s"
+        )
+        self.score_label_display.setStyleSheet(f"color: {color}; font-size: 18px;")
+        self.score_bar.setValue(result.score)
+        self.score_bar.setStyleSheet(f"QProgressBar::chunk {{ background: {color}; border-radius: 5px; }}")
+
+        # Inline test case results
+        if hasattr(result, "test_results") and result.test_results:
+            self.test_results_group.setVisible(True)
+            lines = []
+            for i, tc in enumerate(result.test_results, 1):
+                status = "通过" if tc.get("passed") else "未通过"
+                icon = "+" if tc.get("passed") else "x"
+                lines.append(f"[{icon}] 用例 {i}: {status}")
+                if tc.get("input"):
+                    lines.append(f"    输入: {tc['input']}")
+                if tc.get("expected"):
+                    lines.append(f"    期望: {tc['expected']}")
+                if tc.get("actual"):
+                    lines.append(f"    实际: {tc['actual']}")
+            self.test_results_box.setPlainText("\n".join(lines))
+        else:
+            self.test_results_group.setVisible(False)
+
+        # Feedback
         lines = [
-            f"得分：{result.score}/100",
+            f"得分：{result.score}/100 ({score_label(result.score)})",
             f"是否通过：{'通过' if result.passed else '未通过'}",
+            f"用时：{elapsed} 秒",
             "",
             "反馈：",
             result.feedback_text,

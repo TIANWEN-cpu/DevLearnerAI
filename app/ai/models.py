@@ -1,4 +1,7 @@
-"""Data classes and constants for the AI mentor module."""
+"""AI 导师模块的数据类和安全常量。
+
+定义 HTML 净化所需的标签白名单、危险标签列表和安全 URI 模式。
+"""
 
 import re
 

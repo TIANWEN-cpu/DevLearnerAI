@@ -1,4 +1,7 @@
-"""Data classes for the practice module."""
+"""练习模块的数据类定义。
+
+定义 Exercise（练习）和 EvaluationResult（评测结果）两个核心数据类。
+"""
 
 from dataclasses import dataclass, field
 

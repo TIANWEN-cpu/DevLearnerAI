@@ -1,11 +1,11 @@
-"""
-Credential storage module.
+"""凭证安全存储模块。
 
-On Windows, secrets are stored in the Windows Credential Manager (encrypted).
-On other platforms, if the 'keyring' package is installed, it is used as a
-secure backend.  Otherwise, a fallback stores the secret as base64 in a
-plain file at ~/.devlearnerai/api_key.txt -- this is NOT encrypted and
-should only be used when keyring is unavailable.
+提供跨平台的密钥存储能力。优先级：
+1. Windows: Windows Credential Manager（加密存储）
+2. 非 Windows + keyring 已安装: keyring 后端
+3. 回退: Base64 编码的明文文件（~/.devlearnerai/api_key.txt）
+
+公开接口: save_secret()、load_secret()、delete_secret()。
 """
 
 import base64
@@ -132,6 +132,7 @@ def load_secret(target: str) -> Optional[str]:
         try:
             return base64.b64decode(raw).decode("utf-8")
         except Exception:
+            logger.debug("Base64 解码失败，返回原始文本")
             return raw
 
     credential = PCREDENTIALW()
