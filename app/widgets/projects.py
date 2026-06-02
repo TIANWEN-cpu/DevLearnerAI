@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
 )
 
 from app.content_service import ContentService
-from app.effects import optimize_scroll_widget, surface_panel
+from app.effects import optimize_scroll_widget
 from app.localized_inputs import LocalizedTextBrowser
 from app.reader_dialog import ReaderDialog
 from app.styles import F_SUB, F_TITLE, FONT
@@ -50,9 +50,6 @@ class ProjectsWidget(QWidget):
         if self.project_list.count():
             self.project_list.setCurrentRow(0)
 
-    def _surface_panel(self) -> QFrame:
-        return surface_panel(self)
-
     def _project_category_theme(self, module_title: str):
         if module_title.startswith("基础模块"):
             return "#2f6df6", "基础模块"
@@ -73,7 +70,7 @@ class ProjectsWidget(QWidget):
         title = QLabel("融合项目")
         title.setFont(QFont(FONT, F_TITLE - 4, QFont.Bold))
         subtitle = QLabel("从单点知识走向能交付的小作品，重点练范围控制、结构设计和真实落地。")
-        subtitle.setStyleSheet("color: #5f6f86; font-size: 18px;")
+        subtitle.setStyleSheet("color: #3a506b; font-size: 18px;")
         subtitle.setWordWrap(True)
         left.addWidget(title)
         left.addWidget(subtitle)
@@ -85,7 +82,7 @@ class ProjectsWidget(QWidget):
         pace_title.setStyleSheet("color: #1c1c1e; font-weight: 700; font-size: 18px;")
         pace_text = QLabel("先做命令行项目，再做 Python + SQLite，最后再碰 FastAPI 后端。")
         pace_text.setWordWrap(True)
-        pace_text.setStyleSheet("color: #5f6f86; font-size: 17px;")
+        pace_text.setStyleSheet("color: #3a506b; font-size: 17px;")
         right.addWidget(pace_title)
         right.addWidget(pace_text)
         layout.addLayout(right)
@@ -102,7 +99,7 @@ class ProjectsWidget(QWidget):
         title.setFont(QFont(FONT, F_SUB, QFont.Bold))
         summary = QLabel("从小而完整的项目开始，逐步提升到带数据库和接口的作品。")
         summary.setWordWrap(True)
-        summary.setStyleSheet("color: #5f6f86; font-size: 18px;")
+        summary.setStyleSheet("color: #3a506b; font-size: 18px;")
         layout.addWidget(title)
         layout.addWidget(summary)
 
@@ -237,7 +234,7 @@ class ProjectsWidget(QWidget):
         self.meta_title = QLabel("选择一个项目")
         self.meta_title.setFont(QFont(FONT, F_TITLE - 6, QFont.Bold))
         self.meta_meta = QLabel("")
-        self.meta_meta.setStyleSheet("color: #64748b; font-size: 18px; font-weight: 600;")
+        self.meta_meta.setStyleSheet("color: #3a506b; font-size: 18px; font-weight: 600;")
         layout.addWidget(self.meta_title)
         layout.addWidget(self.meta_meta)
 
@@ -270,6 +267,8 @@ class ProjectsWidget(QWidget):
         self.reader_btn = QPushButton("放大阅读")
         self.reader_btn.setProperty("variant", "secondary")
         self.reader_btn.setToolTip("在独立窗口中放大阅读项目文档")
+        self.reader_btn.setAccessibleName("放大阅读")
+        self.reader_btn.setAccessibleDescription("在独立窗口中以更大字体阅读项目文档")
         btn_row.addWidget(self.reader_btn)
         layout.addLayout(btn_row)
         return panel

@@ -1,12 +1,21 @@
-"""Dashboard widget -- learning overview, stats, charts, and goal setting."""
+"""Dashboard widget -- learning overview, stats, charts, and goal setting.
+
+Enhanced with interactive data-visualization charts:
+- LineChart for learning progress over time
+- RadarChart for skill distribution across tracks
+- HeatmapCalendar for daily activity heat map
+- BarChart for score drill-down
+"""
 
 import logging
+from datetime import date, timedelta
 
 from PyQt5.QtCore import Qt, pyqtSignal
 
 logger = logging.getLogger(__name__)
 from PyQt5.QtGui import QBrush, QColor, QFont, QPainter, QPen
 from PyQt5.QtWidgets import (
+    QDialog,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -35,6 +44,7 @@ from app.styles import (
     WARNING,
     score_label,
 )
+from app.widgets.charts import HeatmapCalendar, LineChart, RadarChart
 
 # ── Mini bar chart widget ────────────────────────────────────────────────────
 
@@ -165,7 +175,12 @@ class DashboardWidget(QWidget):
         root.addWidget(self._build_welcome())
         root.addWidget(self._build_stats_row())
         root.addWidget(self._build_progress_section())
+        root.addWidget(self._build_progress_line_chart_section())
+        root.addWidget(self._build_skill_radar_section())
+        root.addWidget(self._build_heatmap_section())
+        root.addWidget(self._build_recommendations_section())
         root.addWidget(self._build_tracks_section())
+        root.addWidget(self._build_analytics_section())
         root.addWidget(self._build_achievements_section())
         root.addWidget(self._build_bookmarks_section())
         root.addWidget(self._build_goal_section())
@@ -270,6 +285,142 @@ class DashboardWidget(QWidget):
         layout.addWidget(self.chart_container)
         return card
 
+    def _build_recommendations_section(self) -> QFrame:
+        """Build the learning recommendations section for the dashboard."""
+        card = self._card()
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(28, 24, 28, 24)
+        layout.setSpacing(14)
+
+        header = QHBoxLayout()
+        title = QLabel("学习推荐")
+        title.setFont(QFont(FONT, F_TITLE - 16, QFont.Bold))
+        header.addWidget(title)
+        header.addStretch()
+
+        view_all_btn = QPushButton("查看全部推荐")
+        view_all_btn.setProperty("variant", "secondary")
+        view_all_btn.setCursor(Qt.PointingHandCursor)
+        view_all_btn.setToolTip("打开完整的学习推荐面板")
+        view_all_btn.setAccessibleName("查看全部推荐")
+        view_all_btn.setAccessibleDescription("打开学习推荐对话框，查看个性化学习建议")
+        view_all_btn.clicked.connect(self._show_recommendations_dialog)
+        header.addWidget(view_all_btn)
+        layout.addLayout(header)
+
+        # Inline summary of recommendations
+        self.recommendations_summary = QLabel("加载中...")
+        self.recommendations_summary.setWordWrap(True)
+        self.recommendations_summary.setStyleSheet(f"color: {TEXT_SUB}; font-size: 16px;")
+        layout.addWidget(self.recommendations_summary)
+
+        # Row of recommendation cards
+        self.recommendation_cards_row = QHBoxLayout()
+        self.recommendation_cards_row.setSpacing(12)
+        layout.addLayout(self.recommendation_cards_row)
+
+        return card
+
+    def _show_recommendations_dialog(self) -> None:
+        """Open a dialog showing all learning recommendations."""
+        from PyQt5.QtWidgets import QVBoxLayout as DlgLayout
+
+        from app.widgets.learning_recommendations import LearningRecommendationsWidget
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("学习推荐")
+        dialog.setMinimumSize(720, 580)
+        dialog.setAccessibleName("学习推荐对话框")
+        dlg_layout = DlgLayout(dialog)
+        dlg_layout.setContentsMargins(0, 0, 0, 0)
+        widget = LearningRecommendationsWidget(self.content_service, self.db, dialog)
+        widget.refresh()
+        dlg_layout.addWidget(widget)
+        dialog.exec_()
+
+    def _refresh_recommendations(self) -> None:
+        """Refresh the inline recommendations summary on the dashboard."""
+        # Next lesson recommendation
+        next_lesson_text = ""
+        for track in self.content_service.tracks:
+            for module in track.modules:
+                for lesson in module.lessons:
+                    status = self.db.lesson_status(lesson.id)
+                    if status != "completed":
+                        next_lesson_text = f"推荐下一课：{lesson.title}（{track.title}）"
+                        break
+                if next_lesson_text:
+                    break
+            if next_lesson_text:
+                break
+
+        # Review due count
+        due_reviews = self.db.exercises_due_for_review(limit=10)
+        review_text = f"今日待复习 {len(due_reviews)} 道练习" if due_reviews else ""
+
+        # Weakness summary
+        try:
+            weak_rows = self.db.fetchall(
+                """
+                SELECT track_id, AVG(score) as avg_score
+                FROM practice_attempts
+                GROUP BY track_id
+                HAVING COUNT(*) >= 2 AND AVG(score) < 80
+                ORDER BY avg_score ASC
+                LIMIT 2
+                """
+            )
+            weak_text = f"发现 {len(weak_rows)} 个薄弱领域" if weak_rows else ""
+        except Exception:
+            weak_text = ""
+
+        # Build summary text
+        parts = [p for p in [next_lesson_text, review_text, weak_text] if p]
+        if parts:
+            self.recommendations_summary.setText("  |  ".join(parts))
+        else:
+            self.recommendations_summary.setText("暂无推荐数据，开始学习和练习后会自动生成个性化推荐。")
+
+        # Clear old recommendation cards
+        while self.recommendation_cards_row.count():
+            item = self.recommendation_cards_row.takeAt(0)
+            w = item.widget()
+            if w:
+                w.deleteLater()
+
+        # Add inline recommendation mini-cards
+        from app.widgets.learning_recommendations import RecommendationCard
+
+        if next_lesson_text:
+            card = RecommendationCard(
+                title="继续学习",
+                subtitle=next_lesson_text.replace("推荐下一课：", ""),
+                icon=">",
+                color=ACCENT,
+                item_id="learn",
+            )
+            self.recommendation_cards_row.addWidget(card)
+
+        if due_reviews:
+            card = RecommendationCard(
+                title="复习提醒",
+                subtitle=f"{len(due_reviews)} 道题等待复习",
+                icon="R",
+                color=WARNING,
+            )
+            self.recommendation_cards_row.addWidget(card)
+
+        if weak_rows:
+            card = RecommendationCard(
+                title="薄弱环节",
+                subtitle=weak_text,
+                icon="!",
+                color="#ef4444",
+            )
+            self.recommendation_cards_row.addWidget(card)
+
+        self.recommendation_cards_row.addStretch()
+
     def _build_tracks_section(self) -> QFrame:
         card = self._card()
         layout = QVBoxLayout(card)
@@ -285,6 +436,9 @@ class DashboardWidget(QWidget):
         for track in self.content_service.tracks:
             track_frame = QFrame()
             track_frame.setCursor(Qt.PointingHandCursor)
+            track_frame.setAccessibleName(f"学习主线：{track.title}")
+            track_frame.setAccessibleDescription(f"{track.title} - 点击进入学习")
+            track_frame.setFocusPolicy(Qt.StrongFocus)
             track_frame.setStyleSheet(
                 f"""
                 QFrame {{
@@ -322,6 +476,9 @@ class DashboardWidget(QWidget):
             track_layout.addWidget(progress_bar)
 
             track_frame.mousePressEvent = lambda ev, tid=track.id: self.track_requested.emit(tid)
+            track_frame.keyPressEvent = lambda ev, tid=track.id: (
+                self.track_requested.emit(tid) if ev.key() in (Qt.Key_Return, Qt.Key_Enter, Qt.Key_Space) else None
+            )
             layout.addWidget(track_frame)
             self.track_buttons.append(track_frame)
             self.track_progress_bars.append((track, progress_bar, track_pct))
@@ -332,6 +489,198 @@ class DashboardWidget(QWidget):
             layout.addWidget(placeholder)
 
         return card
+
+    # ── New chart sections ────────────────────────────────────────────────
+
+    def _build_progress_line_chart_section(self) -> QFrame:
+        """Learning progress line chart -- shows score trend over recent attempts."""
+        card = self._card()
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(28, 24, 28, 24)
+        layout.setSpacing(14)
+
+        header = QHBoxLayout()
+        title = QLabel("学习进度趋势")
+        title.setFont(QFont(FONT, F_TITLE - 16, QFont.Bold))
+        header.addWidget(title)
+        header.addStretch()
+        self.line_chart_hint = QLabel("点击数据点查看详细信息")
+        self.line_chart_hint.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 14px;")
+        header.addWidget(self.line_chart_hint)
+        layout.addLayout(header)
+
+        self.progress_line_chart = LineChart(bar_color=ACCENT)
+        self.progress_line_chart.setMinimumHeight(180)
+        self.progress_line_chart.point_clicked.connect(self._on_line_point_clicked)
+        self.progress_line_chart.setAccessibleName("学习进度折线图")
+        layout.addWidget(self.progress_line_chart)
+
+        return card
+
+    def _build_skill_radar_section(self) -> QFrame:
+        """Skill distribution radar chart -- shows proficiency per track."""
+        card = self._card()
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(28, 24, 28, 24)
+        layout.setSpacing(14)
+
+        header = QHBoxLayout()
+        title = QLabel("技能分布")
+        title.setFont(QFont(FONT, F_TITLE - 16, QFont.Bold))
+        header.addWidget(title)
+        header.addStretch()
+        self.radar_hint = QLabel("点击轴线查看该方向详情")
+        self.radar_hint.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 14px;")
+        header.addWidget(self.radar_hint)
+        layout.addLayout(header)
+
+        self.skill_radar_chart = RadarChart(color=ACCENT)
+        self.skill_radar_chart.setMinimumSize(260, 260)
+        self.skill_radar_chart.axis_clicked.connect(self._on_radar_axis_clicked)
+        self.skill_radar_chart.setAccessibleName("技能分布雷达图")
+        layout.addWidget(self.skill_radar_chart, alignment=Qt.AlignHCenter)
+
+        return card
+
+    def _build_heatmap_section(self) -> QFrame:
+        """Activity heatmap calendar -- GitHub-style contribution grid."""
+        card = self._card()
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(28, 24, 28, 24)
+        layout.setSpacing(14)
+
+        header = QHBoxLayout()
+        title = QLabel("学习活跃度")
+        title.setFont(QFont(FONT, F_TITLE - 16, QFont.Bold))
+        header.addWidget(title)
+        header.addStretch()
+        self.heatmap_streak_label = QLabel("")
+        self.heatmap_streak_label.setStyleSheet(f"color: {SUCCESS}; font-weight: 700; font-size: 18px;")
+        header.addWidget(self.heatmap_streak_label)
+        layout.addLayout(header)
+
+        self.activity_heatmap = HeatmapCalendar(weeks=24)
+        self.activity_heatmap.day_clicked.connect(self._on_heatmap_day_clicked)
+        self.activity_heatmap.setAccessibleName("学习活跃度热力图")
+        layout.addWidget(self.activity_heatmap)
+
+        return card
+
+    # ── Chart drill-down handlers ─────────────────────────────────────────
+
+    def _on_line_point_clicked(self, index: int, value: float) -> None:
+        """Handle click on a line chart data point -- show detail dialog."""
+        try:
+            attempts = self.db.recent_attempts(limit=30)
+            if index < len(attempts):
+                _at, title, score, passed, _dur = attempts[index]
+                status = "通过" if passed else "未通过"
+                msg = f"练习: {title}\n分数: {score}\n状态: {status}"
+            else:
+                msg = f"数据点 #{index + 1}: {value:.0f}"
+        except Exception:
+            msg = f"数据点 #{index + 1}: {value:.0f}"
+        self._show_info_dialog("练习详情", msg)
+
+    def _on_radar_axis_clicked(self, index: int, value: float) -> None:
+        """Handle click on a radar axis -- navigate to that track."""
+        try:
+            tracks = list(self.content_service.tracks)
+            if index < len(tracks):
+                self.track_requested.emit(tracks[index].id)
+        except Exception as exc:
+            logger.debug("雷达轴点击跳转失败: %s", exc)
+
+    def _on_heatmap_day_clicked(self, iso_date: str, count: int) -> None:
+        """Handle click on a heatmap cell -- show day detail dialog."""
+        if count == 0:
+            msg = f"{iso_date}\n当天没有学习记录"
+        else:
+            msg = f"{iso_date}\n完成了 {count} 项学习活动"
+        self._show_info_dialog("每日详情", msg)
+
+    def _show_info_dialog(self, title: str, message: str) -> None:
+        """Show a simple info dialog with title and message."""
+        from PyQt5.QtGui import QKeySequence
+        from PyQt5.QtWidgets import QMessageBox, QShortcut
+
+        box = QMessageBox(self)
+        box.setWindowTitle(title)
+        box.setText(message)
+        box.setIcon(QMessageBox.Information)
+        box.setAccessibleName(title)
+        box.setAccessibleDescription(message)
+        QShortcut(QKeySequence(Qt.Key_Escape), box, box.close)
+        box.exec_()
+
+    # ── Chart data computation helpers ────────────────────────────────────
+
+    def _compute_radar_data(self) -> tuple[list[float], list[str]]:
+        """Compute per-track average scores for the radar chart.
+
+        Returns (values, labels) with values in [0, 100].
+        """
+        data: list[float] = []
+        labels: list[str] = []
+        for track in self.content_service.tracks:
+            try:
+                track_stats = self.db.get_analytics_track_stats()
+                avg = track_stats.get(track.id, 0.0)
+            except Exception:
+                # Fallback: compute from lesson statuses
+                completed = sum(1 for lesson in track.lessons if self.db.lesson_status(lesson.id) == "completed")
+                avg = (completed / max(len(track.lessons), 1)) * 100
+            data.append(min(avg, 100.0))
+            # Use short track title for label
+            label = track.title if len(track.title) <= 6 else track.title[:5] + ".."
+            labels.append(label)
+        # Ensure at least 3 axes for a visible polygon
+        while len(data) < 3:
+            data.append(0.0)
+            labels.append("")
+        return data, labels
+
+    def _compute_heatmap_data(self) -> dict[str, int]:
+        """Build ISO-date -> activity-count mapping for the last 24 weeks.
+
+        Counts both lesson completions and practice attempts per day.
+        """
+        heatmap: dict[str, int] = {}
+        today = date.today()
+        start = today - timedelta(weeks=24)
+
+        try:
+            # Query lesson completions
+            rows = self.db.fetchall(
+                """
+                SELECT substr(completed_at, 1, 10) AS day, COUNT(*) AS cnt
+                FROM lesson_progress
+                WHERE completed_at IS NOT NULL AND completed_at >= ?
+                GROUP BY day
+                """,
+                (start.isoformat(),),
+            )
+            for day_str, cnt in rows:
+                if day_str:
+                    heatmap[day_str] = heatmap.get(day_str, 0) + int(cnt)
+
+            # Query practice attempts
+            rows = self.db.fetchall(
+                """
+                SELECT substr(submitted_at, 1, 10) AS day, COUNT(*) AS cnt
+                FROM practice_attempts
+                WHERE submitted_at IS NOT NULL AND submitted_at >= ?
+                GROUP BY day
+                """,
+                (start.isoformat(),),
+            )
+            for day_str, cnt in rows:
+                if day_str:
+                    heatmap[day_str] = heatmap.get(day_str, 0) + int(cnt)
+        except Exception as exc:
+            logger.debug("计算热力图数据失败: %s", exc)
+
+        return heatmap
 
     def _build_goal_section(self) -> QFrame:
         card = self._card()
@@ -354,6 +703,8 @@ class DashboardWidget(QWidget):
             btn.setProperty("variant", "secondary")
             btn.setCursor(Qt.PointingHandCursor)
             btn.setToolTip(tr("dashboard.goal_tooltip", label=label, target=target))
+            btn.setAccessibleName(label)
+            btn.setAccessibleDescription(tr("dashboard.goal_tooltip", label=label, target=target))
             btn.clicked.connect(lambda _checked=False, t=target, lbl=label: self._set_goal(t, lbl))
             goal_row.addWidget(btn)
         layout.addLayout(goal_row)
@@ -430,6 +781,8 @@ class DashboardWidget(QWidget):
         self.view_achievements_btn.setProperty("variant", "secondary")
         self.view_achievements_btn.setCursor(Qt.PointingHandCursor)
         self.view_achievements_btn.setToolTip("打开完整的成就殿堂")
+        self.view_achievements_btn.setAccessibleName("查看全部成就")
+        self.view_achievements_btn.setAccessibleDescription("打开成就殿堂对话框，查看所有已解锁和待解锁的成就")
         self.view_achievements_btn.clicked.connect(self._show_achievements_dialog)
         view_all_row.addWidget(self.view_achievements_btn)
         layout.addLayout(view_all_row)
@@ -462,9 +815,61 @@ class DashboardWidget(QWidget):
         self.view_bookmarks_btn.setProperty("variant", "secondary")
         self.view_bookmarks_btn.setCursor(Qt.PointingHandCursor)
         self.view_bookmarks_btn.setToolTip("打开收藏管理面板")
+        self.view_bookmarks_btn.setAccessibleName("查看全部收藏")
+        self.view_bookmarks_btn.setAccessibleDescription("打开收藏管理对话框，查看和管理所有已收藏的课程和练习")
         self.view_bookmarks_btn.clicked.connect(self._show_bookmarks_dialog)
         view_all_row.addWidget(self.view_bookmarks_btn)
         layout.addLayout(view_all_row)
+
+        return card
+
+    def _build_analytics_section(self) -> QFrame:
+        card = self._card()
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(28, 24, 28, 24)
+        layout.setSpacing(14)
+
+        header = QHBoxLayout()
+        title = QLabel(tr("analytics.title"))
+        title.setFont(QFont(FONT, F_TITLE - 16, QFont.Bold))
+        header.addWidget(title)
+        header.addStretch()
+        self.analytics_time_label = QLabel("0 " + tr("analytics.unit_min"))
+        self.analytics_time_label.setStyleSheet(f"color: {ACCENT}; font-weight: 700; font-size: 20px;")
+        header.addWidget(self.analytics_time_label)
+        layout.addLayout(header)
+
+        # Mini stats row
+        stats_row = QHBoxLayout()
+        stats_row.setSpacing(14)
+        for label_text, obj_name in [
+            (tr("analytics.stat_lessons"), "analytics_mini_lessons"),
+            (tr("analytics.stat_exercises"), "analytics_mini_exercises"),
+            (tr("analytics.stat_avg_score"), "analytics_mini_score"),
+        ]:
+            mini = QLabel("0")
+            mini.setStyleSheet(f"color: {TEXT_MAIN}; font-weight: 600; font-size: 19px;")
+            mini.setObjectName(obj_name)
+            col = QVBoxLayout()
+            col.setSpacing(2)
+            col.addWidget(mini)
+            lbl = QLabel(label_text)
+            lbl.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 15px;")
+            col.addWidget(lbl)
+            stats_row.addLayout(col)
+        stats_row.addStretch()
+        layout.addLayout(stats_row)
+
+        # Open full analytics button
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        view_btn = QPushButton(tr("analytics.title"))
+        view_btn.setProperty("variant", "secondary")
+        view_btn.setCursor(Qt.PointingHandCursor)
+        view_btn.setToolTip(tr("analytics.subtitle"))
+        view_btn.clicked.connect(self._show_analytics_dialog)
+        btn_row.addWidget(view_btn)
+        layout.addLayout(btn_row)
 
         return card
 
@@ -549,28 +954,53 @@ class DashboardWidget(QWidget):
 
     def _show_achievements_dialog(self) -> None:
         """Open a dialog showing all achievements."""
-        from PyQt5.QtWidgets import QDialog, QVBoxLayout
+        from PyQt5.QtGui import QKeySequence
+        from PyQt5.QtWidgets import QShortcut, QVBoxLayout
 
         from app.widgets.achievements import AchievementsWidget
 
         dialog = QDialog(self)
         dialog.setWindowTitle("成就殿堂")
         dialog.setMinimumSize(720, 520)
+        dialog.setAccessibleName("成就殿堂对话框")
+        QShortcut(QKeySequence(Qt.Key_Escape), dialog, dialog.close)
         layout = QVBoxLayout(dialog)
         layout.setContentsMargins(0, 0, 0, 0)
         widget = AchievementsWidget(self.db, dialog)
         layout.addWidget(widget)
         dialog.exec_()
 
+    def _show_analytics_dialog(self) -> None:
+        """Open a dialog showing the full analytics view."""
+        from PyQt5.QtGui import QKeySequence
+        from PyQt5.QtWidgets import QShortcut, QVBoxLayout
+
+        from app.widgets.analytics_view import AnalyticsViewWidget
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(tr("analytics.title"))
+        dialog.setMinimumSize(900, 650)
+        dialog.setAccessibleName(tr("analytics.title"))
+        QShortcut(QKeySequence(Qt.Key_Escape), dialog, dialog.close)
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(0, 0, 0, 0)
+        widget = AnalyticsViewWidget(self.db, dialog)
+        widget.refresh()
+        layout.addWidget(widget)
+        dialog.exec_()
+
     def _show_bookmarks_dialog(self) -> None:
         """Open a dialog showing all bookmarks."""
-        from PyQt5.QtWidgets import QDialog, QVBoxLayout
+        from PyQt5.QtGui import QKeySequence
+        from PyQt5.QtWidgets import QShortcut, QVBoxLayout
 
         from app.widgets.bookmarks import BookmarksWidget
 
         dialog = QDialog(self)
         dialog.setWindowTitle("我的收藏")
         dialog.setMinimumSize(560, 440)
+        dialog.setAccessibleName("收藏管理对话框")
+        QShortcut(QKeySequence(Qt.Key_Escape), dialog, dialog.close)
         layout = QVBoxLayout(dialog)
         layout.setContentsMargins(0, 0, 0, 0)
         widget = BookmarksWidget(self.db, dialog)
@@ -647,8 +1077,6 @@ class DashboardWidget(QWidget):
                 )
 
         # Weekly chart - compute activity per day of last 7 days
-        from datetime import date, timedelta
-
         today = date.today()
         # Fetch recent attempts for charting (limit to 7 days worth)
         chart_attempts = self.db.recent_attempts(limit=200)
@@ -669,6 +1097,35 @@ class DashboardWidget(QWidget):
         score_data = [s for (_at, _t, s, _p, _d) in chart_attempts[:8]]
         score_data.reverse()
         self.score_chart.set_data(score_data)
+
+        # ── Progress line chart ───────────────────────────────────────────
+        try:
+            line_scores = [s for (_at, _t, s, _p, _d) in chart_attempts[:30]]
+            line_scores.reverse()
+            line_labels = [f"#{i + 1}" for i in range(len(line_scores))]
+            self.progress_line_chart.set_data(line_scores, line_labels)
+        except Exception as exc:
+            logger.debug("刷新折线图失败: %s", exc)
+
+        # ── Skill radar chart ─────────────────────────────────────────────
+        try:
+            radar_data, radar_labels = self._compute_radar_data()
+            self.skill_radar_chart.set_data(radar_data, radar_labels)
+        except Exception as exc:
+            logger.debug("刷新雷达图失败: %s", exc)
+
+        # ── Activity heatmap ──────────────────────────────────────────────
+        try:
+            heatmap_data = self._compute_heatmap_data()
+            self.activity_heatmap.set_data(heatmap_data)
+            # Update streak label next to heatmap title
+            if hasattr(self, "heatmap_streak_label"):
+                if streak > 0:
+                    self.heatmap_streak_label.setText(f"连续 {streak} 天")
+                else:
+                    self.heatmap_streak_label.setText("")
+        except Exception as exc:
+            logger.debug("刷新热力图失败: %s", exc)
 
         # Goal bar
         if self._goal_target > 0:
@@ -691,6 +1148,33 @@ class DashboardWidget(QWidget):
             self.welcome_sub.setText(
                 tr("dashboard.welcome_summary", completed=completed, total=total, avg=avg_score, streak=streak)
             )
+
+        # ── Analytics section ─────────────────────────────────────────────────
+        try:
+            from app.utils.analytics import AnalyticsCollector
+
+            collector = AnalyticsCollector(self.db)
+            weekly = collector.generate_weekly_report()
+            if hasattr(self, "analytics_time_label"):
+                from app.i18n import tr as _tr
+
+                self.analytics_time_label.setText(f"{weekly['total_learning_time_min']} {_tr('analytics.unit_min')}")
+            for obj_name, value in [
+                ("analytics_mini_lessons", str(weekly["total_lessons_completed"])),
+                ("analytics_mini_exercises", str(weekly["total_exercises_completed"])),
+                ("analytics_mini_score", str(weekly["average_score"])),
+            ]:
+                lbl = self.findChild(QLabel, obj_name)
+                if lbl:
+                    lbl.setText(value)
+        except Exception as exc:
+            logger.warning("刷新分析预览失败: %s", exc)
+
+        # ── Recommendations section ────────────────────────────────────────
+        try:
+            self._refresh_recommendations()
+        except Exception as exc:
+            logger.warning("刷新学习推荐失败: %s", exc)
 
         # ── Achievements section ─────────────────────────────────────────────
         try:

@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 _connection_cache: dict[str, tuple[float, str]] = {}  # (host, key) -> (timestamp, status)
 _connection_cache_lock = threading.Lock()
 _CONNECTION_CACHE_TTL = 300  # 5 minutes
+_CONNECTION_CACHE_MAX_SIZE = 32  # max cached connection test results
 
 # ── Request timeout defaults ─────────────────────────────────────────────────
 
@@ -106,6 +107,16 @@ def test_connection(host: str, api_key: str) -> str:
         get_metrics().record_operation("api_connection_test", elapsed_ms, success=False)
 
     with _connection_cache_lock:
+        # Evict stale entries if cache is at capacity
+        if len(_connection_cache) >= _CONNECTION_CACHE_MAX_SIZE:
+            now = time.monotonic()
+            stale = [k for k, (ts, _) in _connection_cache.items() if now - ts >= _CONNECTION_CACHE_TTL]
+            for k in stale:
+                del _connection_cache[k]
+            # If still full, remove oldest entry
+            if len(_connection_cache) >= _CONNECTION_CACHE_MAX_SIZE:
+                oldest_key = min(_connection_cache, key=lambda k: _connection_cache[k][0])
+                del _connection_cache[oldest_key]
         _connection_cache[cache_key] = (time.monotonic(), result)
     return result
 

@@ -28,8 +28,8 @@ ACCENT_HOVER = "#1d4ed8"
 ACCENT_PRESSED = "#1e40af"
 ACCENT_SOFT = "#dbeafe"
 TEXT_MAIN = "#0f1a2e"
-TEXT_SUB = "#4f6180"
-TEXT_MUTED = "#6b7d94"
+TEXT_SUB = "#3a506b"
+TEXT_MUTED = "#556880"
 BORDER = "rgba(37, 99, 235, 0.10)"
 BORDER_STRONG = "rgba(21, 32, 51, 0.12)"
 
@@ -62,8 +62,8 @@ DARK_ACCENT_HOVER = "#93c5fd"
 DARK_ACCENT_PRESSED = "#3b82f6"
 DARK_ACCENT_SOFT = "#1e3a5f"
 DARK_TEXT_MAIN = "#f1f5f9"
-DARK_TEXT_SUB = "#94a3b8"
-DARK_TEXT_MUTED = "#7a8ba3"
+DARK_TEXT_SUB = "#b0c0d4"
+DARK_TEXT_MUTED = "#8a9bb5"
 DARK_BORDER = "rgba(96, 165, 250, 0.18)"
 DARK_BORDER_STRONG = "rgba(241, 245, 249, 0.12)"
 
@@ -215,11 +215,11 @@ QTabBar::tab {{
     padding: 14px 30px;
     margin: 6px 9px 12px 0;
     min-width: 120px;
-    color: #3a3a3c;
+    color: {text_main};
 }}
 QTabBar::tab:selected {{
     background: #ffffff;
-    color: #000000;
+    color: {text_main};
     border: 1px solid rgba(0, 0, 0, 0.1);
 }}
 QPushButton {{
@@ -375,7 +375,7 @@ QProgressBar::chunk {{
     );
 }}
 QDockWidget {{
-    color: #1c1c1e;
+    color: {text_main};
 }}
 QDockWidget::title {{
     background: #edf3f9;

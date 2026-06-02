@@ -382,9 +382,7 @@ class WelcomeWizard(QDialog):
             card_layout.addWidget(radio)
 
             # Click on card selects radio
-            card.mousePressEvent = lambda ev, r=radio, tid=track.id: (
-                r.setChecked(True), self._select_track(tid)
-            )
+            card.mousePressEvent = lambda ev, r=radio, tid=track.id: (r.setChecked(True), self._select_track(tid))
             radio.toggled.connect(lambda checked, tid=track.id: self._select_track(tid) if checked else None)
 
             layout.addWidget(card)
@@ -468,9 +466,7 @@ class WelcomeWizard(QDialog):
             text_col.addWidget(desc_label)
             card_layout.addLayout(text_col, 1)
 
-            card.mousePressEvent = lambda ev, r=radio, t=target: (
-                r.setChecked(True), self._set_goal(t)
-            )
+            card.mousePressEvent = lambda ev, r=radio, t=target: (r.setChecked(True), self._set_goal(t))
             radio.toggled.connect(lambda checked, t=target: self._set_goal(t) if checked else None)
 
             layout.addWidget(card)
@@ -519,8 +515,7 @@ class WelcomeWizard(QDialog):
             num.setFixedSize(36, 36)
             num.setAlignment(Qt.AlignCenter)
             num.setStyleSheet(
-                f"background: {ACCENT}; color: #ffffff; "
-                f"border-radius: 18px; font-size: 18px; font-weight: 700;"
+                f"background: {ACCENT}; color: #ffffff; border-radius: 18px; font-size: 18px; font-weight: 700;"
             )
             row.addWidget(num)
 

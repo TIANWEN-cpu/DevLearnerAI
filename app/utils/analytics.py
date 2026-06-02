@@ -15,7 +15,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import time
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
@@ -108,10 +108,13 @@ class AnalyticsCollector:
         self._current_activity_start = None
 
         if elapsed > 1.0:  # 忽略不到1秒的活动
-            self.track_event("activity_time", {
-                "type": actual_type,
-                "duration_sec": round(elapsed, 1),
-            })
+            self.track_event(
+                "activity_time",
+                {
+                    "type": actual_type,
+                    "duration_sec": round(elapsed, 1),
+                },
+            )
             # 同步到每日聚合
             try:
                 self._db.update_daily_analytics(
@@ -127,9 +130,12 @@ class AnalyticsCollector:
 
     def track_lesson_completed(self, lesson_id: str, track_id: str) -> None:
         """记录课程完成。"""
-        self.track_event("lesson_completed", {
-            "track_id": track_id,
-        })
+        self.track_event(
+            "lesson_completed",
+            {
+                "track_id": track_id,
+            },
+        )
         try:
             self._db.update_daily_analytics(
                 date.today().isoformat(),
@@ -146,11 +152,14 @@ class AnalyticsCollector:
 
     def track_exercise_attempt(self, exercise_id: str, score: int, passed: bool, duration_sec: int) -> None:
         """记录练习评测。"""
-        self.track_event("exercise_attempt", {
-            "score": score,
-            "passed": passed,
-            "duration_sec": duration_sec,
-        })
+        self.track_event(
+            "exercise_attempt",
+            {
+                "score": score,
+                "passed": passed,
+                "duration_sec": duration_sec,
+            },
+        )
         try:
             self._db.update_daily_analytics(
                 date.today().isoformat(),
@@ -193,7 +202,7 @@ class AnalyticsCollector:
         基于各 track 的完成率和练习得分计算技能水平。
         """
         try:
-            from app.content_service import ContentService
+            pass
         except Exception:
             return {}
 
@@ -258,13 +267,15 @@ class AnalyticsCollector:
         # 按周聚合
         weekly_data = []
         for i in range(0, 30, 7):
-            week_slice = data[i:i + 7]
-            weekly_data.append({
-                "week_start": week_slice[0]["date"] if week_slice else "",
-                "lessons": sum(r["lessons_completed"] for r in week_slice),
-                "exercises": sum(r["exercises_completed"] for r in week_slice),
-                "time_min": round(sum(r["learning_time_sec"] for r in week_slice) / 60),
-            })
+            week_slice = data[i : i + 7]
+            weekly_data.append(
+                {
+                    "week_start": week_slice[0]["date"] if week_slice else "",
+                    "lessons": sum(r["lessons_completed"] for r in week_slice),
+                    "exercises": sum(r["exercises_completed"] for r in week_slice),
+                    "time_min": round(sum(r["learning_time_sec"] for r in week_slice) / 60),
+                }
+            )
 
         return {
             "period": "monthly",

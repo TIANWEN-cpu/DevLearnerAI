@@ -4,6 +4,48 @@
 
 ---
 
+## [Unreleased] -- Sprint 11+ 后续迭代
+
+v1.1.0 发布后的持续改进，聚焦 UX 改善、数据层安全、AI 功能增强和发布准备。
+
+### 新功能
+
+- **Onboarding Store** -- 新用户引导状态管理，记录引导完成状态 (Sprint 11)
+- **代码执行安全沙箱** -- 隔离执行环境，防止代码逃逸 (Sprint 11)
+- **性能监控** -- 慢操作追踪、IPC 通信跟踪、启动耗时插桩 (Sprint 5)
+
+### 改进
+
+- **统计数据迁移至 SQLite** -- 方案设计完成，从 localStorage 迁移到持久化存储 (进行中)
+- **Monaco Editor 优化** -- Worker 优化、懒加载、配置缓存 (进行中)
+- **问题 Store 测试** -- problemStore.ts 单元测试编写 (进行中)
+- **SnippetManager** -- 代码片段 CRUD 组件完善 (进行中)
+- **demo 数据与 README 润色** -- 改善首次体验 (进行中)
+
+### 测试
+
+- 新增 IPC 测试: chat / problems / rag / database / runner (约 80 个用例)
+- 新增 DB 测试: electron/db/index.ts
+- 新增集成测试: problemFlow / chatFlow / editorFlow / settingsFlow (4 个)
+- 新增性能监控测试
+
+### 工程改进
+
+- 4 套 CI 工作流: ci.yml / pr-check.yml / release.yml / dependabot-auto-merge.yml
+- Pre-commit hooks 集成
+- Electron Fuses 安全熔丝
+- Vite 构建配置优化
+- scripts/version-bump.js 版本管理
+
+### 已知问题
+
+- 统计数据仍存储在 localStorage，换设备会丢失
+- Store 测试覆盖不完整 (5 个 Store 中仅部分有测试)
+- TypeScript 严格模式未完全开启
+- 生产代码中残留 console.log 语句
+
+---
+
 ## [1.1.0] - 2026-06-02
 
 基于 v1.0.0 的全面成熟度升级，涵盖架构重构、测试覆盖、工程化改进和文档完善。

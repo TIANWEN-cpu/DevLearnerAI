@@ -9,10 +9,9 @@ Provides a panel for AI-powered code analysis with:
 
 import logging
 import re
-import threading
 from typing import Optional
 
-from PyQt5.QtCore import QSize, Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QColor, QFont, QPainter, QPen
 from PyQt5.QtWidgets import (
     QFrame,
@@ -22,15 +21,12 @@ from PyQt5.QtWidgets import (
     QProgressBar,
     QPushButton,
     QScrollArea,
-    QSizePolicy,
     QTabWidget,
     QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 
-from app.ai.api_client import send_chat, send_chat_stream
-from app.effects import surface_panel
 from app.styles import (
     ACCENT,
     ACCENT_SOFT,
@@ -38,20 +34,13 @@ from app.styles import (
     BG_CARD_SOFT,
     BORDER,
     ERROR,
-    ERROR_SOFT,
-    F_CODE,
     F_SUB,
     FONT,
-    INFO,
-    INFO_SOFT,
-    MONO_FONT,
     SUCCESS,
-    SUCCESS_SOFT,
     TEXT_MAIN,
     TEXT_MUTED,
     TEXT_SUB,
     WARNING,
-    WARNING_SOFT,
 )
 
 logger = logging.getLogger(__name__)
@@ -353,6 +342,8 @@ class CodeAnalyzerPanel(QWidget):
         self.analyze_btn = QPushButton("开始分析")
         self.analyze_btn.setMinimumWidth(120)
         self.analyze_btn.setToolTip("对当前代码运行全部分析")
+        self.analyze_btn.setAccessibleName("开始分析")
+        self.analyze_btn.setAccessibleDescription("对当前代码运行 AI 全部分析，包括解释、审查和 Bug 检测")
         self.analyze_btn.clicked.connect(self._run_all_analysis)
         header_layout.addWidget(self.analyze_btn)
 
@@ -390,6 +381,8 @@ class CodeAnalyzerPanel(QWidget):
         self.tabs.addTab(self._build_review_tab(), "代码审查")
         self.tabs.addTab(self._build_bug_tab(), "Bug 检测")
         self.tabs.addTab(self._build_complexity_tab(), "复杂度分析")
+        self.tabs.setAccessibleName("代码分析选项卡")
+        self.tabs.setAccessibleDescription("切换不同类型的代码分析结果视图")
 
         root.addWidget(self.tabs, 1)
 
@@ -557,9 +550,7 @@ class CodeAnalyzerPanel(QWidget):
         """Update the complexity tab with static analysis results."""
         metrics = estimate_complexity(code, language)
         self.complexity_gauge.set_complexity(metrics["score"], metrics["level"], metrics["level_label"])
-        self.complexity_summary.setText(
-            f"圈复杂度评估为 {metrics['score']}，属于{metrics['level_label']}。"
-        )
+        self.complexity_summary.setText(f"圈复杂度评估为 {metrics['score']}，属于{metrics['level_label']}。")
         self.complexity_stats.setText(
             f"代码行数: {metrics['lines']}  |  函数: {metrics['functions']}  |  类: {metrics['classes']}"
         )
@@ -672,7 +663,9 @@ class CodeAnalyzerPanel(QWidget):
     def _parse_explanation_steps(text: str) -> list:
         """Try to parse numbered steps from AI response text."""
         steps = []
-        pattern = re.compile(r"(?:^|\n)\s*(?:\d+[\.\)、]|[-*])\s*(.+?)(?:\n|$)(.*?)(?=\n\s*(?:\d+[\.\)、]|[-*])\s|\Z)", re.DOTALL)
+        pattern = re.compile(
+            r"(?:^|\n)\s*(?:\d+[\.\)、]|[-*])\s*(.+?)(?:\n|$)(.*?)(?=\n\s*(?:\d+[\.\)、]|[-*])\s|\Z)", re.DOTALL
+        )
         for m in pattern.finditer(text):
             title = m.group(1).strip().rstrip("：:")
             body = m.group(2).strip()
@@ -687,7 +680,9 @@ class CodeAnalyzerPanel(QWidget):
         """Convert plain text with markdown-like formatting to basic HTML."""
         html = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         html = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", html)
-        html = re.sub(r"`(.+?)`", r"<code style='background:#f1f5f9;padding:2px 6px;border-radius:4px;'>\1</code>", html)
+        html = re.sub(
+            r"`(.+?)`", r"<code style='background:#f1f5f9;padding:2px 6px;border-radius:4px;'>\1</code>", html
+        )
         html = html.replace("\n", "<br>")
         return html
 

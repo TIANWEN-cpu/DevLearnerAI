@@ -268,8 +268,7 @@ def evaluate_sql(exercise: Exercise, code: str) -> EvaluationResult:
     score = 0
 
     feedback.append(
-        "[结构检查模式] 当前为 SQL 结构训练题，仅检查查询结构，暂不执行真实数据库结果比对。"
-        "评测结果仅供参考。"
+        "[结构检查模式] 当前为 SQL 结构训练题，仅检查查询结构，暂不执行真实数据库结果比对。评测结果仅供参考。"
     )
 
     if normalized:

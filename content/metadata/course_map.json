@@ -703,6 +703,69 @@
                 "能读写文本和二进制文件",
                 "理解上下文管理器 with 的作用"
               ]
+            },
+            {
+              "id": "py-strings-collections",
+              "title": "字符串与集合操作",
+              "summary": "掌握字符串的常用方法和集合操作。",
+              "path": "python/py_strings_collections.md",
+              "difficulty": "基础",
+              "estimated_minutes": 35,
+              "tags": [
+                "字符串",
+                "集合",
+                "方法"
+              ],
+              "prerequisites": [
+                "py-data-types"
+              ],
+              "outcomes": [
+                "熟练使用字符串方法",
+                "理解集合的去重和运算",
+                "掌握字符串格式化的多种方式"
+              ]
+            },
+            {
+              "id": "py-recursion-patterns",
+              "title": "递归思维与模式",
+              "summary": "理解递归的本质，学会识别和实现常见的递归模式。",
+              "path": "python/py_recursion_patterns.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 40,
+              "tags": [
+                "递归",
+                "分治",
+                "回溯"
+              ],
+              "prerequisites": [
+                "py-functions"
+              ],
+              "outcomes": [
+                "理解递归调用栈的执行过程",
+                "掌握分治和回溯两种递归模式",
+                "知道何时用递归何时用迭代"
+              ]
+            },
+            {
+              "id": "py-error-handling-patterns",
+              "title": "错误处理进阶模式",
+              "summary": "学习异常链、自定义异常和防御性编程的高级模式。",
+              "path": "python/py_error_handling_patterns.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 35,
+              "tags": [
+                "异常",
+                "自定义异常",
+                "防御"
+              ],
+              "prerequisites": [
+                "py-exceptions-files"
+              ],
+              "outcomes": [
+                "会定义自定义异常类",
+                "理解异常链的 from 语法",
+                "掌握断言和日志在错误处理中的角色"
+              ]
             }
           ]
         },
@@ -794,6 +857,27 @@
                 "理解 map/filter/reduce",
                 "知道 itertools 的常用函数"
               ]
+            },
+            {
+              "id": "py-context-managers",
+              "title": "上下文管理器深入",
+              "summary": "理解 with 语句的协议，学会实现自定义上下文管理器。",
+              "path": "python/py_context_managers.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 35,
+              "tags": [
+                "with",
+                "contextmanager",
+                "资源管理"
+              ],
+              "prerequisites": [
+                "py-iterators-generators"
+              ],
+              "outcomes": [
+                "理解 __enter__ 和 __exit__ 协议",
+                "会用 contextlib.contextmanager 装饰器",
+                "知道上下文管理器在数据库连接中的应用"
+              ]
             }
           ]
         },
@@ -884,6 +968,49 @@
                 "会用 dataclass 定义数据类",
                 "理解 PEP 8 编码规范",
                 "知道工程化项目的基本结构"
+              ]
+            },
+            {
+              "id": "py-decorators-basics",
+              "title": "装饰器入门",
+              "summary": "理解装饰器的本质（高阶函数），学会实现和使用自定义装饰器。",
+              "path": "python/py_decorators_basics.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 40,
+              "tags": [
+                "装饰器",
+                "高阶函数",
+                "闭包"
+              ],
+              "prerequisites": [
+                "py-magic-methods"
+              ],
+              "outcomes": [
+                "理解装饰器是函数的函数",
+                "会实现带参数的装饰器",
+                "知道 functools.wraps 的作用"
+              ]
+            },
+            {
+              "id": "py-type-hints-dataclasses",
+              "title": "类型提示与 dataclass 进阶",
+              "summary": "学习 typing 模块的高级用法和 dataclass 的高级特性。",
+              "path": "python/py_type_hints_dataclasses.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 40,
+              "tags": [
+                "typing",
+                "dataclass",
+                "Protocol"
+              ],
+              "prerequisites": [
+                "py-typing",
+                "py-dataclass"
+              ],
+              "outcomes": [
+                "会用 Protocol 做结构化类型检查",
+                "理解 TypeVar 和泛型的用法",
+                "掌握 dataclass 的 field() 高级配置"
               ]
             }
           ]
@@ -1067,6 +1194,174 @@
                 "会组织项目目录结构和模块划分",
                 "掌握基本的单元测试编写",
                 "具备完整的项目交付能力"
+              ]
+            },
+            {
+              "id": "py-automation-scripts",
+              "title": "自动化脚本实践",
+              "summary": "学习用 Python 编写自动化脚本，涵盖文件操作、系统命令和网络请求。",
+              "path": "python/py_automation_scripts.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 45,
+              "tags": [
+                "自动化",
+                "脚本",
+                "subprocess"
+              ],
+              "prerequisites": [
+                "py-exceptions-files"
+              ],
+              "outcomes": [
+                "会用 subprocess 调用系统命令",
+                "能编写文件批量处理脚本",
+                "了解 schedule 和 cron 定时任务"
+              ]
+            },
+            {
+              "id": "py-cli-argparse",
+              "title": "命令行工具开发",
+              "summary": "学习用 argparse 和 click 库开发专业的命令行工具。",
+              "path": "python/py_cli_argparse.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 40,
+              "tags": [
+                "CLI",
+                "argparse",
+                "click"
+              ],
+              "prerequisites": [
+                "py-functions"
+              ],
+              "outcomes": [
+                "会用 argparse 定义命令行参数",
+                "能实现子命令结构",
+                "了解 click 库的简洁 API"
+              ]
+            },
+            {
+              "id": "py-json-pathlib",
+              "title": "JSON 与 pathlib 文件处理",
+              "summary": "掌握 JSON 数据处理和 pathlib 现代文件路径操作。",
+              "path": "python/py_json_pathlib.md",
+              "difficulty": "基础",
+              "estimated_minutes": 35,
+              "tags": [
+                "JSON",
+                "pathlib",
+                "文件"
+              ],
+              "prerequisites": [
+                "py-exceptions-files"
+              ],
+              "outcomes": [
+                "会用 json 序列化和反序列化",
+                "掌握 pathlib 的路径操作 API",
+                "能读写 JSON 配置文件"
+              ]
+            },
+            {
+              "id": "py-logging-debugging",
+              "title": "日志与调试",
+              "summary": "学习 logging 模块和 Python 调试技巧。",
+              "path": "python/py_logging_debugging.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 35,
+              "tags": [
+                "logging",
+                "debugger",
+                "pdb"
+              ],
+              "prerequisites": [
+                "py-error-handling-patterns"
+              ],
+              "outcomes": [
+                "会配置 logging 模块",
+                "能用 pdb/pdb++ 调试程序",
+                "知道 print 调试的局限性"
+              ]
+            },
+            {
+              "id": "py-unit-testing-workflow",
+              "title": "单元测试工作流",
+              "summary": "学习 unittest 和 pytest 框架，掌握测试驱动开发的基本流程。",
+              "path": "python/py_unit_testing_workflow.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 45,
+              "tags": [
+                "pytest",
+                "unittest",
+                "TDD"
+              ],
+              "prerequisites": [
+                "py-dataclass"
+              ],
+              "outcomes": [
+                "会用 pytest 编写测试",
+                "理解 fixtures 和参数化测试",
+                "知道测试覆盖率的意义"
+              ]
+            },
+            {
+              "id": "py-asyncio-basics",
+              "title": "asyncio 基础",
+              "summary": "理解 asyncio 事件循环和协程的基础概念。",
+              "path": "python/py_asyncio_basics.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 40,
+              "tags": [
+                "asyncio",
+                "协程",
+                "事件循环"
+              ],
+              "prerequisites": [
+                "py-asyncio"
+              ],
+              "outcomes": [
+                "理解事件循环的执行模型",
+                "会用 aiohttp 进行异步 HTTP 请求",
+                "知道常见异步陷阱"
+              ]
+            },
+            {
+              "id": "py-http-api",
+              "title": "HTTP 与 API 调用",
+              "summary": "学习用 requests/httpx 调用 REST API 和处理响应。",
+              "path": "python/py_http_api.md",
+              "difficulty": "基础",
+              "estimated_minutes": 35,
+              "tags": [
+                "HTTP",
+                "REST",
+                "requests"
+              ],
+              "prerequisites": [
+                "py-exceptions-files"
+              ],
+              "outcomes": [
+                "会用 requests 发起 GET/POST 请求",
+                "能处理 JSON 响应和错误码",
+                "了解认证和请求头的设置"
+              ]
+            },
+            {
+              "id": "py-project-structure",
+              "title": "Python 项目结构",
+              "summary": "学习如何组织一个专业的 Python 项目，包括包结构、配置和依赖管理。",
+              "path": "python/py_project_structure.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 35,
+              "tags": [
+                "项目结构",
+                "打包",
+                "poetry"
+              ],
+              "prerequisites": [
+                "py-modules-imports"
+              ],
+              "outcomes": [
+                "理解 src layout 和 flat layout 的区别",
+                "会用 pyproject.toml 管理项目",
+                "知道虚拟环境和依赖管理"
               ]
             }
           ]
@@ -2319,6 +2614,88 @@
                 "会用哈希表做去重和频率统计",
                 "知道哈希冲突的解决方案"
               ]
+            },
+            {
+              "id": "algo-complexity-basics",
+              "title": "时间与空间复杂度入门",
+              "summary": "理解 Big-O 表示法，学会分析代码的时间和空间复杂度。",
+              "path": "algorithms/algo_complexity_basics.md",
+              "difficulty": "基础",
+              "estimated_minutes": 30,
+              "tags": [
+                "Big-O",
+                "复杂度",
+                "分析"
+              ],
+              "prerequisites": [],
+              "outcomes": [
+                "理解 O(1)/O(n)/O(n^2)/O(log n) 的含义",
+                "能分析简单代码的时间复杂度",
+                "知道常见数据结构操作的复杂度"
+              ]
+            },
+            {
+              "id": "algo-thinking-map",
+              "title": "算法解题思维地图",
+              "summary": "建立系统化的算法解题框架，学会识别题型并选择正确的算法策略。",
+              "path": "algorithms/algo_thinking_map.md",
+              "difficulty": "基础",
+              "estimated_minutes": 25,
+              "tags": [
+                "思维",
+                "策略",
+                "框架"
+              ],
+              "prerequisites": [
+                "algo-complexity-basics"
+              ],
+              "outcomes": [
+                "能识别常见的算法题型分类",
+                "知道何时用贪心、何时用动态规划",
+                "建立系统化的解题思维"
+              ]
+            },
+            {
+              "id": "algo-two-pointers",
+              "title": "双指针技巧",
+              "summary": "掌握双指针的两种模式（对撞指针和快慢指针），解决数组和链表相关问题。",
+              "path": "algorithms/algo_two_pointers.md",
+              "difficulty": "基础",
+              "estimated_minutes": 40,
+              "tags": [
+                "双指针",
+                "数组",
+                "链表"
+              ],
+              "prerequisites": [
+                "algo-arrays-strings"
+              ],
+              "outcomes": [
+                "掌握对撞指针和快慢指针两种模式",
+                "能用双指针解决回文判断、反转等问题",
+                "理解双指针在有序数组中的优势"
+              ]
+            },
+            {
+              "id": "algo-prefix-sum-window",
+              "title": "前缀和与滑动窗口",
+              "summary": "学习两种高效的数组处理技巧：前缀和用于快速区间求和，滑动窗口用于子数组问题。",
+              "path": "algorithms/algo_prefix_sum_window.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 45,
+              "tags": [
+                "前缀和",
+                "滑动窗口",
+                "子数组"
+              ],
+              "prerequisites": [
+                "algo-arrays-strings"
+              ],
+              "outcomes": [
+                "理解前缀和的预处理思想",
+                "掌握滑动窗口的模板代码",
+                "能用两种技巧解决区间求和与子数组问题"
+              ]
             }
           ]
         },
@@ -2410,6 +2787,48 @@
                 "会写 BFS 和 DFS",
                 "能解决图的连通性问题"
               ]
+            },
+            {
+              "id": "algo-tree-bfs-dfs",
+              "title": "树的 BFS 与 DFS",
+              "summary": "掌握二叉树的层序遍历（BFS）和前/中/后序遍历（DFS），理解递归和迭代两种实现。",
+              "path": "algorithms/algo_tree_bfs_dfs.md",
+              "difficulty": "进阶",
+              "estimated_minutes": 45,
+              "tags": [
+                "BFS",
+                "DFS",
+                "遍历"
+              ],
+              "prerequisites": [
+                "algo-binary-trees"
+              ],
+              "outcomes": [
+                "能实现 BFS 层序遍历",
+                "掌握递归和迭代两种 DFS 实现",
+                "理解 BFS/DFS 的时间和空间复杂度"
+              ]
+            },
+            {
+              "id": "algo-graph-shortest-path",
+              "title": "图的最短路径算法",
+              "summary": "学习 Dijkstra 和 BFS 最短路径算法，理解加权图和无权图的区别。",
+              "path": "algorithms/algo_graph_shortest_path.md",
+              "difficulty": "综合",
+              "estimated_minutes": 55,
+              "tags": [
+                "Dijkstra",
+                "BFS",
+                "最短路径"
+              ],
+              "prerequisites": [
+                "algo-graphs"
+              ],
+              "outcomes": [
+                "理解 Dijkstra 算法的贪心策略",
+                "能用 BFS 求无权图最短路径",
+                "知道优先队列在最短路径中的作用"
+              ]
             }
           ]
         },
@@ -2500,6 +2919,49 @@
                 "理解贪心的适用条件",
                 "会写回溯搜索模板",
                 "能解决组合和排列问题"
+              ]
+            },
+            {
+              "id": "algo-dynamic-programming-intuition",
+              "title": "动态规划直觉训练",
+              "summary": "建立动态规划的直觉，从暴力递归到记忆化搜索再到自底向上 DP 的转化过程。",
+              "path": "algorithms/algo_dynamic_programming_intuition.md",
+              "difficulty": "综合",
+              "estimated_minutes": 55,
+              "tags": [
+                "DP",
+                "递归",
+                "状态转移"
+              ],
+              "prerequisites": [
+                "algo-dp"
+              ],
+              "outcomes": [
+                "理解 DP 的三要素：状态、转移方程、边界",
+                "能从暴力递归推导出 DP 解法",
+                "掌握空间优化的滚动数组技巧"
+              ]
+            },
+            {
+              "id": "algo-binary-search-greedy",
+              "title": "二分搜索与贪心综合",
+              "summary": "学习二分搜索的高级应用（答案二分）和贪心算法的证明方法。",
+              "path": "algorithms/algo_binary_search_greedy.md",
+              "difficulty": "综合",
+              "estimated_minutes": 50,
+              "tags": [
+                "二分",
+                "贪心",
+                "证明"
+              ],
+              "prerequisites": [
+                "algo-binary-search",
+                "algo-greedy-backtrack"
+              ],
+              "outcomes": [
+                "掌握答案二分的模板",
+                "理解贪心选择性质的证明方法",
+                "能综合运用二分和贪心解决复杂问题"
               ]
             }
           ]

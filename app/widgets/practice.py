@@ -49,7 +49,6 @@ from app.styles import (
     score_color,
     score_label,
 )
-from app.widgets.code_analyzer import CodeAnalyzerPanel
 
 
 class PracticeWidget(QWidget):
@@ -178,6 +177,8 @@ class PracticeWidget(QWidget):
         track_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 13px;")
         self.track_combo = QComboBox()
         self.track_combo.setToolTip("\u6309\u6280\u672f\u6808\u7b5b\u9009\u7ec3\u4e60")
+        self.track_combo.setAccessibleName("\u5b66\u4e60\u8def\u7ebf\u7b5b\u9009")
+        self.track_combo.setAccessibleDescription("\u6309\u6280\u672f\u6808\u7b5b\u9009\u7ec3\u4e60\u9898\u76ee")
         self.track_combo.addItem("\u5168\u90e8\u8def\u7ebf", "all")
         for track in self.content_service.tracks:
             self.track_combo.addItem(track.title, track.id)
@@ -186,6 +187,8 @@ class PracticeWidget(QWidget):
         diff_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 13px;")
         self.diff_combo = QComboBox()
         self.diff_combo.setToolTip("\u6309\u96be\u5ea6\u7b5b\u9009\u7ec3\u4e60")
+        self.diff_combo.setAccessibleName("\u96be\u5ea6\u7b5b\u9009")
+        self.diff_combo.setAccessibleDescription("\u6309\u96be\u5ea6\u7b5b\u9009\u7ec3\u4e60\u9898\u76ee")
         self.diff_combo.addItem("\u5168\u90e8\u96be\u5ea6", "all")
         self.diff_combo.addItem("\u57fa\u7840", "\u57fa\u7840")
         self.diff_combo.addItem("\u8fdb\u9636", "\u8fdb\u9636")
@@ -196,6 +199,8 @@ class PracticeWidget(QWidget):
         topic_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 13px;")
         self.topic_combo = QComboBox()
         self.topic_combo.setToolTip("\u6309\u4e13\u9898\u7b5b\u9009\u7ec3\u4e60")
+        self.topic_combo.setAccessibleName("\u4e13\u9898\u7b5b\u9009")
+        self.topic_combo.setAccessibleDescription("\u6309\u4e13\u9898\u7b5b\u9009\u7ec3\u4e60\u9898\u76ee")
         self.topic_combo.addItem("\u5168\u90e8\u4e13\u9898", "all")
         row.addWidget(track_label)
         row.addWidget(self.track_combo)
@@ -306,22 +311,49 @@ class PracticeWidget(QWidget):
         self.hint_btn.setToolTip(
             "\u9010\u6b65\u663e\u793a\u63d0\u793a\uff0c\u6bcf\u6b21\u70b9\u51fb\u5c55\u5f00\u4e00\u6761 (Ctrl+H)"
         )
+        self.hint_btn.setAccessibleName("\u67e5\u770b\u63d0\u793a")
+        self.hint_btn.setAccessibleDescription(
+            "\u9010\u6b65\u663e\u793a\u63d0\u793a\uff0c\u6bcf\u6b21\u70b9\u51fb\u5c55\u5f00\u4e00\u6761 (Ctrl+H)"
+        )
+        self.progressive_hint_btn = QPushButton("\u6e10\u8fdb\u63d0\u793a")
+        self.progressive_hint_btn.setProperty("variant", "secondary")
+        self.progressive_hint_btn.setToolTip(
+            "\u6253\u5f003\u7ea7\u6e10\u8fdb\u63d0\u793a\u9762\u677f\uff1a\u6982\u5ff5\u63d0\u793a\u3001\u601d\u8def\u63d0\u793a\u3001\u4f2a\u4ee3\u7801\u63d0\u793a"
+        )
+        self.progressive_hint_btn.setAccessibleName("\u6e10\u8fdb\u63d0\u793a")
+        self.progressive_hint_btn.clicked.connect(self._open_hint_system_dialog)
         self.analyze_btn = QPushButton("\u5206\u6790\u4ee3\u7801")
         self.analyze_btn.setProperty("variant", "secondary")
-        self.analyze_btn.setToolTip("\u4f7f\u7528 AI \u5206\u6790\u5f53\u524d\u4ee3\u7801\uff0c\u83b7\u53d6\u89e3\u91ca\u3001\u5ba1\u67e5\u548c Bug \u68c0\u6d4b")
+        self.analyze_btn.setToolTip(
+            "\u4f7f\u7528 AI \u5206\u6790\u5f53\u524d\u4ee3\u7801\uff0c\u83b7\u53d6\u89e3\u91ca\u3001\u5ba1\u67e5\u548c Bug \u68c0\u6d4b"
+        )
         self.analyze_btn.setAccessibleName("\u5206\u6790\u4ee3\u7801")
+        self.analyze_btn.setAccessibleDescription(
+            "\u4f7f\u7528 AI \u5206\u6790\u5f53\u524d\u4ee3\u7801\uff0c\u83b7\u53d6\u89e3\u91ca\u3001\u5ba1\u67e5\u548c Bug \u68c0\u6d4b"
+        )
         self.analyze_btn.clicked.connect(self._open_code_analyzer)
         self.run_btn = QPushButton("\u8fd0\u884c\u4ee3\u7801")
         self.run_btn.setProperty("variant", "secondary")
         self.run_btn.setToolTip("\u5728\u9694\u79bb\u6c99\u7bb1\u4e2d\u8fd0\u884c\u4ee3\u7801\u67e5\u770b\u8f93\u51fa")
+        self.run_btn.setAccessibleName("\u8fd0\u884c\u4ee3\u7801")
+        self.run_btn.setAccessibleDescription(
+            "\u5728\u9694\u79bb\u6c99\u7bb1\u4e2d\u8fd0\u884c\u4ee3\u7801\u67e5\u770b\u8f93\u51fa"
+        )
         self.reset_btn = QPushButton("\u91cd\u7f6e\u4ee3\u7801")
         self.reset_btn.setProperty("variant", "secondary")
         self.reset_btn.setToolTip("\u6062\u590d\u5230\u9898\u76ee\u521d\u59cb\u4ee3\u7801")
+        self.reset_btn.setAccessibleName("\u91cd\u7f6e\u4ee3\u7801")
+        self.reset_btn.setAccessibleDescription("\u6062\u590d\u5230\u9898\u76ee\u521d\u59cb\u4ee3\u7801")
         self.reset_btn.clicked.connect(self._reset_code)
         self.check_btn = QPushButton("\u63d0\u4ea4\u5e76\u5224\u9898")
         self.check_btn.setMinimumWidth(180)
         self.check_btn.setToolTip("\u63d0\u4ea4\u4ee3\u7801\u8fdb\u884c\u81ea\u52a8\u8bc4\u6d4b (Ctrl+Enter)")
+        self.check_btn.setAccessibleName("\u63d0\u4ea4\u5e76\u5224\u9898")
+        self.check_btn.setAccessibleDescription(
+            "\u63d0\u4ea4\u4ee3\u7801\u8fdb\u884c\u81ea\u52a8\u8bc4\u6d4b (Ctrl+Enter)"
+        )
         btn_row.addWidget(self.hint_btn)
+        btn_row.addWidget(self.progressive_hint_btn)
         btn_row.addWidget(self.reset_btn)
         btn_row.addWidget(self.analyze_btn)
         btn_row.addWidget(self.run_btn)
@@ -729,6 +761,7 @@ class PracticeWidget(QWidget):
     def _set_action_state(self, busy: bool, mode: str = "") -> None:
         self.busy_mode = mode if busy else None
         self.hint_btn.setEnabled(not busy)
+        self.progressive_hint_btn.setEnabled(not busy)
         self.analyze_btn.setEnabled(not busy)
         self.run_btn.setEnabled(not busy)
         self.check_btn.setEnabled(not busy)
@@ -927,6 +960,31 @@ class PracticeWidget(QWidget):
 
     # ── Code Analyzer ─────────────────────────────────────────────────────────
 
+    def _open_hint_system_dialog(self) -> None:
+        """Open the progressive hint system dialog for the current exercise."""
+        if not self.current_exercise:
+            return
+
+        from PyQt5.QtGui import QKeySequence
+        from PyQt5.QtWidgets import QDialog, QShortcut, QVBoxLayout
+
+        from app.widgets.hint_system import HintSystemWidget
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(f"渐进提示 - {self.current_exercise.title}")
+        dialog.setMinimumSize(560, 480)
+        dialog.setAccessibleName("渐进提示对话框")
+        QShortcut(QKeySequence(Qt.Key_Escape), dialog, dialog.close)
+        dlg_layout = QVBoxLayout(dialog)
+        dlg_layout.setContentsMargins(12, 12, 12, 12)
+
+        hint_widget = HintSystemWidget(self.db, dialog)
+        hints = self.current_exercise.hints or []
+        hint_widget.set_exercise(self.current_exercise.id, hints)
+        dlg_layout.addWidget(hint_widget)
+
+        dialog.exec_()
+
     def _open_code_analyzer(self) -> None:
         """Open code analyzer dialog for the current editor code."""
         code = self.editor.toPlainText()
@@ -943,13 +1001,16 @@ class PracticeWidget(QWidget):
         }
         language = language_map.get(track_id, "python")
 
-        from PyQt5.QtWidgets import QDialog, QVBoxLayout
+        from PyQt5.QtGui import QKeySequence
+        from PyQt5.QtWidgets import QDialog, QShortcut, QVBoxLayout
 
         from app.widgets.code_analyzer import CodeAnalyzerPanel
 
         dialog = QDialog(self)
         dialog.setWindowTitle("AI 代码分析")
         dialog.setMinimumSize(820, 660)
+        dialog.setAccessibleName("AI 代码分析对话框")
+        QShortcut(QKeySequence(Qt.Key_Escape), dialog, dialog.close)
         dlg_layout = QVBoxLayout(dialog)
         dlg_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -984,7 +1045,6 @@ class PracticeWidget(QWidget):
 
     def _dispatch_analysis(self, mentor_panel, analyzer_panel, code, language):
         """Dispatch code analysis via the mentor panel's AI backend."""
-        from app.ai.chat_handler import AIMentorPanel
 
         def _on_result(analysis_type, result):
             try:

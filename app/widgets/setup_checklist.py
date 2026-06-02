@@ -66,8 +66,7 @@ class ChecklistItem(QWidget):
         self._icon.setFixedSize(32, 32)
         self._icon.setAlignment(Qt.AlignCenter)
         self._icon.setStyleSheet(
-            f"background: {WARNING_SOFT}; color: {WARNING}; "
-            f"border-radius: 16px; font-size: 16px; font-weight: 700;"
+            f"background: {WARNING_SOFT}; color: {WARNING}; border-radius: 16px; font-size: 16px; font-weight: 700;"
         )
         self._icon.setText("?")
         layout.addWidget(self._icon)
@@ -109,8 +108,7 @@ class ChecklistItem(QWidget):
         if self._completed:
             self._icon.setText("✓")
             self._icon.setStyleSheet(
-                f"background: {SUCCESS_SOFT}; color: {SUCCESS}; "
-                f"border-radius: 16px; font-size: 18px; font-weight: 700;"
+                f"background: {SUCCESS_SOFT}; color: {SUCCESS}; border-radius: 16px; font-size: 18px; font-weight: 700;"
             )
             self._title_label.setStyleSheet(
                 f"color: {TEXT_MUTED}; font-size: 18px; font-weight: 600; text-decoration: line-through;"
@@ -119,8 +117,7 @@ class ChecklistItem(QWidget):
         else:
             self._icon.setText("?")
             self._icon.setStyleSheet(
-                f"background: {WARNING_SOFT}; color: {WARNING}; "
-                f"border-radius: 16px; font-size: 16px; font-weight: 700;"
+                f"background: {WARNING_SOFT}; color: {WARNING}; border-radius: 16px; font-size: 16px; font-weight: 700;"
             )
             self._title_label.setStyleSheet(f"color: {TEXT_MAIN}; font-size: 18px; font-weight: 600;")
             self._action_btn.setVisible(True)
@@ -296,9 +293,7 @@ class SetupChecklistWidget(QFrame):
 
     def _has_ai_messages(self) -> bool:
         """Check if user has any AI chat messages (non-system)."""
-        row = self.db.fetchone(
-            "SELECT COUNT(*) FROM mentor_messages WHERE role = 'user'"
-        )
+        row = self.db.fetchone("SELECT COUNT(*) FROM mentor_messages WHERE role = 'user'")
         return bool(row and row[0] > 0)
 
     def _dismiss(self) -> None:

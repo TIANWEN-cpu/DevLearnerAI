@@ -142,6 +142,7 @@ class AppDatabase:
     """
 
     _STATS_CACHE_TTL = 30  # 统计缓存过期时间（秒）
+    _STATS_CACHE_MAX_SIZE = 64  # 统计缓存最大条目数
 
     def __init__(self, db_path: Optional[Path] = None):
         """初始化数据库实例。
@@ -198,268 +199,11 @@ class AppDatabase:
         start = _time.perf_counter()
         with self.connect() as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS lesson_progress (
-                    lesson_id TEXT PRIMARY KEY,
-                    track_id TEXT NOT NULL,
-                    status TEXT DEFAULT 'not_started',
-                    completed INTEGER DEFAULT 0,
-                    last_opened TEXT,
-                    completed_at TEXT
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS lesson_notes (
-                    lesson_id TEXT PRIMARY KEY,
-                    content TEXT DEFAULT '',
-                    updated_at TEXT
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS practice_attempts (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    exercise_id TEXT NOT NULL,
-                    exercise_title_snapshot TEXT,
-                    track_id TEXT NOT NULL,
-                    code_snapshot TEXT,
-                    score INTEGER NOT NULL,
-                    passed INTEGER DEFAULT 0,
-                    duration_sec INTEGER DEFAULT 0,
-                    submitted_at TEXT NOT NULL,
-                    feedback TEXT
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS exercise_drafts (
-                    exercise_id TEXT PRIMARY KEY,
-                    exercise_title_snapshot TEXT NOT NULL,
-                    code_snapshot TEXT NOT NULL,
-                    updated_at TEXT NOT NULL
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS mentor_api_config (
-                    id INTEGER PRIMARY KEY,
-                    host TEXT,
-                    api_key TEXT,
-                    model TEXT
-                )
-                """
-            )
-            columns = {row[1] for row in cursor.execute("PRAGMA table_info(mentor_api_config)").fetchall()}
-            if "key_alias" not in columns:
-                cursor.execute("ALTER TABLE mentor_api_config ADD COLUMN key_alias TEXT")
-            attempt_columns = {row[1] for row in cursor.execute("PRAGMA table_info(practice_attempts)").fetchall()}
-            if "exercise_title_snapshot" not in attempt_columns:
-                cursor.execute("ALTER TABLE practice_attempts ADD COLUMN exercise_title_snapshot TEXT")
-            if "code_snapshot" not in attempt_columns:
-                cursor.execute("ALTER TABLE practice_attempts ADD COLUMN code_snapshot TEXT")
-
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS mentor_sessions (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    created_at TEXT NOT NULL,
-                    updated_at TEXT NOT NULL
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS mentor_messages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    session_id INTEGER NOT NULL,
-                    role TEXT NOT NULL,
-                    content TEXT NOT NULL,
-                    created_at TEXT NOT NULL,
-                    FOREIGN KEY(session_id) REFERENCES mentor_sessions(id)
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS mentor_knowledge_files (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    display_name TEXT NOT NULL,
-                    file_path TEXT NOT NULL,
-                    excerpt TEXT NOT NULL,
-                    created_at TEXT NOT NULL
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS mentor_workspace_state (
-                    id INTEGER PRIMARY KEY,
-                    active_session_id INTEGER,
-                    use_base INTEGER DEFAULT 1,
-                    use_personal INTEGER DEFAULT 1,
-                    use_custom INTEGER DEFAULT 1
-                )
-                """
-            )
-            cursor.execute(
-                """
-                INSERT OR IGNORE INTO mentor_workspace_state (id, active_session_id, use_base, use_personal, use_custom)
-                VALUES (1, NULL, 1, 1, 1)
-                """
-            )
-
-            # ── Bookmark / Favorites ────────────────────────────────────────────
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS bookmarks (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    item_type TEXT NOT NULL,
-                    item_id TEXT NOT NULL,
-                    title TEXT NOT NULL,
-                    track_id TEXT DEFAULT '',
-                    note TEXT DEFAULT '',
-                    created_at TEXT NOT NULL,
-                    UNIQUE(item_type, item_id)
-                )
-                """
-            )
-
-            # ── Achievement System ─────────────────────────────────────────────
-            # Migrate old achievements schema (id, name, unlocked, date) to new schema
-            ach_columns = {row[1] for row in cursor.execute("PRAGMA table_info(achievements)").fetchall()}
-            if ach_columns and "title" not in ach_columns:
-                cursor.execute("DROP TABLE IF EXISTS achievement_progress")
-                cursor.execute("DROP TABLE IF EXISTS achievements")
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS achievements (
-                    id TEXT PRIMARY KEY,
-                    title TEXT NOT NULL,
-                    description TEXT NOT NULL,
-                    icon TEXT DEFAULT '',
-                    category TEXT DEFAULT 'general',
-                    threshold INTEGER DEFAULT 1
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS achievement_progress (
-                    achievement_id TEXT NOT NULL,
-                    current_value INTEGER DEFAULT 0,
-                    unlocked INTEGER DEFAULT 0,
-                    unlocked_at TEXT,
-                    PRIMARY KEY(achievement_id),
-                    FOREIGN KEY(achievement_id) REFERENCES achievements(id)
-                )
-                """
-            )
-
-            # ── Enhanced Notes ─────────────────────────────────────────────────
-            note_columns = {row[1] for row in cursor.execute("PRAGMA table_info(lesson_notes)").fetchall()}
-            if "tags" not in note_columns:
-                cursor.execute("ALTER TABLE lesson_notes ADD COLUMN tags TEXT DEFAULT ''")
-            if "code_snippets" not in note_columns:
-                cursor.execute("ALTER TABLE lesson_notes ADD COLUMN code_snippets TEXT DEFAULT ''")
-
-            # ── Exercise Timer / Review Schedule ───────────────────────────────
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS exercise_timers (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    exercise_id TEXT NOT NULL,
-                    duration_sec INTEGER NOT NULL,
-                    difficulty TEXT DEFAULT '',
-                    recorded_at TEXT NOT NULL
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS review_schedule (
-                    exercise_id TEXT PRIMARY KEY,
-                    interval_days REAL DEFAULT 1.0,
-                    ease_factor REAL DEFAULT 2.5,
-                    repetitions INTEGER DEFAULT 0,
-                    next_review TEXT NOT NULL,
-                    last_reviewed TEXT
-                )
-                """
-            )
-
-            # ── First-run / Wizard state ─────────────────────────────────────
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS first_run_state (
-                    key TEXT PRIMARY KEY,
-                    value TEXT NOT NULL,
-                    updated_at TEXT NOT NULL
-                )
-                """
-            )
-
-            # ── Analytics tables ───────────────────────────────────────────────
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS analytics_events (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    event_type TEXT NOT NULL,
-                    session_id TEXT DEFAULT '',
-                    data TEXT DEFAULT '{}',
-                    created_at TEXT NOT NULL
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS analytics_daily (
-                    date TEXT PRIMARY KEY,
-                    learning_time_sec REAL DEFAULT 0,
-                    lessons_completed INTEGER DEFAULT 0,
-                    exercises_completed INTEGER DEFAULT 0,
-                    exercise_score_sum INTEGER DEFAULT 0,
-                    updated_at TEXT NOT NULL
-                )
-                """
-            )
-
-            # ── Performance indexes for new tables ─────────────────────────────
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_bookmarks_type ON bookmarks(item_type)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_bookmarks_item ON bookmarks(item_type, item_id)")
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_achievement_progress_unlocked ON achievement_progress(unlocked)"
-            )
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_exercise_timers_exercise ON exercise_timers(exercise_id)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_review_schedule_next ON review_schedule(next_review)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_analytics_events_type ON analytics_events(event_type)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_analytics_events_created ON analytics_events(created_at)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_analytics_daily_date ON analytics_daily(date)")
-
-            # ── Performance indexes ───────────────────────────────────────────
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_lesson_progress_track_completed ON lesson_progress(track_id, completed)"
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_lesson_progress_completed_at ON lesson_progress(completed_at)"
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_practice_attempts_exercise ON practice_attempts(exercise_id)"
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_practice_attempts_submitted ON practice_attempts(submitted_at)"
-            )
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_practice_attempts_track ON practice_attempts(track_id)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_mentor_messages_session ON mentor_messages(session_id, id)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_mentor_sessions_updated ON mentor_sessions(updated_at DESC)")
-
-            # ── Query planner optimization ────────────────────────────────────
+            self._create_core_tables(cursor)
+            self._create_mentor_tables(cursor)
+            self._create_feature_tables(cursor)
+            self._create_analytics_tables(cursor)
+            self._create_performance_indexes(cursor)
             cursor.execute("ANALYZE")
 
         self._seed_achievements()
@@ -475,6 +219,269 @@ class AppDatabase:
         from app.utils.metrics import get_metrics
 
         get_metrics().record_db_operation("init_db", elapsed_ms)
+
+    # ── Table creation helpers ────────────────────────────────────────────────
+
+    @staticmethod
+    def _create_core_tables(cursor: "sqlite3.Cursor") -> None:
+        """创建核心业务表并执行列迁移。"""
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS lesson_progress (
+                lesson_id TEXT PRIMARY KEY,
+                track_id TEXT NOT NULL,
+                status TEXT DEFAULT 'not_started',
+                completed INTEGER DEFAULT 0,
+                last_opened TEXT,
+                completed_at TEXT
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS lesson_notes (
+                lesson_id TEXT PRIMARY KEY,
+                content TEXT DEFAULT '',
+                updated_at TEXT
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS practice_attempts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                exercise_id TEXT NOT NULL,
+                exercise_title_snapshot TEXT,
+                track_id TEXT NOT NULL,
+                code_snapshot TEXT,
+                score INTEGER NOT NULL,
+                passed INTEGER DEFAULT 0,
+                duration_sec INTEGER DEFAULT 0,
+                submitted_at TEXT NOT NULL,
+                feedback TEXT
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS exercise_drafts (
+                exercise_id TEXT PRIMARY KEY,
+                exercise_title_snapshot TEXT NOT NULL,
+                code_snapshot TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS mentor_api_config (
+                id INTEGER PRIMARY KEY,
+                host TEXT,
+                api_key TEXT,
+                model TEXT
+            )
+            """
+        )
+        # Column migrations for core tables
+        columns = {row[1] for row in cursor.execute("PRAGMA table_info(mentor_api_config)").fetchall()}
+        if "key_alias" not in columns:
+            cursor.execute("ALTER TABLE mentor_api_config ADD COLUMN key_alias TEXT")
+        attempt_columns = {row[1] for row in cursor.execute("PRAGMA table_info(practice_attempts)").fetchall()}
+        if "exercise_title_snapshot" not in attempt_columns:
+            cursor.execute("ALTER TABLE practice_attempts ADD COLUMN exercise_title_snapshot TEXT")
+        if "code_snapshot" not in attempt_columns:
+            cursor.execute("ALTER TABLE practice_attempts ADD COLUMN code_snapshot TEXT")
+        note_columns = {row[1] for row in cursor.execute("PRAGMA table_info(lesson_notes)").fetchall()}
+        if "tags" not in note_columns:
+            cursor.execute("ALTER TABLE lesson_notes ADD COLUMN tags TEXT DEFAULT ''")
+        if "code_snippets" not in note_columns:
+            cursor.execute("ALTER TABLE lesson_notes ADD COLUMN code_snippets TEXT DEFAULT ''")
+
+    @staticmethod
+    def _create_mentor_tables(cursor: "sqlite3.Cursor") -> None:
+        """创建 AI 导师相关表。"""
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS mentor_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS mentor_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id INTEGER NOT NULL,
+                role TEXT NOT NULL,
+                content TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(session_id) REFERENCES mentor_sessions(id)
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS mentor_knowledge_files (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                display_name TEXT NOT NULL,
+                file_path TEXT NOT NULL,
+                excerpt TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS mentor_workspace_state (
+                id INTEGER PRIMARY KEY,
+                active_session_id INTEGER,
+                use_base INTEGER DEFAULT 1,
+                use_personal INTEGER DEFAULT 1,
+                use_custom INTEGER DEFAULT 1
+            )
+            """
+        )
+        cursor.execute(
+            """
+            INSERT OR IGNORE INTO mentor_workspace_state (id, active_session_id, use_base, use_personal, use_custom)
+            VALUES (1, NULL, 1, 1, 1)
+            """
+        )
+
+    @staticmethod
+    def _create_feature_tables(cursor: "sqlite3.Cursor") -> None:
+        """创建书签、成就、练习计时器、复习计划、首次运行状态等表。"""
+        # Bookmark / Favorites
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS bookmarks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_type TEXT NOT NULL,
+                item_id TEXT NOT NULL,
+                title TEXT NOT NULL,
+                track_id TEXT DEFAULT '',
+                note TEXT DEFAULT '',
+                created_at TEXT NOT NULL,
+                UNIQUE(item_type, item_id)
+            )
+            """
+        )
+        # Achievement System - migrate old schema if needed
+        ach_columns = {row[1] for row in cursor.execute("PRAGMA table_info(achievements)").fetchall()}
+        if ach_columns and "title" not in ach_columns:
+            cursor.execute("DROP TABLE IF EXISTS achievement_progress")
+            cursor.execute("DROP TABLE IF EXISTS achievements")
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS achievements (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                icon TEXT DEFAULT '',
+                category TEXT DEFAULT 'general',
+                threshold INTEGER DEFAULT 1
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS achievement_progress (
+                achievement_id TEXT NOT NULL,
+                current_value INTEGER DEFAULT 0,
+                unlocked INTEGER DEFAULT 0,
+                unlocked_at TEXT,
+                PRIMARY KEY(achievement_id),
+                FOREIGN KEY(achievement_id) REFERENCES achievements(id)
+            )
+            """
+        )
+        # Exercise Timer / Review Schedule
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS exercise_timers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                exercise_id TEXT NOT NULL,
+                duration_sec INTEGER NOT NULL,
+                difficulty TEXT DEFAULT '',
+                recorded_at TEXT NOT NULL
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS review_schedule (
+                exercise_id TEXT PRIMARY KEY,
+                interval_days REAL DEFAULT 1.0,
+                ease_factor REAL DEFAULT 2.5,
+                repetitions INTEGER DEFAULT 0,
+                next_review TEXT NOT NULL,
+                last_reviewed TEXT
+            )
+            """
+        )
+        # First-run / Wizard state
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS first_run_state (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+
+    @staticmethod
+    def _create_analytics_tables(cursor: "sqlite3.Cursor") -> None:
+        """创建分析相关表。"""
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS analytics_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_type TEXT NOT NULL,
+                session_id TEXT DEFAULT '',
+                data TEXT DEFAULT '{}',
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS analytics_daily (
+                date TEXT PRIMARY KEY,
+                learning_time_sec REAL DEFAULT 0,
+                lessons_completed INTEGER DEFAULT 0,
+                exercises_completed INTEGER DEFAULT 0,
+                exercise_score_sum INTEGER DEFAULT 0,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+
+    @staticmethod
+    def _create_performance_indexes(cursor: "sqlite3.Cursor") -> None:
+        """创建所有性能索引。"""
+        indexes = [
+            "CREATE INDEX IF NOT EXISTS idx_bookmarks_type ON bookmarks(item_type)",
+            "CREATE INDEX IF NOT EXISTS idx_bookmarks_item ON bookmarks(item_type, item_id)",
+            "CREATE INDEX IF NOT EXISTS idx_achievement_progress_unlocked ON achievement_progress(unlocked)",
+            "CREATE INDEX IF NOT EXISTS idx_exercise_timers_exercise ON exercise_timers(exercise_id)",
+            "CREATE INDEX IF NOT EXISTS idx_review_schedule_next ON review_schedule(next_review)",
+            "CREATE INDEX IF NOT EXISTS idx_analytics_events_type ON analytics_events(event_type)",
+            "CREATE INDEX IF NOT EXISTS idx_analytics_events_created ON analytics_events(created_at)",
+            "CREATE INDEX IF NOT EXISTS idx_analytics_daily_date ON analytics_daily(date)",
+            "CREATE INDEX IF NOT EXISTS idx_lesson_progress_track_completed ON lesson_progress(track_id, completed)",
+            "CREATE INDEX IF NOT EXISTS idx_lesson_progress_completed_at ON lesson_progress(completed_at)",
+            "CREATE INDEX IF NOT EXISTS idx_practice_attempts_exercise ON practice_attempts(exercise_id)",
+            "CREATE INDEX IF NOT EXISTS idx_practice_attempts_submitted ON practice_attempts(submitted_at)",
+            "CREATE INDEX IF NOT EXISTS idx_practice_attempts_track ON practice_attempts(track_id)",
+            "CREATE INDEX IF NOT EXISTS idx_mentor_messages_session ON mentor_messages(session_id, id)",
+            "CREATE INDEX IF NOT EXISTS idx_mentor_sessions_updated ON mentor_sessions(updated_at DESC)",
+        ]
+        for sql in indexes:
+            cursor.execute(sql)
 
     def _migrate_legacy_api_key_if_needed(self) -> None:
         """将旧版明文 API 密钥迁移到 keyring 安全存储。
@@ -551,7 +558,16 @@ class AppDatabase:
         return _SENTINEL
 
     def _set_cached_stats(self, key: str, value: object) -> None:
-
+        # Evict stale entries if cache is at capacity
+        if len(self._stats_cache) >= self._STATS_CACHE_MAX_SIZE:
+            now = _time.monotonic()
+            stale = [k for k, (ts, _) in self._stats_cache.items() if now - ts >= self._STATS_CACHE_TTL]
+            for k in stale:
+                del self._stats_cache[k]
+            # If still at capacity after stale eviction, remove oldest entry
+            if len(self._stats_cache) >= self._STATS_CACHE_MAX_SIZE:
+                oldest_key = min(self._stats_cache, key=lambda k: self._stats_cache[k][0])
+                del self._stats_cache[oldest_key]
         self._stats_cache[key] = (_time.monotonic(), value)
 
     def _invalidate_stats_cache(self, key: Optional[str] = None) -> None:
@@ -1745,6 +1761,123 @@ class AppDatabase:
         if count >= 5 and self.update_achievement_progress("notes_5", count):
             unlocked.append("notes_5")
         return unlocked
+
+    # ════════════════════════════════════════════════════════════════════════════
+    # Analytics
+    # ════════════════════════════════════════════════════════════════════════════
+
+    def record_analytics_event(self, event_type: str, session_id: str = "", data: dict | None = None) -> None:
+        """记录分析事件。"""
+        import json
+
+        data_json = json.dumps(data or {}, ensure_ascii=False)
+        self.execute(
+            "INSERT INTO analytics_events (event_type, session_id, data, created_at) VALUES (?, ?, ?, ?)",
+            (event_type, session_id, data_json, now_text()),
+        )
+
+    def update_daily_analytics(
+        self,
+        date_str: str,
+        learning_time_sec: float = 0,
+        lessons_completed: int = 0,
+        exercises_completed: int = 0,
+        exercise_score_sum: int = 0,
+    ) -> None:
+        """更新每日分析聚合数据（累加语义）。"""
+        self.execute(
+            """
+            INSERT INTO analytics_daily (date, learning_time_sec, lessons_completed, exercises_completed, exercise_score_sum, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(date) DO UPDATE SET
+                learning_time_sec = learning_time_sec + excluded.learning_time_sec,
+                lessons_completed = lessons_completed + excluded.lessons_completed,
+                exercises_completed = exercises_completed + excluded.exercises_completed,
+                exercise_score_sum = exercise_score_sum + excluded.exercise_score_sum,
+                updated_at = excluded.updated_at
+            """,
+            (date_str, learning_time_sec, lessons_completed, exercises_completed, exercise_score_sum, now_text()),
+        )
+
+    def get_analytics_daily_summary(self, days: int = 30) -> list[dict[str, Any]]:
+        """获取最近 N 天的每日分析摘要。"""
+        from datetime import timedelta
+
+        cutoff = (date.today() - timedelta(days=days)).isoformat()
+        rows = self.fetchall(
+            "SELECT date, learning_time_sec, lessons_completed, exercises_completed, exercise_score_sum "
+            "FROM analytics_daily WHERE date >= ? ORDER BY date ASC",
+            (cutoff,),
+        )
+        # Fill in missing dates
+        result_map = {}
+        for r in rows:
+            result_map[r[0]] = {
+                "date": r[0],
+                "learning_time_sec": r[1],
+                "lessons_completed": r[2],
+                "exercises_completed": r[3],
+                "exercise_score_sum": r[4],
+            }
+        filled = []
+        for i in range(days - 1, -1, -1):
+            d = (date.today() - timedelta(days=i)).isoformat()
+            if d in result_map:
+                filled.append(result_map[d])
+            else:
+                filled.append(
+                    {
+                        "date": d,
+                        "learning_time_sec": 0,
+                        "lessons_completed": 0,
+                        "exercises_completed": 0,
+                        "exercise_score_sum": 0,
+                    }
+                )
+        return filled
+
+    def get_analytics_track_stats(self) -> dict[str, float]:
+        """获取各 track 的技能评分（基于完成率和练习得分）。"""
+        rows = self.fetchall(
+            "SELECT track_id, COUNT(*) as total, SUM(completed) as done FROM lesson_progress GROUP BY track_id"
+        )
+        score_rows = self.fetchall("SELECT track_id, AVG(score) FROM practice_attempts GROUP BY track_id")
+        score_map = {r[0]: r[1] for r in score_rows if r[1] is not None}
+        result = {}
+        for track_id, total, done in rows:
+            completion_rate = (done / total * 100) if total > 0 else 0
+            avg_score = score_map.get(track_id, 0)
+            # Combine: 60% completion + 40% score
+            skill_score = completion_rate * 0.6 + (avg_score or 0) * 0.4
+            result[track_id] = round(min(100, skill_score), 1)
+        return result
+
+    def cleanup_analytics_before(self, cutoff_date: str) -> int:
+        """清理指定日期之前的分析数据。"""
+        with self.connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM analytics_events WHERE created_at < ?", (cutoff_date,))
+            event_count = cursor.rowcount
+            cursor.execute("DELETE FROM analytics_daily WHERE date < ?", (cutoff_date,))
+            daily_count = cursor.rowcount
+        return event_count + daily_count
+
+    def get_analytics_event_count(self, event_type: str = "", days: int = 30) -> int:
+        """获取分析事件数量。"""
+        from datetime import timedelta
+
+        cutoff = (date.today() - timedelta(days=days)).isoformat()
+        if event_type:
+            row = self.fetchone(
+                "SELECT COUNT(*) FROM analytics_events WHERE event_type = ? AND created_at >= ?",
+                (event_type, cutoff),
+            )
+        else:
+            row = self.fetchone(
+                "SELECT COUNT(*) FROM analytics_events WHERE created_at >= ?",
+                (cutoff,),
+            )
+        return int(row[0]) if row else 0
 
     # ════════════════════════════════════════════════════════════════════════════
     # Export / Import

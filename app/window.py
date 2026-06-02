@@ -376,7 +376,7 @@ class DevLearnerWindow(QMainWindow):
         self.brand_logo.setFont(QFont(FONT, F_TITLE - 8, QFont.Bold))
         self.brand_sub = QLabel(tr("window.brand_sub"))
         self.brand_sub.setWordWrap(True)
-        self.brand_sub.setStyleSheet("color: #5f6f86; font-size: 18px;")
+        self.brand_sub.setStyleSheet("color: #3a506b; font-size: 18px;")
         brand_layout.addWidget(self.brand_logo)
         brand_layout.addWidget(self.brand_sub)
         layout.addWidget(self.brand_card)
@@ -617,6 +617,9 @@ class DevLearnerWindow(QMainWindow):
         self.page_subtitle.setAccessibleDescription(desc)
         self.status.showMessage(tr("window.page_switched", title=title), 3000)
         self.status.setAccessibleDescription(f"{title}。{desc}")
+        # Announce page change to screen readers
+        self.page_title.setAccessibleName(title)
+        self.page_subtitle.setAccessibleDescription(desc)
         if widget is self.dashboard:
             self.dashboard.refresh()
 
@@ -714,6 +717,8 @@ class DevLearnerWindow(QMainWindow):
         # Use direct labels for theme since there is no specific theme name key
         theme_label = tr("window.font_size_large") if self._dark_mode else tr("window.font_size_small")
         self.status.showMessage(tr("window.theme_switched", theme=theme_label), 3000)
+        # Announce theme change to screen readers
+        self.status.setAccessibleDescription(tr("window.theme_switched", theme=theme_label))
 
     def set_font_size(self, size_name: str) -> None:
         """Apply a named font-size preset and rebuild the stylesheet."""
@@ -725,6 +730,8 @@ class DevLearnerWindow(QMainWindow):
             "large": tr("window.font_size_large"),
         }
         self.status.showMessage(tr("window.font_size_changed", size=size_labels.get(size_name, size_name)), 3000)
+        # Announce font size change to screen readers
+        self.status.setAccessibleDescription(tr("window.font_size_changed", size=size_labels.get(size_name, size_name)))
 
     def _apply_style_deferred(self) -> None:
         """Apply stylesheet on next event loop tick to batch rapid changes."""
@@ -841,6 +848,13 @@ class DevLearnerWindow(QMainWindow):
             logger.exception("Failed to load demo data")
             QMessageBox.warning(self, tr("demo.load_btn"), tr("demo.load_error"))
 
+    def _show_export_import(self) -> None:
+        """Open the export / import dialog for data management."""
+        from app.widgets.export_import import ExportImportDialog
+
+        dlg = ExportImportDialog(self.db, self)
+        dlg.exec_()
+
 
 def run():
     app = QApplication(sys.argv)
@@ -884,6 +898,10 @@ def run():
         from app.utils.metrics import get_metrics
 
         get_metrics().log_summary()
+        # Clear API connection cache to release memory
+        from app.ai.api_client import clear_connection_cache
+
+        clear_connection_cache()
         close_connection()
     except Exception:
         logger.debug("关闭数据库连接时出错", exc_info=True)

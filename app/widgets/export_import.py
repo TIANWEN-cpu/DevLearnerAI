@@ -1,4 +1,12 @@
-"""Export / Import dialog for learning progress backup and restore."""
+"""Export / Import dialog for learning progress backup and restore.
+
+Supports:
+- Full progress export to JSON
+- Selective export (choose categories)
+- Import progress from JSON (with conflict strategy selection)
+- Export notes to Markdown
+- Full backup and restore
+"""
 
 import json
 from pathlib import Path
@@ -6,8 +14,10 @@ from pathlib import Path
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QKeySequence
 from PyQt5.QtWidgets import (
+    QCheckBox,
     QDialog,
     QFileDialog,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QMessageBox,
@@ -26,6 +36,28 @@ from app.styles import (
     TEXT_MUTED,
     TEXT_SUB,
 )
+from app.utils.data_portability import (
+    ConflictStrategy,
+    ValidationError,
+    export_database_json,
+    export_database_to_file,
+    export_notes_markdown,
+    get_export_summary,
+    import_file_to_database,
+    restore_from_backup,
+)
+
+# ── Category display names ───────────────────────────────────────────────────
+
+CATEGORY_LABELS: dict[str, str] = {
+    "lesson_progress": "课程进度",
+    "lesson_notes": "课程笔记",
+    "practice_attempts": "练习记录",
+    "bookmarks": "书签",
+    "achievements": "成就",
+    "review_schedule": "复习计划",
+    "exercise_timers": "练习计时",
+}
 
 
 class ExportImportDialog(QDialog):
@@ -35,7 +67,7 @@ class ExportImportDialog(QDialog):
         super().__init__(parent)
         self.db = db
         self.setWindowTitle("数据导出 / 导入")
-        self.setMinimumSize(640, 520)
+        self.setMinimumSize(640, 620)
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -66,6 +98,12 @@ class ExportImportDialog(QDialog):
         )
         actions_grid.addLayout(row1)
 
+        # Selective export
+        row1b = self._action_row(
+            "选择性导出", "仅导出指定类别的数据（在下方勾选需要的类别）。", "选择性导出", self._selective_export
+        )
+        actions_grid.addLayout(row1b)
+
         # Import progress JSON
         row2 = self._action_row(
             "导入学习进度", "从之前导出的 JSON 文件中恢复学习进度数据。", "导入", self._import_progress
@@ -93,10 +131,29 @@ class ExportImportDialog(QDialog):
 
         root.addLayout(actions_grid)
 
+        # ── Selective export checkboxes ──────────────────────────────────────
+        self._selective_group = QGroupBox("选择性导出类别")
+        self._selective_group.setStyleSheet(
+            f"QGroupBox {{ color: {TEXT_MAIN}; font-weight: 600; border: 1px solid rgba(37,99,235,0.15); "
+            "border-radius: 8px; margin-top: 8px; padding-top: 20px; }"
+            f"QGroupBox::title {{ subcontrol-origin: margin; left: 12px; }}"
+        )
+        cb_layout = QHBoxLayout()
+        cb_layout.setSpacing(12)
+        self._category_checkboxes: dict[str, QCheckBox] = {}
+        for cat_key, label in CATEGORY_LABELS.items():
+            cb = QCheckBox(label)
+            cb.setChecked(True)
+            cb.setCursor(Qt.PointingHandCursor)
+            self._category_checkboxes[cat_key] = cb
+            cb_layout.addWidget(cb)
+        self._selective_group.setLayout(cb_layout)
+        root.addWidget(self._selective_group)
+
         # Status / log area
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
-        self.log_area.setMinimumHeight(100)
+        self.log_area.setMinimumHeight(80)
         self.log_area.setPlaceholderText("操作日志将显示在这里...")
         self.log_area.setAccessibleName("操作日志")
         self.log_area.setAccessibleDescription("显示导出导入操作的结果和错误信息")
@@ -139,6 +196,12 @@ class ExportImportDialog(QDialog):
     def _log(self, message: str) -> None:
         self.log_area.append(f"[{now_text()}] {message}")
 
+    def _get_selected_categories(self) -> tuple[str, ...]:
+        """返回当前勾选的数据类别。"""
+        return tuple(cat_key for cat_key, cb in self._category_checkboxes.items() if cb.isChecked())
+
+    # ── Export actions ───────────────────────────────────────────────────────
+
     def _export_progress(self) -> None:
         path, _ = QFileDialog.getSaveFileName(
             self,
@@ -149,13 +212,40 @@ class ExportImportDialog(QDialog):
         if not path:
             return
         try:
-            data = self.db.export_progress_json()
+            data = export_database_json(self.db)
             Path(path).write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-            count = sum(len(v) for k, v in data.items() if isinstance(v, list))
+            summary = get_export_summary(data)
+            count = sum(summary.values())
             self._log(f"成功导出 {count} 条记录到: {path}")
             QMessageBox.information(self, "导出成功", f"已导出 {count} 条记录。")
         except Exception as e:
             self._log(f"导出失败: {e}")
+            QMessageBox.warning(self, "导出失败", str(e))
+
+    def _selective_export(self) -> None:
+        categories = self._get_selected_categories()
+        if not categories:
+            QMessageBox.warning(self, "未选择类别", "请至少勾选一个数据类别。")
+            return
+
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "选择性导出",
+            str(EXPORT_DIR / f"selective_{now_text().replace(':', '-').replace(' ', '_')}.json"),
+            "JSON 文件 (*.json)",
+        )
+        if not path:
+            return
+        try:
+            data = export_database_json(self.db, categories=categories)
+            Path(path).write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            summary = get_export_summary(data)
+            count = sum(summary.values())
+            labels = [CATEGORY_LABELS.get(c, c) for c in categories]
+            self._log(f"选择性导出 {count} 条记录（{', '.join(labels)}）到: {path}")
+            QMessageBox.information(self, "导出成功", f"已导出 {count} 条记录。\n类别: {', '.join(labels)}")
+        except Exception as e:
+            self._log(f"选择性导出失败: {e}")
             QMessageBox.warning(self, "导出失败", str(e))
 
     def _import_progress(self) -> None:
@@ -168,11 +258,12 @@ class ExportImportDialog(QDialog):
         if not path:
             return
         try:
-            raw = Path(path).read_text(encoding="utf-8")
-            data = json.loads(raw)
-            count = self.db.import_progress_json(data)
+            count = import_file_to_database(self.db, path, strategy=ConflictStrategy.OVERWRITE, validate=True)
             self._log(f"成功导入 {count} 条记录从: {path}")
             QMessageBox.information(self, "导入成功", f"已导入 {count} 条记录。")
+        except ValidationError as e:
+            self._log(f"数据校验失败: {'; '.join(e.errors)}")
+            QMessageBox.warning(self, "数据校验失败", "\n".join(e.errors))
         except Exception as e:
             self._log(f"导入失败: {e}")
             QMessageBox.warning(self, "导入失败", str(e))
@@ -187,14 +278,12 @@ class ExportImportDialog(QDialog):
         if not path:
             return
         try:
-            content = self.db.export_notes_markdown()
-            Path(path).write_text(content, encoding="utf-8")
-            note_count = self.db.note_count()
-            self._log(f"成功导出 {note_count} 条笔记到: {path}")
+            count = export_notes_markdown(self.db, path)
+            self._log(f"成功导出 {count} 条笔记到: {path}")
             # Track achievement
             self.db.update_achievement_progress("note_exporter", 1)
             self.db.update_achievement_progress("data_backup", 1)
-            QMessageBox.information(self, "导出成功", f"已导出 {note_count} 条笔记。")
+            QMessageBox.information(self, "导出成功", f"已导出 {count} 条笔记。")
         except Exception as e:
             self._log(f"导出失败: {e}")
             QMessageBox.warning(self, "导出失败", str(e))
@@ -209,10 +298,7 @@ class ExportImportDialog(QDialog):
         if not path:
             return
         try:
-            data = self.db.export_progress_json()
-            data["backup_type"] = "full"
-            Path(path).write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-            count = sum(len(v) for k, v in data.items() if isinstance(v, list))
+            count = export_database_to_file(self.db, path)
             self._log(f"完整备份已保存 ({count} 条记录): {path}")
             self.db.update_achievement_progress("data_backup", 1)
             QMessageBox.information(self, "备份成功", f"完整备份包含 {count} 条记录。")
@@ -240,14 +326,13 @@ class ExportImportDialog(QDialog):
         if not path:
             return
         try:
-            raw = Path(path).read_text(encoding="utf-8")
-            data = json.loads(raw)
-            # Reset then import
-            self.db.reset_learning_progress()
-            count = self.db.import_progress_json(data)
+            count = restore_from_backup(self.db, path)
             self._log(f"已从备份恢复 {count} 条记录: {path}")
             self.db.update_achievement_progress("data_backup", 1)
             QMessageBox.information(self, "恢复成功", f"已恢复 {count} 条记录。建议重启应用以刷新界面。")
+        except ValidationError as e:
+            self._log(f"数据校验失败: {'; '.join(e.errors)}")
+            QMessageBox.warning(self, "数据校验失败", "\n".join(e.errors))
         except Exception as e:
             self._log(f"恢复失败: {e}")
             QMessageBox.warning(self, "恢复失败", str(e))

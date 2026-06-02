@@ -30,6 +30,30 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+# ── Coaching mode constants ──────────────────────────────────────────────────
+
+COACHING_MODE_STANDARD = "standard"
+COACHING_MODE_COACHING = "coaching"
+
+_COACHING_SYSTEM_PROMPT = (
+    "你现在处于苏格拉底式教练模式。不要直接给出答案，而是：\n"
+    "1. 通过引导性提问帮助学生自己发现答案\n"
+    "2. 如果学生犯了错误，用反问引导他们思考为什么这里会出错\n"
+    "3. 对学生的正确思路给予肯定，并鼓励他们继续深入\n"
+    "4. 在学生卡住时，只给一个小小的线索，然后继续提问\n"
+    "5. 分析学生的学习模式（喜欢速解还是深思、是否经常跳步等），适时给出个性化建议\n"
+    "6. 每次回答的结构：先一个引导问题，再一小段提示，再一个跟进问题\n"
+    "记住：你的目标不是给出答案，而是引导学生自己找到答案。用中文回答。"
+)
+
+_LEARNING_PATTERN_ANALYSIS_PROMPT = (
+    "根据学生的对话和练习历史，分析其学习模式：\n"
+    "- 学习风格：速解型/深思型/实验型\n"
+    "- 常见弱点：概念理解/代码实现/调试能力\n"
+    "- 学习建议：基于分析给出2-3条具体建议\n"
+    "请简要分析，不超过150字。"
+)
+
 from app.ai.api_client import (
     fetch_models as api_fetch_models,
 )
@@ -90,6 +114,7 @@ class AIMentorPanel(QWidget):
         self.settings_dialog: Optional[QDialog] = None
         self._request_in_flight: bool = False
         self._is_valid: bool = True
+        self._coaching_mode: str = COACHING_MODE_STANDARD
 
         self.response_ready.connect(self._handle_response_ready)
         self.models_ready.connect(self._populate_models)
@@ -307,6 +332,32 @@ class AIMentorPanel(QWidget):
             code_row.addWidget(button)
         code_row.addStretch()
         self.chat_layout.addLayout(code_row)
+
+        # Coaching mode toggle row
+        coaching_row = QHBoxLayout()
+        coaching_row.setSpacing(8)
+        coaching_label = QLabel("AI 教练模式：")
+        coaching_label.setStyleSheet(f"color: {TEXT_SUB}; font-size: 13px; font-weight: 600;")
+        coaching_row.addWidget(coaching_label)
+
+        self.coaching_btn = QPushButton("标准模式")
+        self.coaching_btn.setProperty("variant", "secondary")
+        self.coaching_btn.setFixedHeight(32)
+        self.coaching_btn.setCursor(Qt.PointingHandCursor)
+        self.coaching_btn.setToolTip("切换到苏格拉底式教练模式：AI 通过引导性提问帮助你自主思考")
+        self.coaching_btn.clicked.connect(self._toggle_coaching_mode)
+        coaching_row.addWidget(self.coaching_btn)
+
+        self.learning_pattern_btn = QPushButton("分析学习模式")
+        self.learning_pattern_btn.setProperty("variant", "secondary")
+        self.learning_pattern_btn.setFixedHeight(32)
+        self.learning_pattern_btn.setCursor(Qt.PointingHandCursor)
+        self.learning_pattern_btn.setToolTip("AI 根据你的学习和练习历史分析学习风格和弱点")
+        self.learning_pattern_btn.clicked.connect(self._analyze_learning_pattern)
+        coaching_row.addWidget(self.learning_pattern_btn)
+
+        coaching_row.addStretch()
+        self.chat_layout.addLayout(coaching_row)
 
         self.thinking_hint = QLabel("")
         self.thinking_hint.setWordWrap(True)
@@ -597,8 +648,9 @@ class AIMentorPanel(QWidget):
             self.session_list.blockSignals(False)
 
         self.current_session_id = active_id
-        # Auto-trim old messages to prevent memory bloat
-        self.db.trim_mentor_messages(active_id, keep_last=200)
+        # Auto-trim old messages in ALL sessions to prevent memory bloat
+        for session_id, _name, _updated_at in sessions:
+            self.db.trim_mentor_messages(session_id, keep_last=200)
         self._sync_session_header()
         self._render_messages()
 
@@ -969,6 +1021,10 @@ class AIMentorPanel(QWidget):
             "- Bug 检测：检查边界条件、运行时错误、逻辑漏洞",
             "当用户发送代码时，主动识别意图并提供对应的分析。",
         ]
+
+        # Inject coaching mode system prompt when active
+        if self._coaching_mode == COACHING_MODE_COACHING:
+            parts.append(_COACHING_SYSTEM_PROMPT)
         if self.base_cb.isChecked():
             parts.append(self._base_knowledge_text())
         if self.personal_cb.isChecked():
@@ -1022,6 +1078,95 @@ class AIMentorPanel(QWidget):
             self.analyze_code_review(code, language)
         elif analysis_type == "bug_detection":
             self.analyze_code_bugs(code, language)
+
+    def _toggle_coaching_mode(self) -> None:
+        """Toggle between standard and Socratic coaching mode."""
+        if self._coaching_mode == COACHING_MODE_STANDARD:
+            self._coaching_mode = COACHING_MODE_COACHING
+            self.coaching_btn.setText("教练模式中")
+            self.coaching_btn.setStyleSheet("QPushButton { background: rgba(37, 99, 235, 0.12); font-weight: 700; }")
+        else:
+            self._coaching_mode = COACHING_MODE_STANDARD
+            self.coaching_btn.setText("标准模式")
+            self.coaching_btn.setStyleSheet("")
+
+    def _analyze_learning_pattern(self) -> None:
+        """Send a learning pattern analysis request to the AI."""
+        host = self.host_input.text().strip()
+        api_key = self.key_input.text().strip()
+        model = self.model_combo.currentText().strip()
+
+        if not host or not api_key or not model:
+            self._seed_prompt("请先在 AI 设置中配置 Host、Key 和模型，然后才能分析学习模式。")
+            return
+
+        self.thinking_hint.setVisible(True)
+        self.thinking_hint.setText("正在分析你的学习模式...")
+
+        # Build analysis context from practice history
+        analysis_context = self._build_learning_pattern_context()
+
+        threading.Thread(
+            target=self._learning_pattern_worker,
+            args=(host, api_key, model, analysis_context),
+            daemon=True,
+        ).start()
+
+    def _build_learning_pattern_context(self) -> str:
+        """Build context for learning pattern analysis."""
+        lines = [_LEARNING_PATTERN_ANALYSIS_PROMPT, "", "学生数据摘要："]
+
+        # Practice stats
+        lines.append(f"- 已完成课程数：{self.db.completed_lessons()}")
+        lines.append(f"- 练习平均分：{self.db.average_score()}")
+        lines.append(f"- 连续学习天数：{self.db.active_days_streak()}")
+
+        # Recent attempts
+        recent = self.db.recent_attempts(limit=10)
+        if recent:
+            lines.append("- 最近练习：")
+            for _submitted_at, title, score, passed, dur in recent[:6]:
+                lines.append(f"  - {title}: 分数 {score}, {'通过' if passed else '未通过'}, 用时 {dur}s")
+
+        # Hint usage patterns
+        try:
+            hint_rows = self.db.fetchall("SELECT COUNT(*) FROM exercise_timers WHERE difficulty = 'hint'")
+            total_hints = int(hint_rows[0][0]) if hint_rows and hint_rows[0][0] else 0
+            lines.append(f"- 总提示使用次数：{total_hints}")
+        except Exception:
+            pass
+
+        return "\n".join(lines)
+
+    def _learning_pattern_worker(self, host: str, api_key: str, model: str, context: str) -> None:
+        """Background worker for learning pattern analysis."""
+        try:
+            api_messages = [
+                {
+                    "role": "system",
+                    "content": "你是一位专业的学习分析师。根据学生的学习数据，用简洁的中文分析其学习模式和弱点。",
+                },
+                {"role": "user", "content": context},
+            ]
+            try:
+                reply = api_send_chat_stream(host, api_key, model, api_messages)
+            except Exception:
+                reply = api_send_chat(host, api_key, model, api_messages)
+
+            if self.current_session_id:
+                self.db.append_mentor_message(self.current_session_id, "user", "[学习模式分析请求]")
+                self.db.append_mentor_message(self.current_session_id, "assistant", reply)
+
+            try:
+                self.response_ready.emit(self.current_session_id or 0)
+            except RuntimeError:
+                pass
+        except Exception as exc:
+            logger.error("学习模式分析失败: %s", exc, exc_info=True)
+            try:
+                self.status_ready.emit(f"学习模式分析失败：{exc}")
+            except RuntimeError:
+                pass
 
     def retry_last_message(self) -> None:
         """Retry the last user message."""
@@ -1189,21 +1334,22 @@ class AIMentorPanel(QWidget):
         )
         self._send_code_analysis_request("bug_detection", prompt, code, language)
 
-    def _send_code_analysis_request(
-        self, analysis_type: str, prompt: str, code: str, language: str
-    ) -> None:
+    def _send_code_analysis_request(self, analysis_type: str, prompt: str, code: str, language: str) -> None:
         """Internal method to send code analysis requests to the AI backend."""
         host = self.host_input.text().strip()
         api_key = self.key_input.text().strip()
         model = self.model_combo.currentText().strip()
 
         if not host or not api_key or not model:
-            self.code_analysis_ready.emit(analysis_type, {
-                "success": False,
-                "error": "请先在 AI 设置中配置 Host、Key 和模型。",
-                "code": code,
-                "language": language,
-            })
+            self.code_analysis_ready.emit(
+                analysis_type,
+                {
+                    "success": False,
+                    "error": "请先在 AI 设置中配置 Host、Key 和模型。",
+                    "code": code,
+                    "language": language,
+                },
+            )
             return
 
         system_context = (
@@ -1242,12 +1388,15 @@ class AIMentorPanel(QWidget):
                 logger.info("代码分析流式传输失败，回退到普通请求")
                 reply = api_send_chat(host, api_key, model, api_messages)
 
-            self.code_analysis_ready.emit(analysis_type, {
-                "success": True,
-                "reply": reply,
-                "code": code,
-                "language": language,
-            })
+            self.code_analysis_ready.emit(
+                analysis_type,
+                {
+                    "success": True,
+                    "reply": reply,
+                    "code": code,
+                    "language": language,
+                },
+            )
         except urllib.error.HTTPError as exc:
             logger.error("代码分析 HTTP 错误: %s", exc.code, exc_info=True)
             error_msg = f"AI 服务请求失败（HTTP {exc.code}），请检查设置。"
@@ -1255,20 +1404,26 @@ class AIMentorPanel(QWidget):
                 error_msg = "AI 密钥无效或已过期，请更新密钥。"
             elif exc.code == 429:
                 error_msg = "请求过于频繁，请稍后重试。"
-            self.code_analysis_ready.emit(analysis_type, {
-                "success": False,
-                "error": error_msg,
-                "code": code,
-                "language": language,
-            })
+            self.code_analysis_ready.emit(
+                analysis_type,
+                {
+                    "success": False,
+                    "error": error_msg,
+                    "code": code,
+                    "language": language,
+                },
+            )
         except Exception as exc:
             logger.error("代码分析异常: %s", exc, exc_info=True)
-            self.code_analysis_ready.emit(analysis_type, {
-                "success": False,
-                "error": f"代码分析失败：{exc}",
-                "code": code,
-                "language": language,
-            })
+            self.code_analysis_ready.emit(
+                analysis_type,
+                {
+                    "success": False,
+                    "error": f"代码分析失败：{exc}",
+                    "code": code,
+                    "language": language,
+                },
+            )
 
     def _handle_code_analysis_result(self, analysis_type: str, result: dict) -> None:
         """Handle completed code analysis results by saving to session history."""

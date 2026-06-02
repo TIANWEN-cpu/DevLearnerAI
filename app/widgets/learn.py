@@ -75,9 +75,6 @@ class LearnWidget(QWidget):
                 self.track_combo.setCurrentIndex(index)
                 return
 
-    def _surface_panel(self) -> QFrame:
-        return surface_panel(self)
-
     def _module_category_theme(self, module_key: str):
         module_key = module_key or ""
         if "foundations" in module_key:
@@ -89,7 +86,7 @@ class LearnWidget(QWidget):
         return "#94a3b8", "通用模块"
 
     def _build_header(self) -> QFrame:
-        header = self._surface_panel()
+        header = surface_panel(self)
         layout = QHBoxLayout(header)
         layout.setContentsMargins(22, 18, 22, 18)
         layout.setSpacing(18)
@@ -98,7 +95,7 @@ class LearnWidget(QWidget):
         title = QLabel("学习路径")
         title.setFont(QFont(FONT, F_TITLE - 4, QFont.Bold))
         subtitle = QLabel("按主线进入模块，再从模块里递进学习课程。")
-        subtitle.setStyleSheet("color: #64748b; font-size: 18px;")
+        subtitle.setStyleSheet("color: #3a506b; font-size: 18px;")
         subtitle.setWordWrap(True)
         left.addWidget(title)
         left.addWidget(subtitle)
@@ -106,14 +103,14 @@ class LearnWidget(QWidget):
 
         right = QVBoxLayout()
         picker_label = QLabel("切换主线")
-        picker_label.setStyleSheet("color: #64748b; font-size: 18px; font-weight: 600;")
+        picker_label.setStyleSheet("color: #3a506b; font-size: 18px; font-weight: 600;")
         self.track_combo = QComboBox()
         self.track_combo.setToolTip("选择学习主线（技术栈）")
         for track in self.content_service.tracks:
             self.track_combo.addItem(f"{track.icon} {track.title}", track.id)
         self.track_combo.setMinimumWidth(280)
         self.track_stats = QLabel("")
-        self.track_stats.setStyleSheet("color: #94a3b8; font-size: 16px;")
+        self.track_stats.setStyleSheet("color: #556880; font-size: 16px;")
         right.addWidget(picker_label)
         right.addWidget(self.track_combo)
         right.addWidget(self.track_stats)
@@ -121,7 +118,7 @@ class LearnWidget(QWidget):
         return header
 
     def _build_left_panel(self) -> QFrame:
-        panel = self._surface_panel()
+        panel = surface_panel(self)
         panel.setMinimumWidth(340)
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(18, 18, 18, 18)
@@ -129,7 +126,7 @@ class LearnWidget(QWidget):
 
         self.track_summary = QLabel("")
         self.track_summary.setWordWrap(True)
-        self.track_summary.setStyleSheet("color: #64748b; font-size: 18px;")
+        self.track_summary.setStyleSheet("color: #3a506b; font-size: 18px;")
         layout.addWidget(self.track_summary)
 
         self.search_input = LocalizedLineEdit()
@@ -143,9 +140,11 @@ class LearnWidget(QWidget):
         self.back_btn = QPushButton("返回模块")
         self.back_btn.setProperty("variant", "secondary")
         self.back_btn.setToolTip("返回到模块列表视图")
+        self.back_btn.setAccessibleName("返回模块列表")
+        self.back_btn.setAccessibleDescription("返回上一层模块列表视图")
         self.back_btn.hide()
         self.panel_title = QLabel("模块列表")
-        self.panel_title.setStyleSheet("color: #94a3b8; font-weight: 700; font-size: 18px;")
+        self.panel_title.setStyleSheet("color: #556880; font-weight: 700; font-size: 18px;")
         crumb_row.addWidget(self.back_btn)
         crumb_row.addWidget(self.panel_title)
         crumb_row.addStretch()
@@ -168,12 +167,12 @@ class LearnWidget(QWidget):
 
         self.left_helper = QLabel("")
         self.left_helper.setWordWrap(True)
-        self.left_helper.setStyleSheet("color: #94a3b8; font-size: 16px;")
+        self.left_helper.setStyleSheet("color: #556880; font-size: 16px;")
         layout.addWidget(self.left_helper)
         return panel
 
     def _build_main_panel(self) -> QFrame:
-        panel = self._surface_panel()
+        panel = surface_panel(self)
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(18, 18, 18, 18)
         layout.setSpacing(14)
@@ -181,7 +180,7 @@ class LearnWidget(QWidget):
         self.meta_title = QLabel("学习地图")
         self.meta_title.setFont(QFont(FONT, F_TITLE - 8, QFont.Bold))
         self.meta_meta = QLabel("")
-        self.meta_meta.setStyleSheet("color: #64748b; font-size: 17px; font-weight: 600;")
+        self.meta_meta.setStyleSheet("color: #3a506b; font-size: 17px; font-weight: 600;")
         layout.addWidget(self.meta_title)
         layout.addWidget(self.meta_meta)
 
@@ -198,14 +197,20 @@ class LearnWidget(QWidget):
         self.reader_btn = QPushButton("放大阅读")
         self.reader_btn.setProperty("variant", "secondary")
         self.reader_btn.setToolTip("在独立窗口中放大阅读课程内容")
+        self.reader_btn.setAccessibleName("放大阅读")
+        self.reader_btn.setAccessibleDescription("在独立窗口中以更大字体阅读课程内容")
         self.prev_btn = QPushButton("上一课")
         self.prev_btn.setProperty("variant", "secondary")
         self.prev_btn.setToolTip("切换到上一节课程")
+        self.prev_btn.setAccessibleName("上一课")
         self.complete_btn = QPushButton("标记完成")
         self.complete_btn.setToolTip("将当前课程标记为已完成")
+        self.complete_btn.setAccessibleName("标记完成")
+        self.complete_btn.setAccessibleDescription("将当前课程标记为已完成状态")
         self.next_btn = QPushButton("下一课")
         self.next_btn.setProperty("variant", "secondary")
         self.next_btn.setToolTip("切换到下一节课程")
+        self.next_btn.setAccessibleName("下一课")
         self.bookmark_btn = QPushButton("收藏课程")
         self.bookmark_btn.setProperty("variant", "secondary")
         self.bookmark_btn.setToolTip("收藏当前课程以便快速访问")
@@ -229,7 +234,7 @@ class LearnWidget(QWidget):
         action_row.addStretch()
         layout.addLayout(action_row)
 
-        note_card = self._surface_panel()
+        note_card = surface_panel(self)
         note_layout = QVBoxLayout(note_card)
         note_layout.setContentsMargins(18, 16, 18, 16)
         note_layout.setSpacing(10)
@@ -283,6 +288,8 @@ class LearnWidget(QWidget):
         self.save_note_btn = QPushButton("保存笔记")
         self.save_note_btn.setProperty("variant", "secondary")
         self.save_note_btn.setToolTip("保存当前课程的学习笔记和代码片段")
+        self.save_note_btn.setAccessibleName("保存笔记")
+        self.save_note_btn.setAccessibleDescription("保存当前课程的学习笔记和代码片段到本地数据库")
         row.addWidget(self.save_note_btn)
         note_layout.addLayout(row)
         layout.addWidget(note_card)
@@ -589,13 +596,16 @@ class LearnWidget(QWidget):
         """Open learning path visualization dialog."""
         if not self.current_track:
             return
-        from PyQt5.QtWidgets import QDialog, QVBoxLayout
+        from PyQt5.QtGui import QKeySequence
+        from PyQt5.QtWidgets import QDialog, QShortcut, QVBoxLayout
 
         from app.widgets.learning_path import LearningPathWidget
 
         dialog = QDialog(self)
         dialog.setWindowTitle(f"学习路径 - {self.current_track.title}")
         dialog.setMinimumSize(800, 600)
+        dialog.setAccessibleName(f"学习路径 - {self.current_track.title}")
+        QShortcut(QKeySequence(Qt.Key_Escape), dialog, dialog.close)
         layout = QVBoxLayout(dialog)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -616,6 +626,7 @@ class LearnWidget(QWidget):
             code = self.code_snippet_edit.toPlainText().strip()
         if not code:
             from PyQt5.QtWidgets import QMessageBox
+
             QMessageBox.information(
                 self,
                 "解释代码",
@@ -625,13 +636,16 @@ class LearnWidget(QWidget):
 
         language = self._detect_lesson_language()
 
-        from PyQt5.QtWidgets import QDialog, QVBoxLayout
+        from PyQt5.QtGui import QKeySequence
+        from PyQt5.QtWidgets import QDialog, QShortcut, QVBoxLayout
 
         from app.widgets.code_analyzer import CodeAnalyzerPanel
 
         dialog = QDialog(self)
         dialog.setWindowTitle("AI 代码解释")
         dialog.setMinimumSize(820, 660)
+        dialog.setAccessibleName("AI 代码解释对话框")
+        QShortcut(QKeySequence(Qt.Key_Escape), dialog, dialog.close)
         dlg_layout = QVBoxLayout(dialog)
         dlg_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -695,6 +709,7 @@ class LearnWidget(QWidget):
 
     def _dispatch_explanation(self, mentor_panel, analyzer_panel, code, language):
         """Dispatch code explanation via the mentor panel's AI backend."""
+
         def _on_result(analysis_type, result):
             try:
                 mentor_panel.code_analysis_ready.disconnect(_on_result)
@@ -714,11 +729,22 @@ class LearnWidget(QWidget):
 
     def _show_notes_search(self) -> None:
         """Open a notes search dialog."""
-        from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QVBoxLayout
+        from PyQt5.QtGui import QKeySequence
+        from PyQt5.QtWidgets import (
+            QDialog,
+            QLabel,
+            QLineEdit,
+            QListWidget,
+            QListWidgetItem,
+            QShortcut,
+            QVBoxLayout,
+        )
 
         dialog = QDialog(self)
         dialog.setWindowTitle("搜索笔记")
         dialog.setMinimumSize(560, 440)
+        dialog.setAccessibleName("搜索笔记对话框")
+        QShortcut(QKeySequence(Qt.Key_Escape), dialog, dialog.close)
         layout = QVBoxLayout(dialog)
         layout.setContentsMargins(18, 16, 18, 16)
         layout.setSpacing(12)

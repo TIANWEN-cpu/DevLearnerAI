@@ -197,10 +197,7 @@ class FeatureTourOverlay(QWidget):
             "dashboard": getattr(self._main_window, "dashboard", None),
             "learn": getattr(self._main_window, "learn", None),
             "practice": getattr(self._main_window, "practice", None),
-            "ai_mentor": (
-                getattr(self._main_window, "ai_dock", None)
-                or getattr(self._main_window, "ai_page", None)
-            ),
+            "ai_mentor": (getattr(self._main_window, "ai_dock", None) or getattr(self._main_window, "ai_page", None)),
         }
         return target_map.get(name)
 

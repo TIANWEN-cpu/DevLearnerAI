@@ -76,6 +76,7 @@ class BookmarksWidget(QWidget):
             btn.setFixedHeight(36)
             btn.setCursor(Qt.PointingHandCursor)
             btn.setAccessibleName(f"筛选：{btn.text()}")
+            btn.setAccessibleDescription(f"显示{btn.text()}类型的收藏项")
             btn.clicked.connect(lambda _checked=False, ft=ftype: self._set_filter(ft))
             filter_row.addWidget(btn)
         root.addLayout(filter_row)
@@ -192,6 +193,9 @@ class BookmarksWidget(QWidget):
             "QPushButton:hover { background: #fee2e2; color: #ef4444; }"
         )
         remove_btn.setCursor(Qt.PointingHandCursor)
+        remove_btn.setToolTip("移除此收藏项")
+        remove_btn.setAccessibleName(f"移除收藏：{title}")
+        remove_btn.setAccessibleDescription(f"从收藏列表中移除 {type_label}：{title}")
         remove_btn.clicked.connect(lambda _checked=False, it=item_type, iid=item_id: self._remove(it, iid))
         layout.addWidget(remove_btn, 0, Qt.AlignTop)
 
