@@ -58,7 +58,7 @@ class DashboardWidget(QWidget):
         title.setStyleSheet(f"color: {TEXT_MAIN};")
         layout.addWidget(title)
 
-        self.welcome_sub = QLabel("加载中...")
+        self.welcome_sub = QLabel("正在加载学习数据...")
         self.welcome_sub.setWordWrap(True)
         self.welcome_sub.setStyleSheet(f"color: {TEXT_SUB}; font-size: 21px;")
         layout.addWidget(self.welcome_sub)

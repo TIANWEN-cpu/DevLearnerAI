@@ -4,7 +4,7 @@ from multiprocessing import freeze_support
 from app.window import run
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
 )
 

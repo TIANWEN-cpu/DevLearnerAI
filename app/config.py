@@ -4,6 +4,7 @@ from pathlib import Path
 
 
 APP_NAME = "DevLearnerAI"
+APP_VERSION = "7.0"
 BASE_DIR = Path(__file__).resolve().parent.parent
 RUNTIME_DIR = Path(getattr(sys, "_MEIPASS", BASE_DIR))
 
@@ -38,7 +39,7 @@ EXPORT_DIR = USER_DATA_DIR / "exports"
 DRAFT_DIR = USER_DATA_DIR / "drafts"
 LEGACY_DB_PATH = BASE_DIR / "db" / "learner.db"
 
-APP_TITLE = "DevLearner AI 7.0"
+APP_TITLE = f"DevLearner AI {APP_VERSION}"
 APP_SUBTITLE = "Python / 数据库 / 融合项目一体化学习平台"
 API_CREDENTIAL_ALIAS = f"{APP_NAME}:mentor_api_key"
 

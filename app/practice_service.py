@@ -14,31 +14,6 @@ from app.python_runner import evaluate_python_code
 
 logger = logging.getLogger(__name__)
 
-
-SAFE_BUILTINS = {
-    "abs": abs,
-    "all": all,
-    "any": any,
-    "dict": dict,
-    "enumerate": enumerate,
-    "float": float,
-    "int": int,
-    "len": len,
-    "list": list,
-    "max": max,
-    "min": min,
-    "print": print,
-    "range": range,
-    "reversed": reversed,
-    "set": set,
-    "sorted": sorted,
-    "str": str,
-    "sum": sum,
-    "type": type,
-    "tuple": tuple,
-    "zip": zip,
-}
-
 EXERCISE_FALLBACKS = {
     "py-squares-comprehension": {
         "title": "用推导式生成奇数平方",

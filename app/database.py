@@ -30,6 +30,7 @@ def get_connection(db_path: str):
             ensure_runtime_dirs()
             _connection = sqlite3.connect(db_path, check_same_thread=False)
             _connection.execute("PRAGMA foreign_keys = ON")
+            _connection.execute("PRAGMA journal_mode = WAL")
         return _connection
 
 

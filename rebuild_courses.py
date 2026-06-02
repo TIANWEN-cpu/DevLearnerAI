@@ -6,8 +6,9 @@ Covers Python, C, C++, C#, Database, Algorithms, and Integration tracks.
 
 import json
 import os
+from pathlib import Path
 
-BASE = r"D:\codelearnhleper\content"
+BASE = str(Path(__file__).resolve().parent / "content")
 
 
 def load_map():

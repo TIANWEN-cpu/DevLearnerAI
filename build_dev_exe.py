@@ -11,7 +11,7 @@ PyInstaller.__main__.run(
         main_script,
         "--onefile",
         "--windowed",
-        "--name=DevLearnerAI_6.0",
+        "--name=DevLearnerAI_7.0_dev",
         "--noconfirm",
         "--collect-all=pygments",
         "--collect-all=mistune",
@@ -21,4 +21,4 @@ PyInstaller.__main__.run(
     ]
 )
 
-print("\n打包完成，请检查 dist 目录中的 DevLearnerAI_6.0.exe")
+print("\n打包完成，请检查 dist 目录中的 DevLearnerAI_7.0_dev.exe")

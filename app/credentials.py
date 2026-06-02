@@ -1,3 +1,12 @@
+"""
+Credential storage module.
+
+On Windows, secrets are stored in the Windows Credential Manager (encrypted).
+On other platforms, if the 'keyring' package is installed, it is used as a
+secure backend.  Otherwise, a fallback stores the secret as base64 in a
+plain file at ~/.devlearnerai/api_key.txt -- this is NOT encrypted and
+should only be used when keyring is unavailable.
+"""
 import base64
 import ctypes
 import logging
