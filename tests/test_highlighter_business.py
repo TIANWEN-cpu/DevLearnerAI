@@ -189,9 +189,10 @@ class TestStringHighlighting:
 class TestCommentHighlighting:
     """Test comment regex patterns for each language family."""
 
-    PYTHON_COMMENT = re.compile(r"#[^\n]*")
-    C_COMMENT = re.compile(r"//[^\n]*")
-    SQL_COMMENT = re.compile(r"--[^\n]*")
+    _NL = r"\n"
+    PYTHON_COMMENT = re.compile("#[^" + _NL + "]*")
+    C_COMMENT = re.compile("//[^" + _NL + "]*")
+    SQL_COMMENT = re.compile("--[^" + _NL + "]*")
 
     def test_python_comment_full_line(self):
         m = self.PYTHON_COMMENT.search("# this is a comment")
@@ -203,7 +204,7 @@ class TestCommentHighlighting:
         m = self.PYTHON_COMMENT.search("x = 1  # inline")
         assert m is not None
         assert m.group() == "# inline"
-        assert m.start() == 6
+        assert m.start() == 7  # "x = 1  #" has two spaces before #
 
     def test_python_comment_does_not_cross_newline(self):
         m = self.PYTHON_COMMENT.search("# first\n# second")
@@ -282,7 +283,7 @@ class TestMultilineStringPatterns:
         matches = list(self.TRIPLE_START.finditer(text))
         assert len(matches) == 2
         assert matches[0].start() == 0
-        assert matches[1].start() == 18  # position of closing """
+        assert matches[1].start() == 19  # position of closing """
 
     def test_triple_quote_in_docstring_context(self):
         text = 'def foo():\n    """This is a docstring."""'
@@ -335,9 +336,10 @@ class TestNumberHighlighting:
         assert [m.group() for m in matches] == ["0", "100", "10"]
 
     def test_decimal_without_leading_digit(self):
-        # ".5" should NOT match because [0-9]+ requires at least one digit
+        # ".5" -- the leading dot is not matched, but "5" after the dot is
         m = self.NUMBER.search("x = .5")
-        assert m is None
+        assert m is not None
+        assert m.group() == "5"
 
 
 # ---------------------------------------------------------------------------
@@ -398,19 +400,19 @@ class TestLanguageHighlighterRegistration:
         from app.highlighter import PythonHighlighter
 
         source = __import__("inspect").getsource(PythonHighlighter.__init__)
-        assert "#[^\n]*" in source
+        assert r'#[^\n]*' in source
 
     def test_clike_comment_pattern_is_double_slash(self):
         from app.highlighter import CLikeHighlighter
 
         source = __import__("inspect").getsource(CLikeHighlighter.__init__)
-        assert "//[^\n]*" in source
+        assert r'//[^\n]*' in source
 
     def test_sql_comment_pattern_is_double_dash(self):
         from app.highlighter import SqlHighlighter
 
         source = __import__("inspect").getsource(SqlHighlighter.__init__)
-        assert "--[^\n]*" in source
+        assert r'--[^\n]*' in source
 
     def test_c_language_has_struct_keyword(self):
         from app.highlighter import CLikeHighlighter
