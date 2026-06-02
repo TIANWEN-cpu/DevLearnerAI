@@ -83,6 +83,10 @@ D:\codelearnhleper\
 ├── main.py                  # 生产环境启动入口
 ├── dev_main.py              # 开发环境启动入口
 ├── build_dev_exe.py         # PyInstaller 打包脚本
+├── pyproject.toml           # 项目元数据 + ruff/pytest/coverage 配置
+├── requirements.txt         # 运行时依赖（最小集）
+├── Makefile                 # 本地开发命令（lint / format / test）
+├── LICENSE                  # MIT 许可证
 ├── 项目说明.md              # 项目说明文档
 ├── app/
 │   ├── __init__.py
@@ -92,6 +96,7 @@ D:\codelearnhleper\
 │   ├── content_service.py   # 课程内容加载与管理
 │   ├── database.py          # SQLite 数据库操作（线程安全）
 │   ├── practice_service.py  # 练习服务
+│   ├── python_runner.py     # 代码执行沙箱（AST 预检 + 受限内置函数）
 │   ├── styles.py            # 全局样式定义
 │   └── widgets/
 │       ├── algo.py          # 算法可视化组件
@@ -99,6 +104,11 @@ D:\codelearnhleper\
 │       ├── learn.py         # 学习路径页面
 │       ├── practice.py      # 练习中心页面
 │       └── projects.py      # 融合项目页面
+├── tests/
+│   ├── conftest.py          # pytest 共享 fixture
+│   ├── test_python_runner.py # 沙箱安全边界测试
+│   ├── test_database.py     # 数据库 CRUD + 纯函数测试
+│   └── test_practice_service.py # 评测逻辑测试
 ├── content/
 │   ├── python/              # Python 课程内容
 │   ├── c/                   # C 语言课程内容
@@ -109,6 +119,7 @@ D:\codelearnhleper\
 │   └── metadata/
 │       ├── course_map.json  # 课程元数据
 │       └── exercises.json   # 练习元数据
+├── codexgame/               # Codex 小游戏子项目（独立 README）
 ├── styles/                  # 样式资源
 └── docs/                    # 开发文档
 ```
@@ -124,6 +135,59 @@ D:\codelearnhleper\
 - **HTTPS 强制** -- AI API 通信强制使用 HTTPS，启用 TLS 证书验证
 - **数据库线程安全** -- 使用 SQLite WAL 模式配合写操作锁，确保多线程环境下数据一致性
 - **HTML 输出净化** -- 对 Markdown 渲染后的 HTML 进行净化处理，防止 XSS 注入
+
+---
+
+## 开发指南
+
+### 环境搭建
+
+```bash
+# 克隆仓库
+git clone <repo-url>
+cd codelearnhleper
+
+# 安装运行时 + 开发依赖
+pip install -e ".[dev]"
+# 或仅安装运行时依赖
+pip install -r requirements.txt
+```
+
+### 代码检查与格式化
+
+本项目使用 [Ruff](https://docs.astral.sh/ruff/) 统一完成 lint 和格式化（替代 flake8 + isort + black）。
+
+```bash
+# 检查代码风格
+make lint
+# 或直接调用
+ruff check .
+
+# 自动格式化
+make format
+# 或直接调用
+ruff format .
+ruff check --fix .
+```
+
+### 运行测试
+
+```bash
+# 运行全部测试
+make test
+# 或直接调用
+pytest
+
+# 运行测试并生成覆盖率报告
+make coverage
+```
+
+### 提交规范
+
+- 提交前请确保 `ruff check .` 和 `pytest` 均通过
+- 提交信息建议使用中文，格式：`模块: 简要描述`，例如：
+  - `database: 修复连续学习天数计算的边界条件`
+  - `python_runner: 增加对 eval() 调用的拦截`
 
 ---
 

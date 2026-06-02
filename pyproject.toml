@@ -1,0 +1,82 @@
+[project]
+name = "devlearner-ai"
+version = "7.0"
+description = "AI 驱动的桌面编程学习平台 | Python / PyQt5 / SQLite"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+dependencies = [
+    "PyQt5>=5.15",
+    "mistune>=3.0",
+    "Pygments>=2.14",
+    "keyring>=24.0",
+    "requests>=2.28",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+    "coverage>=7.0",
+]
+
+# ---------------------------------------------------------------------------
+# Ruff  -- linter + formatter (replaces flake8 + isort + black)
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py39"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "SIM108", # ternary operator -- sometimes less readable
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+# ---------------------------------------------------------------------------
+# Coverage
+# ---------------------------------------------------------------------------
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "app/widgets/*",
+    "app/window.py",
+    "app/ai_mentor.py",
+    "app/reader_dialog.py",
+    "app/highlighter.py",
+    "app/effects.py",
+    "app/localized_inputs.py",
+    "app/codex_switcher.py",
+    "app/styles.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
