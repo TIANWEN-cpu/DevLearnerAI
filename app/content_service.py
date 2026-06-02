@@ -6,6 +6,7 @@ Markdown 内容的读取，以及课程数据的缓存和懒加载机制。
 
 import json
 import logging
+import time as _time
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -298,7 +299,16 @@ class ContentService:
         """Load a track on demand and cache it."""
         track_id = track_data.get("id", "track")
         if track_id not in self._cache:
+            start = _time.perf_counter()
             self._cache[track_id] = self._build_track(track_data)
+            elapsed_ms = (_time.perf_counter() - start) * 1000
+            track = self._cache[track_id]
+            logger.info(
+                "Track loaded: id=%s modules=%d lessons=%d latency=%.1fms",
+                track_id, len(track.modules), len(track.lessons), elapsed_ms,
+            )
+            from app.utils.metrics import get_metrics
+            get_metrics().record_content_load("track", elapsed_ms, cache_hit=False)
         return self._cache[track_id]
 
     @property
@@ -360,8 +370,11 @@ class ContentService:
         cache_key = lesson.path
         if cache_key in self._markdown_cache:
             self._markdown_cache.move_to_end(cache_key)
+            from app.utils.metrics import get_metrics
+            get_metrics().record_content_load("markdown", 0.0, cache_hit=True)
             return self._markdown_cache[cache_key]
 
+        start = _time.perf_counter()
         path = CONTENT_DIR / lesson.path
         # Security: verify resolved path stays within CONTENT_DIR
         try:
@@ -389,6 +402,11 @@ class ContentService:
         while len(self._markdown_cache) >= self._MAX_MARKDOWN_CACHE:
             self._markdown_cache.popitem(last=False)
         self._markdown_cache[cache_key] = content
+
+        elapsed_ms = (_time.perf_counter() - start) * 1000
+        logger.debug("Markdown loaded: path=%s len=%d latency=%.1fms", lesson.path, len(content), elapsed_ms)
+        from app.utils.metrics import get_metrics
+        get_metrics().record_content_load("markdown", elapsed_ms, cache_hit=False)
 
         # Proactive memory pressure response
         try:

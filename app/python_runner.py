@@ -658,7 +658,20 @@ def run_python_code(code: str, timeout_sec: int = 3) -> dict[str, Any]:
     Returns:
         包含 ok、stdout、error、duration_sec 键的结果字典。
     """
-    return _run_with_timeout(_run_exec_worker, "run", (code,), timeout_sec)
+    import time as _time
+
+    start = _time.perf_counter()
+    logger.info("Starting code execution: code_len=%d timeout=%ds", len(code), timeout_sec)
+    result = _run_with_timeout(_run_exec_worker, "run", (code,), timeout_sec)
+    elapsed_ms = (_time.perf_counter() - start) * 1000
+    success = result.get("ok", False)
+    logger.info(
+        "Code execution completed: ok=%s duration_sec=%d elapsed_ms=%.1f",
+        success, result.get("duration_sec", 0), elapsed_ms,
+    )
+    from app.utils.metrics import get_metrics
+    get_metrics().record_code_execution(success, exit_code=0 if success else 1, elapsed_ms=elapsed_ms)
+    return result
 
 
 def evaluate_python_code(
@@ -683,12 +696,34 @@ def evaluate_python_code(
     Returns:
         包含 passed、score、feedback_lines、stdout、duration_sec 键的结果字典。
     """
-    return _run_with_timeout(
+    import time as _time
+
+    start = _time.perf_counter()
+    logger.info(
+        "Starting code evaluation: code_len=%d nodes=%d names=%d tests=%d timeout=%ds",
+        len(code), len(expected_nodes), len(required_names), len(tests), timeout_sec,
+    )
+    result = _run_with_timeout(
         _evaluate_worker,
         "evaluate",
         (code, list(expected_nodes), list(required_names), list(tests)),
         timeout_sec,
     )
+    elapsed_ms = (_time.perf_counter() - start) * 1000
+    passed = result.get("passed", False)
+    score = result.get("score", 0)
+    logger.info(
+        "Code evaluation completed: passed=%s score=%d elapsed_ms=%.1f",
+        passed, score, elapsed_ms,
+    )
+    from app.utils.metrics import get_metrics
+    get_metrics().record_exercise_attempt(
+        exercise_id="eval",
+        passed=bool(passed),
+        score=int(score),
+        elapsed_ms=elapsed_ms,
+    )
+    return result
 
 
 def cli_main() -> None:

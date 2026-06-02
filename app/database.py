@@ -8,6 +8,7 @@ import logging
 import shutil
 import sqlite3
 import threading
+import time as _time
 from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta
@@ -84,6 +85,7 @@ def get_connection(db_path: str) -> "sqlite3.Connection":
                     _connection = None
                     _connection_path = None
         if _connection is None:
+            start = _time.perf_counter()
             ensure_runtime_dirs()
             _connection = sqlite3.connect(db_path, check_same_thread=False)
             _connection_path = db_path
@@ -92,6 +94,10 @@ def get_connection(db_path: str) -> "sqlite3.Connection":
             _connection.execute(f"PRAGMA cache_size = {_CACHE_SIZE_KIB}")
             _connection.execute("PRAGMA temp_store = MEMORY")
             _connection.execute(f"PRAGMA mmap_size = {_MMAP_SIZE_BYTES}")
+            elapsed_ms = (_time.perf_counter() - start) * 1000
+            logger.info("Database connection established: path=%s latency=%.1fms", db_path, elapsed_ms)
+            from app.utils.metrics import get_metrics
+            get_metrics().record_db_operation("connect", elapsed_ms)
         return _connection
 
 
@@ -188,6 +194,7 @@ class AppDatabase:
         创建所有必要的表（如不存在），执行列迁移，迁移旧版 API 密钥，
         修复损坏的聊天记录，并确保至少存在一个默认会话。
         """
+        start = _time.perf_counter()
         with self.connect() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -423,6 +430,11 @@ class AppDatabase:
             default_id = self.create_mentor_session("默认对话")
             self.set_active_mentor_session(default_id)
 
+        elapsed_ms = (_time.perf_counter() - start) * 1000
+        logger.info("Database initialization completed in %.1f ms", elapsed_ms)
+        from app.utils.metrics import get_metrics
+        get_metrics().record_db_operation("init_db", elapsed_ms)
+
     def _migrate_legacy_api_key_if_needed(self) -> None:
         """将旧版明文 API 密钥迁移到 keyring 安全存储。
 
@@ -489,7 +501,6 @@ class AppDatabase:
 
     def _get_cached_stats(self, key: str) -> Any:
         """Return cached stats value if still valid, else None."""
-        import time as _time
 
         entry = self._stats_cache.get(key)
         if entry is not None:
@@ -499,7 +510,6 @@ class AppDatabase:
         return _SENTINEL
 
     def _set_cached_stats(self, key: str, value: object) -> None:
-        import time as _time
 
         self._stats_cache[key] = (_time.monotonic(), value)
 
