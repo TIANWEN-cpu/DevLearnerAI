@@ -349,6 +349,30 @@ class PracticeWidget(QWidget):
         guide_layout.addWidget(self.lesson_link)
         guide_layout.addWidget(self.guide_label)
         guide_layout.addWidget(self.draft_status)
+
+        # Bookmark and hint tracking row
+        bm_row = QHBoxLayout()
+        bm_row.setSpacing(8)
+        self.bookmark_btn = QPushButton("收藏此题")
+        self.bookmark_btn.setProperty("variant", "secondary")
+        self.bookmark_btn.setFixedHeight(36)
+        self.bookmark_btn.setCursor(Qt.PointingHandCursor)
+        self.bookmark_btn.setToolTip("收藏当前练习题以便快速访问")
+        self.bookmark_btn.setAccessibleName("收藏练习")
+        self.bookmark_btn.clicked.connect(self._toggle_exercise_bookmark)
+        bm_row.addWidget(self.bookmark_btn)
+        self.hint_usage_label = QLabel("")
+        self.hint_usage_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 14px;")
+        bm_row.addWidget(self.hint_usage_label)
+        bm_row.addStretch()
+        guide_layout.addLayout(bm_row)
+
+        # Delayed hint timer display
+        self.hint_timer_label = QLabel("")
+        self.hint_timer_label.setStyleSheet(f"color: {WARNING}; font-size: 14px; font-weight: 600;")
+        self.hint_timer_label.setVisible(False)
+        guide_layout.addWidget(self.hint_timer_label)
+
         layout.addWidget(guide_box)
 
         # Score visualization card
@@ -694,22 +718,21 @@ class PracticeWidget(QWidget):
         self.draft_status.setText("\u4ee3\u7801\u5df2\u91cd\u7f6e\u4e3a\u521d\u59cb\u72b6\u6001\u3002")
 
     def show_hint(self) -> None:
+        """Show hint with progressive delay system."""
         if not self.current_exercise:
             return
         hints = self.current_exercise.hints or ["这道题没有额外提示，先把输入输出和边界情况想清楚。"]
-        # Progressive hint system: reveal one hint at a time
         if not hasattr(self, "_hint_index"):
             self._hint_index = 0
-        self._hint_index = min(self._hint_index, len(hints) - 1)
-        shown = hints[: self._hint_index + 1]
-        remaining = len(hints) - self._hint_index - 1
-        text = "提示（逐步揭示）：\n" + "\n".join(f"- {item}" for item in shown)
-        if remaining > 0:
-            text += f"\n\n还有 {remaining} 条提示，再次点击「查看提示」可继续展开。"
+        if self._hint_index >= len(hints):
+            # All hints already shown
+            self._reveal_hint()
+            return
+        # First hint is immediate, subsequent hints have a short delay
+        if self._hint_index == 0:
+            self._reveal_hint()
         else:
-            text += "\n\n已显示全部提示。"
-        self.feedback_box.setPlainText(text)
-        self._hint_index = min(self._hint_index + 1, len(hints) - 1)
+            self._start_hint_delay()
 
     def _schedule_draft_save(self) -> None:
         if self._loading_exercise or not self.current_exercise:
@@ -917,3 +940,153 @@ class PracticeWidget(QWidget):
         elif result.passed:
             self.output_box.setPlainText("本次判题没有额外标准输出。")
         self.feedback_box.setPlainText("\n".join(lines))
+
+        # Check achievements after evaluation
+        unlocked = self.db.check_practice_achievements()
+        if result.passed:
+            streak_unlocked = self.db.check_streak_achievements()
+            unlocked.extend(streak_unlocked)
+        if unlocked:
+            self._notify_achievements(unlocked)
+
+    # ── Bookmark methods ──────────────────────────────────────────────────────
+
+    def _toggle_exercise_bookmark(self) -> None:
+        """Toggle bookmark for the current exercise."""
+        if not self.current_exercise:
+            return
+        ex = self.current_exercise
+        if self.db.is_bookmarked("exercise", ex.id):
+            self.db.remove_bookmark("exercise", ex.id)
+            self.bookmark_btn.setText("收藏此题")
+            self.bookmark_btn.setProperty("variant", "secondary")
+        else:
+            self.db.add_bookmark("exercise", ex.id, ex.title, ex.track_id)
+            self.bookmark_btn.setText("已收藏")
+            self.bookmark_btn.setProperty("variant", "primary")
+            self.db.check_bookmark_achievement()
+        self.bookmark_btn.style().unpolish(self.bookmark_btn)
+        self.bookmark_btn.style().polish(self.bookmark_btn)
+
+    def _update_bookmark_state(self) -> None:
+        """Update bookmark button appearance based on current exercise."""
+        if not self.current_exercise:
+            return
+        if self.db.is_bookmarked("exercise", self.current_exercise.id):
+            self.bookmark_btn.setText("已收藏")
+        else:
+            self.bookmark_btn.setText("收藏此题")
+
+    def _update_hint_usage_display(self) -> None:
+        """Update hint usage count label."""
+        if not self.current_exercise:
+            self.hint_usage_label.setText("")
+            return
+        count = self.db.hint_usage_count(self.current_exercise.id)
+        self.hint_usage_label.setText(f"已用 {count} 次提示" if count > 0 else "")
+
+    # ── Delayed hint timer ────────────────────────────────────────────────────
+
+    def _start_hint_delay(self) -> None:
+        """Start a countdown timer before showing the hint."""
+        if not hasattr(self, "_hint_delay_timer"):
+            self._hint_delay_timer = QTimer(self)
+            self._hint_delay_timer.setSingleShot(True)
+            self._hint_delay_timer.timeout.connect(self._on_hint_delay_complete)
+        self._hint_delay_seconds = 5
+        self.hint_timer_label.setText(f"提示将在 {self._hint_delay_seconds} 秒后显示...")
+        self.hint_timer_label.setVisible(True)
+        self.hint_btn.setEnabled(False)
+        if not hasattr(self, "_hint_countdown"):
+            self._hint_countdown = QTimer(self)
+            self._hint_countdown.setInterval(1000)
+            self._hint_countdown.timeout.connect(self._tick_hint_countdown)
+        self._hint_countdown.start()
+        self._hint_delay_timer.start(5000)
+
+    def _tick_hint_countdown(self) -> None:
+        self._hint_delay_seconds = max(0, self._hint_delay_seconds - 1)
+        if self._hint_delay_seconds > 0:
+            self.hint_timer_label.setText(f"提示将在 {self._hint_delay_seconds} 秒后显示...")
+        else:
+            self._hint_countdown.stop()
+
+    def _on_hint_delay_complete(self) -> None:
+        """Called when hint delay timer completes."""
+        if hasattr(self, "_hint_countdown"):
+            self._hint_countdown.stop()
+        self.hint_timer_label.setVisible(False)
+        self.hint_btn.setEnabled(True)
+        self._reveal_hint()
+
+    def _reveal_hint(self) -> None:
+        """Actually reveal the next progressive hint."""
+        if not self.current_exercise:
+            return
+        hints = self.current_exercise.hints or ["这道题没有额外提示，先把输入输出和边界情况想清楚。"]
+        if not hasattr(self, "_hint_index"):
+            self._hint_index = 0
+        self._hint_index = min(self._hint_index, len(hints) - 1)
+        # Record hint usage
+        self.db.record_hint_usage(self.current_exercise.id, self._hint_index)
+        shown = hints[: self._hint_index + 1]
+        remaining = len(hints) - self._hint_index - 1
+        text = "提示（逐步揭示）：\n" + "\n".join(f"- {item}" for item in shown)
+        if remaining > 0:
+            text += f"\n\n还有 {remaining} 条提示，再次点击「查看提示」可继续展开。"
+        else:
+            text += "\n\n已显示全部提示。"
+        self.feedback_box.setPlainText(text)
+        self._hint_index = min(self._hint_index + 1, len(hints) - 1)
+        self._update_hint_usage_display()
+
+    def _notify_achievements(self, achievement_ids: list) -> None:
+        """Show achievement notification popups."""
+        for aid in achievement_ids:
+            ach_rows = self.db.list_achievements()
+            ach = next((a for a in ach_rows if a["id"] == aid), None)
+            if ach:
+                from app.widgets.achievements import AchievementNotification
+
+                top = self.window()
+                notification = AchievementNotification(ach, top)
+                geo = top.geometry()
+                notification.move(geo.right() - 380, geo.top() + 60)
+                notification.show()
+                notification.closed.connect(notification.deleteLater)
+
+    def load_exercise(self, _row: int) -> None:
+        item = self.exercise_list.currentItem()
+        if not item:
+            return
+        self._refresh_exercise_card_selection()
+        exercise = self.practice_service.exercise_by_id(item.data(Qt.UserRole))
+        if not exercise:
+            return
+
+        self.current_exercise = exercise
+        self._hint_index = 0  # Reset progressive hint index
+        self._apply_editor_mode(exercise.track_id)
+        self.start_time = time.time()
+        self._loading_exercise = True
+        self.prompt_box.setPlainText(exercise.prompt)
+        draft = self.db.load_exercise_draft(exercise.id)
+        code_text = draft[1] if draft and draft[1] else exercise.starter_code
+        self.editor.setPlainText(code_text)
+        self._loading_exercise = False
+
+        lesson_info = self.content_service.lesson_by_id(exercise.lesson_id)
+        lesson_title = lesson_info[2].title if lesson_info else "未绑定课程"
+        self.lesson_link.setText(f"关联课程：{lesson_title}")
+        self.guide_label.setText(
+            f"路线：{exercise.track_id}  |  难度：{exercise.difficulty}\n建议先自己完整做一遍，再查看提示和反馈。"
+        )
+        if draft and draft[1]:
+            self.draft_status.setText("已恢复上次草稿，继续写就行。")
+        else:
+            self.draft_status.setText("当前还没有本地草稿。")
+        self.output_box.setPlainText("还没有运行输出。")
+        self.feedback_box.setPlainText("还没有判题反馈。")
+        self._update_bookmark_state()
+        self._update_hint_usage_display()
+        self.hint_timer_label.setVisible(False)

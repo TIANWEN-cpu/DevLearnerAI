@@ -1665,6 +1665,49 @@ class AppDatabase:
         return int(row[0]) if row and row[0] else 0
 
     # ════════════════════════════════════════════════════════════════════════════
+    # Hint Usage Tracking
+    # ════════════════════════════════════════════════════════════════════════════
+
+    def record_hint_usage(self, exercise_id: str, hint_index: int) -> None:
+        """记录提示使用情况。"""
+        self.execute(
+            """
+            INSERT INTO exercise_timers (exercise_id, duration_sec, difficulty, recorded_at)
+            VALUES (?, 0, 'hint', ?)
+            """,
+            (f"{exercise_id}#hint_{hint_index}", now_text()),
+        )
+
+    def hint_usage_count(self, exercise_id: str) -> int:
+        """获取指定练习的提示使用次数。"""
+        pattern = f"{exercise_id}#hint_%"
+        row = self.fetchone(
+            "SELECT COUNT(*) FROM exercise_timers WHERE exercise_id LIKE ? AND difficulty = 'hint'",
+            (pattern,),
+        )
+        return int(row[0]) if row else 0
+
+    # ════════════════════════════════════════════════════════════════════════════
+    # Bookmark Achievement Tracking
+    # ════════════════════════════════════════════════════════════════════════════
+
+    def check_bookmark_achievement(self) -> list[str]:
+        """检查书签相关成就。返回刚解锁的成就 ID 列表。"""
+        count = self.bookmark_count()
+        unlocked = []
+        if count >= 1 and self.update_achievement_progress("first_bookmark", 1):
+            unlocked.append("first_bookmark")
+        return unlocked
+
+    def check_notes_achievements(self) -> list[str]:
+        """检查笔记相关成就。返回刚解锁的成就 ID 列表。"""
+        count = self.note_count()
+        unlocked = []
+        if count >= 5 and self.update_achievement_progress("notes_5", count):
+            unlocked.append("notes_5")
+        return unlocked
+
+    # ════════════════════════════════════════════════════════════════════════════
     # Export / Import
     # ════════════════════════════════════════════════════════════════════════════
 
