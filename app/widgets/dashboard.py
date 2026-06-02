@@ -510,7 +510,7 @@ class DashboardWidget(QWidget):
         header.addWidget(self.line_chart_hint)
         layout.addLayout(header)
 
-        self.progress_line_chart = LineChart(bar_color=ACCENT)
+        self.progress_line_chart = LineChart(line_color=ACCENT)
         self.progress_line_chart.setMinimumHeight(180)
         self.progress_line_chart.point_clicked.connect(self._on_line_point_clicked)
         self.progress_line_chart.setAccessibleName("学习进度折线图")
