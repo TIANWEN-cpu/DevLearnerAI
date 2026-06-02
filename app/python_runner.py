@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
 """Python 代码执行沙箱模块。
 
 提供安全的 Python 代码执行和评测环境，通过 AST 预检、受限内置函数、
 临时目录隔离、输出限制、超时控制和进程隔离等多层防护机制，确保用户
 提交的练习代码不会对宿主系统造成损害。
 """
+
+from __future__ import annotations
 
 import ast
 import io

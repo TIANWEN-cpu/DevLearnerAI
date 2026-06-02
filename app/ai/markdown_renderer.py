@@ -4,6 +4,8 @@
 以及聊天消息气泡 HTML 构建功能。
 """
 
+from __future__ import annotations
+
 import logging
 from html import escape
 from html.parser import HTMLParser

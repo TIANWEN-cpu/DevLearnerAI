@@ -186,18 +186,51 @@ def _build_global_style(
     if cached is not None:
         return cached
 
-    result = f"""
+    p = {
+        "bg_base": bg_base,
+        "bg_shell": bg_shell,
+        "bg_card": bg_card,
+        "bg_card_soft": bg_card_soft,
+        "accent": accent,
+        "accent_hover": accent_hover,
+        "accent_pressed": accent_pressed,
+        "accent_soft": accent_soft,
+        "text_main": text_main,
+        "text_sub": text_sub,
+        "text_muted": text_muted,
+        "border": border,
+        "border_strong": border_strong,
+        "f_base": f_base,
+        "btn_h": btn_h,
+    }
+    result = (
+        _css_base_and_tabs(p)
+        + _css_buttons(p)
+        + _css_inputs(p)
+        + _css_tables(p)
+        + _css_groups_and_progress(p)
+        + _css_panels(p)
+        + _css_menus(p)
+        + _css_a11y(p)
+    )
+    _style_cache[cache_key] = result
+    return result
+
+
+def _css_base_and_tabs(p: dict) -> str:
+    """QWidget 基础样式 + QTabBar 样式。"""
+    return f"""
 QWidget {{
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "{FONT}", Helvetica, Arial, sans-serif;
-    font-size: {f_base}px;
-    color: {text_main};
+    font-size: {p["f_base"]}px;
+    color: {p["text_main"]};
     background: transparent;
 }}
 QMainWindow {{
     background: qlineargradient(
         x1: 0, y1: 0, x2: 1, y2: 1,
-        stop: 0 {bg_base},
-        stop: 0.55 {bg_shell},
+        stop: 0 {p["bg_base"]},
+        stop: 0.55 {p["bg_shell"]},
         stop: 1 #edf6ff
     );
 }}
@@ -215,34 +248,40 @@ QTabBar::tab {{
     padding: 14px 30px;
     margin: 6px 9px 12px 0;
     min-width: 120px;
-    color: {text_main};
+    color: {p["text_main"]};
 }}
 QTabBar::tab:selected {{
     background: #ffffff;
-    color: {text_main};
+    color: {p["text_main"]};
     border: 1px solid rgba(0, 0, 0, 0.1);
 }}
+"""
+
+
+def _css_buttons(p: dict) -> str:
+    """QPushButton 所有变体样式。"""
+    return f"""
 QPushButton {{
-    background: {accent};
+    background: {p["accent"]};
     border: none;
     border-radius: 14px;
     padding: 16px 28px;
-    min-height: {btn_h}px;
+    min-height: {p["btn_h"]}px;
     color: white;
     font-weight: 600;
     cursor: pointer;
 }}
 QPushButton:hover {{
-    background: {accent_hover};
+    background: {p["accent_hover"]};
 }}
 QPushButton:pressed {{
-    background: {accent_pressed};
+    background: {p["accent_pressed"]};
 }}
 QPushButton[nav="true"] {{
     background: transparent;
     border: none;
     border-radius: 12px;
-    color: {text_main};
+    color: {p["text_main"]};
     text-align: left;
     padding: 18px 24px;
     min-height: 84px;
@@ -262,14 +301,14 @@ QPushButton[nav="true"]:hover {{
     background: rgba(37, 99, 235, 0.08);
 }}
 QPushButton[nav="true"][active="true"] {{
-    background: {accent_soft};
-    color: {accent};
+    background: {p["accent_soft"]};
+    color: {p["accent"]};
     font-weight: 600;
 }}
 QPushButton[variant="secondary"] {{
-    background: {bg_card};
-    border: 1px solid {border_strong};
-    color: {text_main};
+    background: {p["bg_card"]};
+    border: 1px solid {p["border_strong"]};
+    color: {p["text_main"]};
     border-radius: 14px;
     cursor: pointer;
 }}
@@ -279,36 +318,42 @@ QPushButton[variant="secondary"]:hover {{
 QPushButton[variant="ghost"] {{
     background: transparent;
     border: none;
-    color: {accent};
+    color: {p["accent"]};
     cursor: pointer;
 }}
 QPushButton[variant="ghost"]:hover {{
     background: rgba(37, 99, 235, 0.10);
     border-radius: 12px;
 }}
+"""
+
+
+def _css_inputs(p: dict) -> str:
+    """QTextEdit / QLineEdit / QComboBox / QListWidget 样式。"""
+    return f"""
 QTextEdit, QPlainTextEdit, QTextBrowser, QListWidget, QLineEdit, QComboBox, QTableWidget {{
-    background: {bg_card};
-    border: 1px solid {border};
+    background: {p["bg_card"]};
+    border: 1px solid {p["border"]};
     border-radius: 14px;
     padding: 16px;
     selection-background-color: rgba(37, 99, 235, 0.25);
 }}
 QTextEdit:focus, QPlainTextEdit:focus, QLineEdit:focus, QComboBox:focus {{
     border: 2px solid rgba(37, 99, 235, 0.45);
-    background: {bg_card};
+    background: {p["bg_card"]};
 }}
 QListWidget::item {{
     border-radius: 9px;
     padding: 20px 16px;
     margin: 4px 0;
     min-height: 40px;
-    color: {text_main};
+    color: {p["text_main"]};
 }}
 QListWidget::item:hover {{
     background: rgba(37, 99, 235, 0.07);
 }}
 QListWidget::item:selected {{
-    background: {accent};
+    background: {p["accent"]};
     color: white;
     font-weight: 600;
 }}
@@ -322,6 +367,12 @@ QComboBox::drop-down {{
 QComboBox::down-arrow {{
     image: none;
 }}
+"""
+
+
+def _css_tables(p: dict) -> str:
+    """QTableWidget / QHeaderView 样式。"""
+    return f"""
 QTableWidget {{
     gridline-color: rgba(0, 0, 0, 0.05);
     alternate-background-color: #fbfdff;
@@ -332,20 +383,26 @@ QTableWidget::item {{
 }}
 QTableWidget::item:selected {{
     background: rgba(37, 99, 235, 0.12);
-    color: {accent};
+    color: {p["accent"]};
     font-weight: 600;
 }}
 QHeaderView::section {{
     background: #edf3f9;
-    color: {text_muted};
+    color: {p["text_muted"]};
     padding: 16px;
     border: none;
-    border-bottom: 1px solid {border};
+    border-bottom: 1px solid {p["border"]};
     font-weight: 600;
 }}
+"""
+
+
+def _css_groups_and_progress(p: dict) -> str:
+    """QGroupBox / QProgressBar 样式。"""
+    return f"""
 QGroupBox {{
-    background: {bg_card};
-    border: 1px solid {border};
+    background: {p["bg_card"]};
+    border: 1px solid {p["border"]};
     border-radius: 18px;
     margin-top: 24px;
     padding-top: 20px;
@@ -355,7 +412,7 @@ QGroupBox::title {{
     left: 24px;
     top: 0px;
     padding: 0 6px;
-    color: {text_muted};
+    color: {p["text_muted"]};
     font-weight: 600;
 }}
 QProgressBar {{
@@ -374,21 +431,27 @@ QProgressBar::chunk {{
         stop: 1 #14b8a6
     );
 }}
+"""
+
+
+def _css_panels(p: dict) -> str:
+    """QDockWidget / QStatusBar / QSplitter / QScrollBar 样式。"""
+    return f"""
 QDockWidget {{
-    color: {text_main};
+    color: {p["text_main"]};
 }}
 QDockWidget::title {{
     background: #edf3f9;
-    border-bottom: 1px solid {border};
+    border-bottom: 1px solid {p["border"]};
     padding: 16px 24px;
     text-align: left;
-    color: {text_main};
+    color: {p["text_main"]};
     font-weight: 600;
 }}
 QStatusBar {{
     background: #edf3f9;
-    border-top: 1px solid {border};
-    color: {text_muted};
+    border-top: 1px solid {p["border"]};
+    color: {p["text_muted"]};
 }}
 QSplitter::handle {{
     background: transparent;
@@ -425,29 +488,41 @@ QScrollBar::handle:horizontal:hover {{
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
     width: 0;
 }}
+"""
+
+
+def _css_menus(p: dict) -> str:
+    """QMenu 样式。"""
+    return f"""
 QMenu {{
-    background: {bg_card};
-    color: {text_main};
-    border: 1px solid {border_strong};
+    background: {p["bg_card"]};
+    color: {p["text_main"]};
+    border: 1px solid {p["border_strong"]};
     border-radius: 14px;
     padding: 10px 0;
 }}
 QMenu::item {{
     background: transparent;
-    color: {text_main};
+    color: {p["text_main"]};
     padding: 12px 24px 12px 24px;
     margin: 2px 8px;
     border-radius: 10px;
 }}
 QMenu::item:selected {{
     background: rgba(37, 99, 235, 0.12);
-    color: {accent};
+    color: {p["accent"]};
 }}
 QMenu::separator {{
     height: 1px;
     background: rgba(37, 99, 235, 0.08);
     margin: 8px 14px;
 }}
+"""
+
+
+def _css_a11y(p: dict) -> str:
+    """键盘焦点指示器 (a11y)。"""
+    return f"""
 /* ── Keyboard focus indicators (a11y) ────────────────────────────────── */
 QPushButton:focus-visible,
 QComboBox:focus-visible,
@@ -457,17 +532,15 @@ QPlainTextEdit:focus-visible,
 QListWidget:focus-visible,
 QSpinBox:focus-visible,
 QTabBar::tab:focus-visible {{
-    outline: 2px solid {accent};
+    outline: 2px solid {p["accent"]};
     outline-offset: 2px;
-    border: 2px solid {accent};
+    border: 2px solid {p["accent"]};
 }}
 QScrollArea:focus-visible {{
-    outline: 1px dashed {accent};
+    outline: 1px dashed {p["accent"]};
     outline-offset: -1px;
 }}
 """
-    _style_cache[cache_key] = result
-    return result
 
 
 # Default (light) stylesheet

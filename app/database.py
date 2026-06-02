@@ -4,6 +4,8 @@
 知识库文件管理。使用 WAL 模式和写锁确保多线程环境下的数据一致性。
 """
 
+from __future__ import annotations
+
 import logging
 import shutil
 import sqlite3
@@ -50,7 +52,7 @@ _MAX_SCORE = 100
 _DEFAULT_KEEP_LAST_MESSAGES = 200
 
 
-def get_connection(db_path: str) -> "sqlite3.Connection":
+def get_connection(db_path: str) -> sqlite3.Connection:
     """获取或创建数据库连接（线程安全的单例模式）。
 
     如果现有连接已失效（例如数据库文件被替换），会自动重新建立连接。
@@ -223,7 +225,7 @@ class AppDatabase:
     # ── Table creation helpers ────────────────────────────────────────────────
 
     @staticmethod
-    def _create_core_tables(cursor: "sqlite3.Cursor") -> None:
+    def _create_core_tables(cursor: sqlite3.Cursor) -> None:
         """创建核心业务表并执行列迁移。"""
         cursor.execute(
             """
@@ -298,7 +300,7 @@ class AppDatabase:
             cursor.execute("ALTER TABLE lesson_notes ADD COLUMN code_snippets TEXT DEFAULT ''")
 
     @staticmethod
-    def _create_mentor_tables(cursor: "sqlite3.Cursor") -> None:
+    def _create_mentor_tables(cursor: sqlite3.Cursor) -> None:
         """创建 AI 导师相关表。"""
         cursor.execute(
             """
@@ -352,7 +354,7 @@ class AppDatabase:
         )
 
     @staticmethod
-    def _create_feature_tables(cursor: "sqlite3.Cursor") -> None:
+    def _create_feature_tables(cursor: sqlite3.Cursor) -> None:
         """创建书签、成就、练习计时器、复习计划、首次运行状态等表。"""
         # Bookmark / Favorites
         cursor.execute(
@@ -434,7 +436,7 @@ class AppDatabase:
         )
 
     @staticmethod
-    def _create_analytics_tables(cursor: "sqlite3.Cursor") -> None:
+    def _create_analytics_tables(cursor: sqlite3.Cursor) -> None:
         """创建分析相关表。"""
         cursor.execute(
             """
@@ -461,7 +463,7 @@ class AppDatabase:
         )
 
     @staticmethod
-    def _create_performance_indexes(cursor: "sqlite3.Cursor") -> None:
+    def _create_performance_indexes(cursor: sqlite3.Cursor) -> None:
         """创建所有性能索引。"""
         indexes = [
             "CREATE INDEX IF NOT EXISTS idx_bookmarks_type ON bookmarks(item_type)",
