@@ -206,7 +206,7 @@ def evaluate_sql_fixture(exercise: Exercise, code: str, fixture: dict) -> Evalua
                     feedback.append("数据库结构变更符合题目要求，已经通过真实校验。")
                 else:
                     feedback.append("SQL 已执行，但数据库结构还没有达到题目要求。")
-        except sqlite3.Error as exc:
+        except (sqlite3.Error, sqlite3.Warning) as exc:
             if _timed_out:
                 feedback.append("SQL 执行超时，可能存在无限循环或过深递归。请检查查询逻辑。")
             else:
