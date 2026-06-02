@@ -18,11 +18,11 @@ import sqlite3
 import pytest
 
 from app.practice_service import (
-    EXERCISE_FALLBACKS,
-    SQL_QUERY_FIXTURES,
     EvaluationResult,
     Exercise,
     PracticeService,
+    _get_exercise_fallbacks,
+    _get_sql_query_fixtures,
     _needs_fallback,
 )
 
@@ -224,8 +224,7 @@ class TestEvaluateSqlFixtureExtended:
             forbidden_keywords=["drop"],
         )
         fixture = {
-            "setup": "CREATE TABLE users(id INTEGER, name TEXT);"
-            "INSERT INTO users VALUES (1, 'Ada');",
+            "setup": "CREATE TABLE users(id INTEGER, name TEXT);INSERT INTO users VALUES (1, 'Ada');",
             "expected_rows": [(1,)],
             "ordered": True,
         }
@@ -256,7 +255,9 @@ class TestEvaluateSqlDDLExtended:
     def test_orders_foreign_key_pass(self):
         svc = PracticeService.__new__(PracticeService)
         ex = _make_exercise("db-orders-foreign-key", track_id="database")
-        code = "CREATE TABLE orders(id INTEGER PRIMARY KEY, user_id INTEGER, FOREIGN KEY(user_id) REFERENCES users(id));"
+        code = (
+            "CREATE TABLE orders(id INTEGER PRIMARY KEY, user_id INTEGER, FOREIGN KEY(user_id) REFERENCES users(id));"
+        )
         result = svc._evaluate_sql(ex, code)
         assert result.passed is True
 
@@ -284,19 +285,23 @@ class TestEvaluateSqlDDLExtended:
     def test_create_enrollment_fk_pass(self):
         svc = PracticeService.__new__(PracticeService)
         ex = _make_exercise("db-create-enrollment-foreign-key", track_id="database")
-        code = ("CREATE TABLE enrollments("
-                "student_id INTEGER, course_id INTEGER, "
-                "FOREIGN KEY(student_id) REFERENCES students(id), "
-                "FOREIGN KEY(course_id) REFERENCES courses(id));")
+        code = (
+            "CREATE TABLE enrollments("
+            "student_id INTEGER, course_id INTEGER, "
+            "FOREIGN KEY(student_id) REFERENCES students(id), "
+            "FOREIGN KEY(course_id) REFERENCES courses(id));"
+        )
         result = svc._evaluate_sql(ex, code)
         assert result.passed is True
 
     def test_create_enrollment_fk_fail_missing_course_fk(self):
         svc = PracticeService.__new__(PracticeService)
         ex = _make_exercise("db-create-enrollment-foreign-key", track_id="database")
-        code = ("CREATE TABLE enrollments("
-                "student_id INTEGER, course_id INTEGER, "
-                "FOREIGN KEY(student_id) REFERENCES students(id));")
+        code = (
+            "CREATE TABLE enrollments("
+            "student_id INTEGER, course_id INTEGER, "
+            "FOREIGN KEY(student_id) REFERENCES students(id));"
+        )
         result = svc._evaluate_sql(ex, code)
         assert result.passed is False
 
@@ -376,11 +381,11 @@ class TestExerciseFallbacksData:
     """Verify EXERCISE_FALLBACKS contains expected data."""
 
     def test_fallbacks_is_nonempty_dict(self):
-        assert isinstance(EXERCISE_FALLBACKS, dict)
-        assert len(EXERCISE_FALLBACKS) > 0
+        assert isinstance(_get_exercise_fallbacks(), dict)
+        assert len(_get_exercise_fallbacks()) > 0
 
     def test_all_fallbacks_have_required_fields(self):
-        for ex_id, data in EXERCISE_FALLBACKS.items():
+        for ex_id, data in _get_exercise_fallbacks().items():
             assert "title" in data, f"{ex_id} missing title"
             assert "difficulty" in data, f"{ex_id} missing difficulty"
             assert "prompt" in data, f"{ex_id} missing prompt"
@@ -390,7 +395,7 @@ class TestExerciseFallbacksData:
 
     def test_no_fallback_needs_fallback(self):
         """Fallback values themselves should NOT trigger the corruption detector."""
-        for ex_id, data in EXERCISE_FALLBACKS.items():
+        for ex_id, data in _get_exercise_fallbacks().items():
             assert _needs_fallback(data["title"]) is False, f"{ex_id} title needs fallback"
             assert _needs_fallback(data["prompt"]) is False, f"{ex_id} prompt needs fallback"
 
@@ -402,28 +407,28 @@ class TestSqlQueryFixturesData:
     """Verify SQL_QUERY_FIXTURES contains valid data."""
 
     def test_fixtures_is_nonempty_dict(self):
-        assert isinstance(SQL_QUERY_FIXTURES, dict)
-        assert len(SQL_QUERY_FIXTURES) > 0
+        assert isinstance(_get_sql_query_fixtures(), dict)
+        assert len(_get_sql_query_fixtures()) > 0
 
     def test_all_fixtures_have_setup(self):
-        for fixture_id, data in SQL_QUERY_FIXTURES.items():
+        for fixture_id, data in _get_sql_query_fixtures().items():
             assert "setup" in data, f"{fixture_id} missing setup"
 
     def test_query_fixtures_have_expected_rows(self):
-        for fixture_id, data in SQL_QUERY_FIXTURES.items():
+        for fixture_id, data in _get_sql_query_fixtures().items():
             mode = data.get("mode", "query")
             if mode == "query":
                 assert "expected_rows" in data, f"{fixture_id} (query mode) missing expected_rows"
 
     def test_script_fixtures_have_check_sql(self):
-        for fixture_id, data in SQL_QUERY_FIXTURES.items():
+        for fixture_id, data in _get_sql_query_fixtures().items():
             if data.get("mode") == "script":
                 assert "check_sql" in data, f"{fixture_id} (script mode) missing check_sql"
                 assert "expected_rows" in data, f"{fixture_id} (script mode) missing expected_rows"
 
     def test_fixtures_setup_executes(self):
         """Each fixture's setup SQL should execute without error."""
-        for fixture_id, data in SQL_QUERY_FIXTURES.items():
+        for fixture_id, data in _get_sql_query_fixtures().items():
             conn = sqlite3.connect(":memory:")
             try:
                 conn.executescript(data["setup"])

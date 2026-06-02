@@ -1,9 +1,29 @@
+import logging
 import os
 import sys
 from pathlib import Path
 
+logger = logging.getLogger(__name__)
+
 APP_NAME = "DevLearnerAI"
-APP_VERSION = "7.0"
+
+
+def _read_package_version() -> str:
+    """Read version from installed package metadata (pyproject.toml).
+
+    Falls back to a hard-coded default when running from source without
+    ``pip install -e .`` so that the application always starts.
+    """
+    try:
+        from importlib.metadata import PackageNotFoundError, version
+
+        return version("devlearner-ai")
+    except (PackageNotFoundError, Exception):
+        logger.debug("importlib.metadata 查不到 devlearner-ai 版本，使用回退值")
+        return "7.0"
+
+
+APP_VERSION = _read_package_version()
 BASE_DIR = Path(__file__).resolve().parent.parent
 RUNTIME_DIR = Path(getattr(sys, "_MEIPASS", BASE_DIR))
 

@@ -67,7 +67,7 @@ python dev_main.py
 
 ```bash
 pip install pyinstaller
-python build_dev_exe.py
+python scripts/build/build_dev_exe.py
 ```
 
 打包产物将输出到 `dist/` 目录。
@@ -93,9 +93,11 @@ python build_dev_exe.py
 
 ```text
 D:\codelearnhleper\
+├── scripts/                 # 构建与数据重建脚本
+│   ├── build/               # PyInstaller 打包脚本
+│   └── rebuild/             # 课程数据重建脚本
 ├── main.py                  # 生产环境启动入口
 ├── dev_main.py              # 开发环境启动入口
-├── build_dev_exe.py         # PyInstaller 打包脚本
 ├── pyproject.toml           # 项目元数据 + ruff/pytest/coverage 配置
 ├── requirements.txt         # 运行时依赖（最小集）
 ├── Makefile                 # 本地开发命令（lint / format / test）
@@ -201,6 +203,12 @@ make coverage
 - 提交信息建议使用中文，格式：`模块: 简要描述`，例如：
   - `database: 修复连续学习天数计算的边界条件`
   - `python_runner: 增加对 eval() 调用的拦截`
+
+---
+
+## 贡献
+
+欢迎参与项目贡献！请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 了解开发环境搭建、分支策略、PR 流程和代码规范。
 
 ---
 

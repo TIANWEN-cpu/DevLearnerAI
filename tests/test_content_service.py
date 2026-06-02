@@ -265,13 +265,7 @@ class TestBuildTrack:
         assert track.title == "未命名主线"
 
     def test_lesson_missing_fields_use_defaults(self, service):
-        track_data = {
-            "modules": [
-                {
-                    "lessons": [{}]
-                }
-            ]
-        }
+        track_data = {"modules": [{"lessons": [{}]}]}
         track = service._build_track(track_data)
         lesson = track.modules[0].lessons[0]
         assert lesson.id == "lesson"
@@ -280,9 +274,7 @@ class TestBuildTrack:
         assert lesson.difficulty == "基础"
 
     def test_module_missing_fields_use_defaults(self, service):
-        track_data = {
-            "modules": [{}]
-        }
+        track_data = {"modules": [{}]}
         track = service._build_track(track_data)
         module = track.modules[0]
         assert module.id == "module"

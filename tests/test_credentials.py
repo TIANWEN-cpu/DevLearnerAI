@@ -28,8 +28,7 @@ class TestSaveSecretWithKeyring:
 
     def test_calls_keyring_set_password(self):
         mock_kr = MagicMock()
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", True):
+        with patch.object(creds_mod.sys, "platform", "linux"), patch.object(creds_mod, "_HAS_KEYRING", True):
             # Inject _keyring if it doesn't exist
             if not hasattr(creds_mod, "_keyring"):
                 creds_mod._keyring = mock_kr
@@ -56,9 +55,11 @@ class TestSaveSecretFallback:
         api_dir = tmp_path / ".devlearnerai"
         fallback_path = api_dir / "api_key.txt"
 
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", False), \
-             patch("app.credentials.Path") as mock_path:
+        with (
+            patch.object(creds_mod.sys, "platform", "linux"),
+            patch.object(creds_mod, "_HAS_KEYRING", False),
+            patch("app.credentials.Path") as mock_path,
+        ):
             mock_path.home.return_value = tmp_path
             # Path.home() / ".devlearnerai" / "api_key.txt"
             # tmp_path is a real Path, so / operator creates real paths
@@ -89,9 +90,11 @@ class TestLoadSecretWithKeyring:
     def test_returns_keyring_value(self):
         mock_kr = MagicMock()
         mock_kr.get_password.return_value = "found"
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", True), \
-             patch.object(creds_mod, "_keyring", mock_kr, create=True):
+        with (
+            patch.object(creds_mod.sys, "platform", "linux"),
+            patch.object(creds_mod, "_HAS_KEYRING", True),
+            patch.object(creds_mod, "_keyring", mock_kr, create=True),
+        ):
             result = creds_mod.load_secret("target")
             assert result == "found"
             mock_kr.get_password.assert_called_once_with("DevLearnerAI", "target")
@@ -99,9 +102,11 @@ class TestLoadSecretWithKeyring:
     def test_returns_none_when_keyring_returns_none(self):
         mock_kr = MagicMock()
         mock_kr.get_password.return_value = None
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", True), \
-             patch.object(creds_mod, "_keyring", mock_kr, create=True):
+        with (
+            patch.object(creds_mod.sys, "platform", "linux"),
+            patch.object(creds_mod, "_HAS_KEYRING", True),
+            patch.object(creds_mod, "_keyring", mock_kr, create=True),
+        ):
             result = creds_mod.load_secret("target")
             assert result is None
 
@@ -117,9 +122,11 @@ class TestLoadSecretFallback:
         api_dir.mkdir(parents=True, exist_ok=True)
         # File does not exist
 
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", False), \
-             patch("app.credentials.Path") as mock_path:
+        with (
+            patch.object(creds_mod.sys, "platform", "linux"),
+            patch.object(creds_mod, "_HAS_KEYRING", False),
+            patch("app.credentials.Path") as mock_path,
+        ):
             mock_path.home.return_value = tmp_path
             # Reconstruct the actual path chain
             # The code does: Path.home() / ".devlearnerai" / "api_key.txt"
@@ -133,9 +140,11 @@ class TestLoadSecretFallback:
         api_dir.mkdir(parents=True, exist_ok=True)
         (api_dir / "api_key.txt").write_text("", encoding="utf-8")
 
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", False), \
-             patch("app.credentials.Path") as mock_path:
+        with (
+            patch.object(creds_mod.sys, "platform", "linux"),
+            patch.object(creds_mod, "_HAS_KEYRING", False),
+            patch("app.credentials.Path") as mock_path,
+        ):
             mock_path.home.return_value = tmp_path
             result = creds_mod.load_secret("target")
             assert result is None
@@ -147,9 +156,11 @@ class TestLoadSecretFallback:
         encoded = base64.b64encode(secret.encode("utf-8")).decode("ascii")
         (api_dir / "api_key.txt").write_text(encoded, encoding="utf-8")
 
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", False), \
-             patch("app.credentials.Path") as mock_path:
+        with (
+            patch.object(creds_mod.sys, "platform", "linux"),
+            patch.object(creds_mod, "_HAS_KEYRING", False),
+            patch("app.credentials.Path") as mock_path,
+        ):
             mock_path.home.return_value = tmp_path
             result = creds_mod.load_secret("target")
             assert result == secret
@@ -160,9 +171,11 @@ class TestLoadSecretFallback:
         api_dir.mkdir(parents=True, exist_ok=True)
         (api_dir / "api_key.txt").write_text(raw_text, encoding="utf-8")
 
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", False), \
-             patch("app.credentials.Path") as mock_path:
+        with (
+            patch.object(creds_mod.sys, "platform", "linux"),
+            patch.object(creds_mod, "_HAS_KEYRING", False),
+            patch("app.credentials.Path") as mock_path,
+        ):
             mock_path.home.return_value = tmp_path
             result = creds_mod.load_secret("target")
             # base64.b64decode won't raise for all strings, but some do
@@ -176,9 +189,11 @@ class TestLoadSecretFallback:
         encoded = base64.b64encode(secret.encode("utf-8")).decode("ascii")
         (api_dir / "api_key.txt").write_text(f"  {encoded}  ", encoding="utf-8")
 
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", False), \
-             patch("app.credentials.Path") as mock_path:
+        with (
+            patch.object(creds_mod.sys, "platform", "linux"),
+            patch.object(creds_mod, "_HAS_KEYRING", False),
+            patch("app.credentials.Path") as mock_path,
+        ):
             mock_path.home.return_value = tmp_path
             result = creds_mod.load_secret("target")
             assert result == secret
@@ -196,9 +211,11 @@ class TestDeleteSecretWithKeyring:
         mock_errors.PasswordDeleteError = type("PasswordDeleteError", (Exception,), {})
         mock_kr.errors = mock_errors
 
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", True), \
-             patch.object(creds_mod, "_keyring", mock_kr, create=True):
+        with (
+            patch.object(creds_mod.sys, "platform", "linux"),
+            patch.object(creds_mod, "_HAS_KEYRING", True),
+            patch.object(creds_mod, "_keyring", mock_kr, create=True),
+        ):
             result = creds_mod.delete_secret("target")
             assert result is True
             mock_kr.delete_password.assert_called_once_with("DevLearnerAI", "target")
@@ -211,9 +228,11 @@ class TestDeleteSecretWithKeyring:
         mock_kr.errors = mock_errors
         mock_kr.delete_password.side_effect = pwd_err()
 
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", True), \
-             patch.object(creds_mod, "_keyring", mock_kr, create=True):
+        with (
+            patch.object(creds_mod.sys, "platform", "linux"),
+            patch.object(creds_mod, "_HAS_KEYRING", True),
+            patch.object(creds_mod, "_keyring", mock_kr, create=True),
+        ):
             result = creds_mod.delete_secret("target")
             assert result is False
 
@@ -230,18 +249,22 @@ class TestDeleteSecretFallback:
         api_file = api_dir / "api_key.txt"
         api_file.write_text("data", encoding="utf-8")
 
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", False), \
-             patch("app.credentials.Path") as mock_path:
+        with (
+            patch.object(creds_mod.sys, "platform", "linux"),
+            patch.object(creds_mod, "_HAS_KEYRING", False),
+            patch("app.credentials.Path") as mock_path,
+        ):
             mock_path.home.return_value = tmp_path
             result = creds_mod.delete_secret("target")
             assert result is True
             assert not api_file.exists()
 
     def test_file_not_exists_returns_false(self, tmp_path):
-        with patch.object(creds_mod.sys, "platform", "linux"), \
-             patch.object(creds_mod, "_HAS_KEYRING", False), \
-             patch("app.credentials.Path") as mock_path:
+        with (
+            patch.object(creds_mod.sys, "platform", "linux"),
+            patch.object(creds_mod, "_HAS_KEYRING", False),
+            patch("app.credentials.Path") as mock_path,
+        ):
             mock_path.home.return_value = tmp_path
             result = creds_mod.delete_secret("target")
             assert result is False
@@ -256,40 +279,50 @@ class TestWindowsCredentialPaths:
     def test_save_secret_windows_success(self):
         """CredWriteW returns True -> no error raised."""
         mock_credential = MagicMock()
-        with patch.object(creds_mod.sys, "platform", "win32"), \
-             patch.object(creds_mod, "CredWriteW", return_value=True) as mock_write, \
-             patch.object(creds_mod, "CREDENTIALW", return_value=mock_credential), \
-             patch("app.credentials.ctypes.byref", side_effect=lambda x: x), \
-             patch("app.credentials.ctypes.create_string_buffer", return_value=b""):
+        with (
+            patch.object(creds_mod.sys, "platform", "win32"),
+            patch.object(creds_mod, "CredWriteW", return_value=True) as mock_write,
+            patch.object(creds_mod, "CREDENTIALW", return_value=mock_credential),
+            patch("app.credentials.ctypes.byref", side_effect=lambda x: x),
+            patch("app.credentials.ctypes.create_string_buffer", return_value=b""),
+        ):
             creds_mod.save_secret("target", "secret")
             mock_write.assert_called_once()
 
     def test_save_secret_windows_failure_raises_oserror(self):
         """CredWriteW returns False -> OSError raised."""
         mock_credential = MagicMock()
-        with patch.object(creds_mod.sys, "platform", "win32"), \
-             patch.object(creds_mod, "CredWriteW", return_value=False), \
-             patch.object(creds_mod, "CREDENTIALW", return_value=mock_credential), \
-             patch("app.credentials.ctypes.byref", side_effect=lambda x: x), \
-             patch("app.credentials.ctypes.create_string_buffer", return_value=b""), \
-             patch("app.credentials.ctypes.get_last_error", return_value=5), pytest.raises(OSError):
+        with (
+            patch.object(creds_mod.sys, "platform", "win32"),
+            patch.object(creds_mod, "CredWriteW", return_value=False),
+            patch.object(creds_mod, "CREDENTIALW", return_value=mock_credential),
+            patch("app.credentials.ctypes.byref", side_effect=lambda x: x),
+            patch("app.credentials.ctypes.create_string_buffer", return_value=b""),
+            patch("app.credentials.ctypes.get_last_error", return_value=5),
+            pytest.raises(OSError),
+        ):
             creds_mod.save_secret("target", "secret")
 
     def test_load_secret_windows_not_found_returns_none(self):
         """CredReadW fails with ERROR_NOT_FOUND -> returns None."""
-        with patch.object(creds_mod.sys, "platform", "win32"), \
-             patch.object(creds_mod, "CredReadW", return_value=False), \
-             patch("app.credentials.ctypes.get_last_error", return_value=1168), \
-             patch("app.credentials.ctypes.byref", side_effect=lambda x: x):
+        with (
+            patch.object(creds_mod.sys, "platform", "win32"),
+            patch.object(creds_mod, "CredReadW", return_value=False),
+            patch("app.credentials.ctypes.get_last_error", return_value=1168),
+            patch("app.credentials.ctypes.byref", side_effect=lambda x: x),
+        ):
             result = creds_mod.load_secret("target")
             assert result is None
 
     def test_load_secret_windows_other_error_raises(self):
         """CredReadW fails with non-NOT_FOUND error -> OSError raised."""
-        with patch.object(creds_mod.sys, "platform", "win32"), \
-             patch.object(creds_mod, "CredReadW", return_value=False), \
-             patch("app.credentials.ctypes.get_last_error", return_value=5), \
-             patch("app.credentials.ctypes.byref", side_effect=lambda x: x), pytest.raises(OSError):
+        with (
+            patch.object(creds_mod.sys, "platform", "win32"),
+            patch.object(creds_mod, "CredReadW", return_value=False),
+            patch("app.credentials.ctypes.get_last_error", return_value=5),
+            patch("app.credentials.ctypes.byref", side_effect=lambda x: x),
+            pytest.raises(OSError),
+        ):
             creds_mod.load_secret("target")
 
     def test_load_secret_windows_success(self):
@@ -300,36 +333,45 @@ class TestWindowsCredentialPaths:
         mock_cred.contents.CredentialBlob = 0
         mock_cred.contents.CredentialBlobSize = len(secret_utf16)
 
-        with patch.object(creds_mod.sys, "platform", "win32"), \
-             patch.object(creds_mod, "PCREDENTIALW", return_value=mock_cred), \
-             patch("app.credentials.ctypes.byref", side_effect=lambda x: x), \
-             patch("app.credentials.ctypes.string_at", return_value=secret_utf16), \
-             patch.object(creds_mod, "CredReadW", return_value=True), \
-             patch.object(creds_mod, "CredFree") as mock_free:
+        with (
+            patch.object(creds_mod.sys, "platform", "win32"),
+            patch.object(creds_mod, "PCREDENTIALW", return_value=mock_cred),
+            patch("app.credentials.ctypes.byref", side_effect=lambda x: x),
+            patch("app.credentials.ctypes.string_at", return_value=secret_utf16),
+            patch.object(creds_mod, "CredReadW", return_value=True),
+            patch.object(creds_mod, "CredFree") as mock_free,
+        ):
             result = creds_mod.load_secret("target")
             assert result == "my_secret"
             mock_free.assert_called_once_with(mock_cred)
 
     def test_delete_secret_windows_success(self):
         """CredDeleteW returns True -> returns True."""
-        with patch.object(creds_mod.sys, "platform", "win32"), \
-             patch.object(creds_mod, "CredDeleteW", return_value=True):
+        with (
+            patch.object(creds_mod.sys, "platform", "win32"),
+            patch.object(creds_mod, "CredDeleteW", return_value=True),
+        ):
             result = creds_mod.delete_secret("target")
             assert result is True
 
     def test_delete_secret_windows_not_found_returns_false(self):
         """CredDeleteW fails with ERROR_NOT_FOUND -> returns False."""
-        with patch.object(creds_mod.sys, "platform", "win32"), \
-             patch.object(creds_mod, "CredDeleteW", return_value=False), \
-             patch("app.credentials.ctypes.get_last_error", return_value=1168):
+        with (
+            patch.object(creds_mod.sys, "platform", "win32"),
+            patch.object(creds_mod, "CredDeleteW", return_value=False),
+            patch("app.credentials.ctypes.get_last_error", return_value=1168),
+        ):
             result = creds_mod.delete_secret("target")
             assert result is False
 
     def test_delete_secret_windows_other_error_raises(self):
         """CredDeleteW fails with non-NOT_FOUND error -> OSError raised."""
-        with patch.object(creds_mod.sys, "platform", "win32"), \
-             patch.object(creds_mod, "CredDeleteW", return_value=False), \
-             patch("app.credentials.ctypes.get_last_error", return_value=5), pytest.raises(OSError):
+        with (
+            patch.object(creds_mod.sys, "platform", "win32"),
+            patch.object(creds_mod, "CredDeleteW", return_value=False),
+            patch("app.credentials.ctypes.get_last_error", return_value=5),
+            pytest.raises(OSError),
+        ):
             creds_mod.delete_secret("target")
 
 

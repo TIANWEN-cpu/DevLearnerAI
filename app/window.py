@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (
 )
 
 from app.ai_mentor import AIMentorDock, AIMentorPanel
-from app.config import APP_TITLE
+from app.config import APP_TITLE, APP_VERSION
 from app.content_service import ContentService
 from app.database import AppDatabase, close_connection
 from app.effects import apply_shadow
@@ -95,7 +95,7 @@ class DevLearnerWindow(QMainWindow):
 
         self.status = QStatusBar()
         self.setStatusBar(self.status)
-        self.status.showMessage("v7.0 正在把原型收成正式产品：Ctrl+Enter 标记课程完成 | Ctrl+Shift+A 唤起 AI 提问")
+        self.status.showMessage(f"v{APP_VERSION} | Ctrl+Enter 标记课程完成 | Ctrl+Shift+A 唤起 AI 提问")
 
         ask_action = QAction("向 AI 提问", self)
         ask_action.setShortcut(QKeySequence("Ctrl+Shift+A"))
