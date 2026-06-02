@@ -91,8 +91,8 @@ class TestMalformedMarkdown:
         lesson = Lesson(id="l1", title="L1", summary="", path="../../etc/passwd", difficulty="", estimated_minutes=10)
         with patch("app.content_service.CONTENT_DIR", md_dir):
             result = service.lesson_markdown(lesson)
-        # Should handle gracefully (file not found)
-        assert "暂时缺失" in result or "错误" in result
+        # Should handle gracefully (file not found or path traversal detected)
+        assert "暂时缺失" in result or "错误" in result or "无效" in result
 
     def test_empty_path_lesson(self, service, tmp_path):
         md_dir = tmp_path / "content"

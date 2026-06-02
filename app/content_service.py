@@ -363,6 +363,19 @@ class ContentService:
             return self._markdown_cache[cache_key]
 
         path = CONTENT_DIR / lesson.path
+        # Security: verify resolved path stays within CONTENT_DIR
+        try:
+            resolved = path.resolve()
+            content_dir_resolved = CONTENT_DIR.resolve()
+            if content_dir_resolved not in resolved.parents and resolved != content_dir_resolved:
+                logger.warning("课程路径越界: %s", lesson.path)
+                content = f"# {lesson.title}\n\n课程文件路径无效。"
+                while len(self._markdown_cache) >= self._MAX_MARKDOWN_CACHE:
+                    self._markdown_cache.popitem(last=False)
+                self._markdown_cache[cache_key] = content
+                return content
+        except (OSError, ValueError):
+            pass
         try:
             content = path.read_text(encoding="utf-8")
         except FileNotFoundError:

@@ -1,11 +1,19 @@
 import logging
 from multiprocessing import freeze_support
 
+from app.config import LOG_DIR, ensure_runtime_dirs
+from app.utils.logger import configure_logging
 from app.window import run
 
-logging.basicConfig(
+ensure_runtime_dirs()
+
+configure_logging(
+    log_dir=LOG_DIR,
     level=logging.DEBUG,
-    format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+    json_format=False,
+    enable_category_files=True,
+    enable_slow_op_tracking=True,
+    enable_memory_tracking=True,
 )
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ import logging
 import re
 import sqlite3
 import time
+from typing import Optional
 
 from app.practice.exercise_loader import get_sql_query_fixtures
 from app.practice.models import EvaluationResult, Exercise
@@ -17,6 +18,49 @@ from app.practice.normalizer import normalize_rows
 from app.python_runner import evaluate_python_code
 
 logger = logging.getLogger(__name__)
+
+# ── SQL execution safety constants ──────────────────────────────────────────
+# Keywords that must never appear in user-submitted SQL, even in sandboxed
+# in-memory databases.  These could allow reading host files, attaching
+# external databases, or loading native extensions.
+_DANGEROUS_SQL_KEYWORDS = frozenset(
+    {
+        "attach",
+        "detach",
+        "load_extension",
+        "readfile",
+        "writefile",
+        "edit",
+        "vfsstat",
+    }
+)
+
+# PRAGMA names that are dangerous even on in-memory databases
+_DANGEROUS_PRAGMAS = frozenset(
+    {
+        "attach",
+        "database_list",
+        "compile_options",
+        "temp_store_directory",
+    }
+)
+
+_SQL_EXEC_TIMEOUT_SEC = 5  # maximum seconds for user SQL execution
+
+
+def _check_sql_safety(code: str) -> Optional[str]:
+    """Return an error message if *code* contains dangerous SQL patterns, else None."""
+    normalized = " ".join(code.lower().split())
+    for keyword in _DANGEROUS_SQL_KEYWORDS:
+        # Match the keyword as a standalone word (not part of a longer identifier)
+        if re.search(r"\b" + keyword + r"\b", normalized):
+            return f"安全限制: 不允许在练习中使用 {keyword.upper()} 语句。"
+    # Block dangerous PRAGMAs
+    pragma_match = re.findall(r"\bpragma\s+(\w+)", normalized)
+    for pragma_name in pragma_match:
+        if pragma_name in _DANGEROUS_PRAGMAS:
+            return f"安全限制: 不允许使用 PRAGMA {pragma_name}。"
+    return None
 
 
 def validate_sql_side_effect(exercise_id: str, conn: sqlite3.Connection) -> bool:
@@ -81,6 +125,16 @@ def evaluate_sql_fixture(exercise: Exercise, code: str, fixture: dict) -> Evalua
             duration_sec=int(time.time() - start),
         )
 
+    # ── Security: block dangerous SQL patterns before execution ───────────
+    safety_error = _check_sql_safety(code)
+    if safety_error:
+        return EvaluationResult(
+            passed=False,
+            score=0,
+            feedback_lines=[safety_error],
+            duration_sec=int(time.time() - start),
+        )
+
     missing = [keyword for keyword in exercise.required_keywords if keyword.lower() not in normalized]
     if missing:
         feedback.append(f"还缺少这些关键结构: {', '.join(missing)}")
@@ -96,6 +150,18 @@ def evaluate_sql_fixture(exercise: Exercise, code: str, fixture: dict) -> Evalua
 
     conn = sqlite3.connect(":memory:")
     conn.execute("PRAGMA foreign_keys = ON")
+    # ── Security: set execution timeout to prevent resource exhaustion ────
+    _deadline = time.monotonic() + _SQL_EXEC_TIMEOUT_SEC
+    _timed_out = False
+
+    def _progress_handler() -> int:
+        nonlocal _timed_out
+        if time.monotonic() > _deadline:
+            _timed_out = True
+            return 1  # non-zero aborts the current query
+        return 0
+
+    conn.set_progress_handler(_progress_handler, 1000)  # check every 1000 VM instructions
     try:
         if fixture.get("setup"):
             conn.executescript(fixture["setup"])
@@ -141,7 +207,10 @@ def evaluate_sql_fixture(exercise: Exercise, code: str, fixture: dict) -> Evalua
                 else:
                     feedback.append("SQL 已执行，但数据库结构还没有达到题目要求。")
         except sqlite3.Error as exc:
-            feedback.append(f"SQL 执行失败: {exc}")
+            if _timed_out:
+                feedback.append("SQL 执行超时，可能存在无限循环或过深递归。请检查查询逻辑。")
+            else:
+                feedback.append(f"SQL 执行失败: {exc}")
     finally:
         conn.close()
 

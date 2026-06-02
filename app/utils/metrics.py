@@ -13,7 +13,6 @@ diagnostics during a single application session.
 
 import logging
 import threading
-import time
 from collections import defaultdict
 from typing import Any, Optional
 
@@ -64,7 +63,7 @@ class Timer:
             self._total_ms += elapsed_ms
             self._samples.append(elapsed_ms)
             if len(self._samples) > self.max_samples:
-                self._samples = self._samples[-self.max_samples:]
+                self._samples = self._samples[-self.max_samples :]
 
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
@@ -153,7 +152,10 @@ class MetricsCollector:
             self._get_counter("api_tokens").inc("total", tokens)
         logger.debug(
             "API call recorded: model=%s status=%s latency=%.1fms tokens=%d",
-            model, status, elapsed_ms, tokens,
+            model,
+            status,
+            elapsed_ms,
+            tokens,
         )
 
     def get_api_summary(self) -> dict[str, Any]:
@@ -183,7 +185,10 @@ class MetricsCollector:
         self._get_counter("exercise_scores").inc(str(score // 10 * 10))  # bucketed by 10s
         logger.debug(
             "Exercise attempt: id=%s status=%s score=%d latency=%.1fms",
-            exercise_id, status, score, elapsed_ms,
+            exercise_id,
+            status,
+            score,
+            elapsed_ms,
         )
 
     def get_exercise_summary(self) -> dict[str, Any]:
@@ -234,7 +239,9 @@ class MetricsCollector:
         self._get_counter("code_exit_codes").inc(str(exit_code))
         logger.debug(
             "Code execution: status=%s exit_code=%d latency=%.1fms",
-            status, exit_code, elapsed_ms,
+            status,
+            exit_code,
+            elapsed_ms,
         )
 
     def get_code_exec_summary(self) -> dict[str, Any]:

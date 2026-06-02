@@ -11,12 +11,13 @@ import json
 import logging
 import multiprocessing as mp
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
 import time
 from collections.abc import Callable
-from contextlib import redirect_stdout
+from contextlib import contextmanager, redirect_stdout
 from pathlib import Path
 from typing import Any
 
@@ -37,6 +38,40 @@ ALLOWED_IMPORTS = {
 }
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+_WIN32_RETRY_ATTEMPTS = 3
+_WIN32_RETRY_DELAY = 0.15
+
+
+@contextmanager
+def _safe_temp_dir(prefix: str):
+    """Create a temporary directory with retry logic for Windows file lock errors.
+
+    On Windows, antivirus (Windows Defender) may newly-created temp directories
+    for scanning, causing WinError 32 ("another process is using this file").
+    This context manager retries directory creation and cleanup on such errors.
+    """
+    for attempt in range(_WIN32_RETRY_ATTEMPTS):
+        try:
+            temp_dir = tempfile.mkdtemp(prefix=prefix)
+            break
+        except OSError:
+            if attempt < _WIN32_RETRY_ATTEMPTS - 1:
+                time.sleep(_WIN32_RETRY_DELAY)
+            else:
+                raise
+    try:
+        yield temp_dir
+    finally:
+        for attempt in range(_WIN32_RETRY_ATTEMPTS):
+            try:
+                shutil.rmtree(temp_dir, ignore_errors=True)
+                break
+            except OSError:
+                if attempt < _WIN32_RETRY_ATTEMPTS - 1:
+                    time.sleep(_WIN32_RETRY_DELAY)
+                else:
+                    shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 _DANGEROUS_ATTRS = frozenset(
@@ -355,7 +390,7 @@ def _execute_code_impl(code: str) -> dict[str, Any]:
     previous_cwd = Path.cwd()
     try:
         _validate_code_safety(code)
-        with tempfile.TemporaryDirectory(prefix="devlearner-run-") as temp_dir:
+        with _safe_temp_dir(prefix="devlearner-run-") as temp_dir:
             workdir = Path(temp_dir)
             os.chdir(workdir)
             try:
@@ -438,21 +473,25 @@ def _evaluate_code_impl(
 
     try:
         _validate_code_safety(code)
-        with tempfile.TemporaryDirectory(prefix="devlearner-eval-") as temp_dir:
+        with _safe_temp_dir(prefix="devlearner-eval-") as temp_dir:
             workdir = Path(temp_dir)
             os.chdir(workdir)
-            stdout_buffer = LimitedBuffer()
-            namespace = {
-                "__builtins__": _safe_builtins(workdir),
-                "__name__": "__main__",
-            }
-            with redirect_stdout(stdout_buffer):
-                exec(compile(tree, "<exercise>", "exec"), namespace, namespace)
-            stdout = stdout_buffer.getvalue().strip()
-            score += 10
-            feedback.append("代码可成功执行。")
+            try:
+                stdout_buffer = LimitedBuffer()
+                namespace = {
+                    "__builtins__": _safe_builtins(workdir),
+                    "__name__": "__main__",
+                }
+                with redirect_stdout(stdout_buffer):
+                    exec(compile(tree, "<exercise>", "exec"), namespace, namespace)
+                stdout = stdout_buffer.getvalue().strip()
+                score += 10
+                feedback.append("代码可成功执行。")
+            finally:
+                os.chdir(previous_cwd)
     except Exception as exc:
         logger.debug("代码评测执行异常: %s", exc)
+        os.chdir(previous_cwd)
         return {
             "passed": False,
             "score": score,
@@ -460,8 +499,6 @@ def _evaluate_code_impl(
             "stdout": stdout,
             "duration_sec": int(time.time() - started_at),
         }
-    finally:
-        os.chdir(previous_cwd)
 
     missing_names = [name for name in required_names if name not in namespace]
     if missing_names:
@@ -529,7 +566,7 @@ def _should_use_subprocess_fallback() -> bool:
 
 def _run_via_subprocess(mode: str, args: tuple[Any, ...], timeout_sec: int) -> dict[str, Any]:
     payload = {"mode": mode, "args": args}
-    with tempfile.TemporaryDirectory(prefix="devlearner-runner-") as temp_dir:
+    with _safe_temp_dir(prefix="devlearner-runner-") as temp_dir:
         payload_path = Path(temp_dir) / "payload.json"
         payload_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 
