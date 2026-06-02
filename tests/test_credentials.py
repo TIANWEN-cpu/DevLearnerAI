@@ -5,6 +5,7 @@ mock _keyring and patching sys.platform, plus edge cases in load/save/delete.
 """
 
 import base64
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -273,6 +274,7 @@ class TestDeleteSecretFallback:
 # ---------------------------------------------------------------------------
 # Windows credential path (mocked ctypes)
 # ---------------------------------------------------------------------------
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows Credential Manager only")
 class TestWindowsCredentialPaths:
     """Test Windows credential manager paths using mocked ctypes calls."""
 

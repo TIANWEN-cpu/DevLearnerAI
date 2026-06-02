@@ -6,7 +6,10 @@ Targets:
 """
 
 import os
+import sys
 from unittest.mock import patch
+
+import pytest
 
 
 class TestResourceDir:
@@ -36,6 +39,7 @@ class TestResourceDir:
         assert result.name == "nonexistent_resource_12345"
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows paths only")
 class TestUserDataRoot:
     """Test _user_data_root function (lines 45-49)."""
 

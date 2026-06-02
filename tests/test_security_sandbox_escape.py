@@ -10,6 +10,8 @@ Tests known Python sandbox escape techniques including:
 - indirect attribute access tricks
 """
 
+import sys
+
 import pytest
 
 from app.python_runner import (
@@ -222,6 +224,7 @@ class TestFileSystemAccessEscape:
             with pytest.raises(PermissionError):
                 safe_open("../../etc/passwd")
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows paths only")
     def test_open_windows_system_path_blocked(self):
         """Absolute system paths are blocked by _safe_open_factory."""
         import tempfile
