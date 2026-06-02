@@ -14,7 +14,6 @@ Covers:
 """
 
 from datetime import date, timedelta
-from unittest.mock import patch
 
 import pytest
 
@@ -173,30 +172,22 @@ class TestWorkspaceFlags:
         assert flags["use_custom"] is True
 
     def test_save_and_load_flags(self, db):
-        db.save_mentor_workspace_flags(
-            use_base=False, use_personal=True, use_custom=False
-        )
+        db.save_mentor_workspace_flags(use_base=False, use_personal=True, use_custom=False)
         flags = db.load_mentor_workspace_flags()
         assert flags["use_base"] is False
         assert flags["use_personal"] is True
         assert flags["use_custom"] is False
 
     def test_save_all_false(self, db):
-        db.save_mentor_workspace_flags(
-            use_base=False, use_personal=False, use_custom=False
-        )
+        db.save_mentor_workspace_flags(use_base=False, use_personal=False, use_custom=False)
         flags = db.load_mentor_workspace_flags()
         assert flags["use_base"] is False
         assert flags["use_personal"] is False
         assert flags["use_custom"] is False
 
     def test_save_all_true_after_changing(self, db):
-        db.save_mentor_workspace_flags(
-            use_base=False, use_personal=False, use_custom=False
-        )
-        db.save_mentor_workspace_flags(
-            use_base=True, use_personal=True, use_custom=True
-        )
+        db.save_mentor_workspace_flags(use_base=False, use_personal=False, use_custom=False)
+        db.save_mentor_workspace_flags(use_base=True, use_personal=True, use_custom=True)
         flags = db.load_mentor_workspace_flags()
         assert flags["use_base"] is True
         assert flags["use_personal"] is True

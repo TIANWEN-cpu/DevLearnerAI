@@ -10,17 +10,13 @@ Covers:
 - filtered / exercise_by_id (exercise query helpers)
 """
 
-import json
 import sqlite3
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Optional
 
 import pytest
 
 from app.practice_service import (
-    Exercise,
     EvaluationResult,
+    Exercise,
     PracticeService,
     _needs_fallback,
 )
@@ -58,9 +54,7 @@ class TestEvaluationResult:
     """Test the EvaluationResult dataclass and its property."""
 
     def test_feedback_text_joins_lines(self):
-        result = EvaluationResult(
-            passed=True, score=100, feedback_lines=["line1", "line2", "line3"]
-        )
+        result = EvaluationResult(passed=True, score=100, feedback_lines=["line1", "line2", "line3"])
         assert result.feedback_text == "line1\nline2\nline3"
 
     def test_feedback_text_empty_lines(self):
@@ -95,94 +89,61 @@ class TestValidateSqlSideEffect:
         c.close()
 
     def test_design_enrollment_table_pass(self, conn):
-        conn.execute(
-            "CREATE TABLE enrollments(student_id INTEGER, course_id INTEGER)"
-        )
-        assert PracticeService._validate_sql_side_effect(
-            "db-design-enrollment-table", conn
-        ) is True
+        conn.execute("CREATE TABLE enrollments(student_id INTEGER, course_id INTEGER)")
+        assert PracticeService._validate_sql_side_effect("db-design-enrollment-table", conn) is True
 
     def test_design_enrollment_table_fail_missing_column(self, conn):
         conn.execute("CREATE TABLE enrollments(student_id INTEGER)")
-        assert PracticeService._validate_sql_side_effect(
-            "db-design-enrollment-table", conn
-        ) is False
+        assert PracticeService._validate_sql_side_effect("db-design-enrollment-table", conn) is False
 
     def test_orders_foreign_key_pass(self, conn):
         conn.execute("CREATE TABLE users(id INTEGER PRIMARY KEY, name TEXT)")
         conn.execute(
-            "CREATE TABLE orders(id INTEGER PRIMARY KEY, user_id INTEGER, "
-            "FOREIGN KEY(user_id) REFERENCES users(id))"
+            "CREATE TABLE orders(id INTEGER PRIMARY KEY, user_id INTEGER, FOREIGN KEY(user_id) REFERENCES users(id))"
         )
-        assert PracticeService._validate_sql_side_effect(
-            "db-orders-foreign-key", conn
-        ) is True
+        assert PracticeService._validate_sql_side_effect("db-orders-foreign-key", conn) is True
 
     def test_orders_foreign_key_fail_no_fk(self, conn):
         conn.execute("CREATE TABLE users(id INTEGER PRIMARY KEY, name TEXT)")
         conn.execute("CREATE TABLE orders(id INTEGER PRIMARY KEY, user_id INTEGER)")
-        assert PracticeService._validate_sql_side_effect(
-            "db-orders-foreign-key", conn
-        ) is False
+        assert PracticeService._validate_sql_side_effect("db-orders-foreign-key", conn) is False
 
     def test_create_index_users_email_pass(self, conn):
         conn.execute("CREATE TABLE users(id INTEGER PRIMARY KEY, email TEXT)")
         conn.execute("CREATE INDEX idx_users_email ON users(email)")
-        assert PracticeService._validate_sql_side_effect(
-            "db-create-index-users-email", conn
-        ) is True
+        assert PracticeService._validate_sql_side_effect("db-create-index-users-email", conn) is True
 
     def test_create_index_users_email_fail(self, conn):
         conn.execute("CREATE TABLE users(id INTEGER PRIMARY KEY, email TEXT)")
-        assert PracticeService._validate_sql_side_effect(
-            "db-create-index-users-email", conn
-        ) is False
+        assert PracticeService._validate_sql_side_effect("db-create-index-users-email", conn) is False
 
     def test_add_column_migration_pass(self, conn):
         conn.execute("CREATE TABLE users(id INTEGER PRIMARY KEY, name TEXT)")
         conn.execute("ALTER TABLE users ADD COLUMN last_login TEXT")
-        assert PracticeService._validate_sql_side_effect(
-            "db-add-column-migration", conn
-        ) is True
+        assert PracticeService._validate_sql_side_effect("db-add-column-migration", conn) is True
 
     def test_add_column_migration_fail(self, conn):
         conn.execute("CREATE TABLE users(id INTEGER PRIMARY KEY, name TEXT)")
-        assert PracticeService._validate_sql_side_effect(
-            "db-add-column-migration", conn
-        ) is False
+        assert PracticeService._validate_sql_side_effect("db-add-column-migration", conn) is False
 
     def test_create_covering_index_report_pass(self, conn):
-        conn.execute(
-            "CREATE TABLE reports(id INTEGER PRIMARY KEY, created_at TEXT, status TEXT, owner_id INTEGER)"
-        )
-        conn.execute(
-            "CREATE INDEX idx_reports_cover ON reports(created_at, status)"
-        )
-        assert PracticeService._validate_sql_side_effect(
-            "db-create-covering-index-report", conn
-        ) is True
+        conn.execute("CREATE TABLE reports(id INTEGER PRIMARY KEY, created_at TEXT, status TEXT, owner_id INTEGER)")
+        conn.execute("CREATE INDEX idx_reports_cover ON reports(created_at, status)")
+        assert PracticeService._validate_sql_side_effect("db-create-covering-index-report", conn) is True
 
     def test_create_covering_index_report_fail_wrong_columns(self, conn):
-        conn.execute(
-            "CREATE TABLE reports(id INTEGER PRIMARY KEY, created_at TEXT, status TEXT, owner_id INTEGER)"
-        )
+        conn.execute("CREATE TABLE reports(id INTEGER PRIMARY KEY, created_at TEXT, status TEXT, owner_id INTEGER)")
         conn.execute("CREATE INDEX idx_reports_wrong ON reports(owner_id)")
-        assert PracticeService._validate_sql_side_effect(
-            "db-create-covering-index-report", conn
-        ) is False
+        assert PracticeService._validate_sql_side_effect("db-create-covering-index-report", conn) is False
 
     def test_add_status_column_users_pass(self, conn):
         conn.execute("CREATE TABLE users(id INTEGER PRIMARY KEY, name TEXT)")
         conn.execute("ALTER TABLE users ADD COLUMN status TEXT")
-        assert PracticeService._validate_sql_side_effect(
-            "db-add-status-column-users", conn
-        ) is True
+        assert PracticeService._validate_sql_side_effect("db-add-status-column-users", conn) is True
 
     def test_add_status_column_users_fail(self, conn):
         conn.execute("CREATE TABLE users(id INTEGER PRIMARY KEY, name TEXT)")
-        assert PracticeService._validate_sql_side_effect(
-            "db-add-status-column-users", conn
-        ) is False
+        assert PracticeService._validate_sql_side_effect("db-add-status-column-users", conn) is False
 
     def test_create_enrollment_foreign_key_pass(self, conn):
         conn.execute("CREATE TABLE students(id INTEGER PRIMARY KEY, name TEXT)")
@@ -193,9 +154,7 @@ class TestValidateSqlSideEffect:
             "FOREIGN KEY(student_id) REFERENCES students(id), "
             "FOREIGN KEY(course_id) REFERENCES courses(id))"
         )
-        assert PracticeService._validate_sql_side_effect(
-            "db-create-enrollment-foreign-key", conn
-        ) is True
+        assert PracticeService._validate_sql_side_effect("db-create-enrollment-foreign-key", conn) is True
 
     def test_create_enrollment_foreign_key_fail_partial_fk(self, conn):
         conn.execute("CREATE TABLE students(id INTEGER PRIMARY KEY, name TEXT)")
@@ -205,21 +164,15 @@ class TestValidateSqlSideEffect:
             "student_id INTEGER, course_id INTEGER, "
             "FOREIGN KEY(student_id) REFERENCES students(id))"
         )
-        assert PracticeService._validate_sql_side_effect(
-            "db-create-enrollment-foreign-key", conn
-        ) is False
+        assert PracticeService._validate_sql_side_effect("db-create-enrollment-foreign-key", conn) is False
 
     def test_explain_users_query_pass(self, conn):
         conn.execute("CREATE TABLE users(id INTEGER PRIMARY KEY, email TEXT)")
         conn.execute("INSERT INTO users(email) VALUES ('a@test.com')")
-        assert PracticeService._validate_sql_side_effect(
-            "db-explain-users-query", conn
-        ) is True
+        assert PracticeService._validate_sql_side_effect("db-explain-users-query", conn) is True
 
     def test_unknown_exercise_returns_false(self, conn):
-        assert PracticeService._validate_sql_side_effect(
-            "unknown-exercise-id", conn
-        ) is False
+        assert PracticeService._validate_sql_side_effect("unknown-exercise-id", conn) is False
 
 
 # ---------------------------------------------------------------------------

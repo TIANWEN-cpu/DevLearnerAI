@@ -5,8 +5,6 @@ execution, name check, test assertion) through the subprocess-based API
 to avoid Windows tempfile cleanup issues with direct _evaluate_code_impl calls.
 """
 
-import pytest
-
 from app.python_runner import evaluate_python_code
 
 
@@ -206,13 +204,7 @@ class TestEvaluatePythonCode:
         assert result["duration_sec"] >= 0
 
     def test_closure_and_higher_order_function(self):
-        code = (
-            "def make_adder(n):\n"
-            "    def adder(x):\n"
-            "        return x + n\n"
-            "    return adder\n"
-            "add5 = make_adder(5)"
-        )
+        code = "def make_adder(n):\n    def adder(x):\n        return x + n\n    return adder\nadd5 = make_adder(5)"
         result = evaluate_python_code(
             code,
             expected_nodes=["FunctionDef"],
@@ -231,7 +223,7 @@ class TestEvaluatePythonCode:
             expected_nodes=["FunctionDef"],
             required_names=["square"],
             tests=[
-                {"expression": "square(3)", "expected": 9},   # pass
+                {"expression": "square(3)", "expected": 9},  # pass
                 {"expression": "square(4)", "expected": 16},  # pass
                 {"expression": "square(5)", "expected": 99},  # fail
             ],
