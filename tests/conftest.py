@@ -40,6 +40,52 @@ if "PyQt5" not in sys.modules:
     _pyqt5.QtCore.QPropertyAnimation = type("QPropertyAnimation", (), {"__init__": lambda *a, **k: None})
     _pyqt5.QtCore.QEasingCurve = type("QEasingCurve", (), {"InOutQuad": 0})()
     _pyqt5.QtCore.QDate = MagicMock()
+
+    # QPointF / QRectF -- lightweight stubs so geometry tests get real numbers
+    class _FakeQPointF:
+        def __init__(self, x=0.0, y=0.0):
+            self._x = float(x)
+            self._y = float(y)
+
+        def x(self):
+            return self._x
+
+        def y(self):
+            return self._y
+
+    class _FakeQRectF:
+        def __init__(self, x=0.0, y=0.0, w=0.0, h=0.0):
+            self._x = float(x)
+            self._y = float(y)
+            self._w = float(w)
+            self._h = float(h)
+
+        def x(self):
+            return self._x
+
+        def y(self):
+            return self._y
+
+        def width(self):
+            return self._w
+
+        def height(self):
+            return self._h
+
+        def left(self):
+            return self._x
+
+        def top(self):
+            return self._y
+
+        def right(self):
+            return self._x + self._w
+
+        def bottom(self):
+            return self._y + self._h
+
+    _pyqt5.QtCore.QPointF = _FakeQPointF
+    _pyqt5.QtCore.QRectF = _FakeQRectF
     # QtGui
     _pyqt5.QtGui.QFont = type("QFont", (), {"Bold": 75, "__init__": lambda *a, **k: None})
     _pyqt5.QtGui.QKeySequence = type("QKeySequence", (), {"__init__": lambda *a, **k: None})

@@ -11,6 +11,7 @@
 import base64
 import ctypes
 import logging
+import stat
 import sys
 from ctypes import wintypes
 from pathlib import Path
@@ -102,6 +103,11 @@ def save_secret(target: str, secret: str, username: str = "DevLearnerAI") -> Non
         fallback_path = Path.home() / ".devlearnerai" / "api_key.txt"
         fallback_path.parent.mkdir(parents=True, exist_ok=True)
         fallback_path.write_text(base64.b64encode(secret.encode("utf-8")).decode("ascii"), encoding="utf-8")
+        # Restrict file permissions to owner-only (Unix); no-op on Windows
+        try:
+            fallback_path.chmod(stat.S_IRUSR | stat.S_IWUSR)
+        except (OSError, AttributeError):
+            pass
         return
 
     blob = secret.encode("utf-16-le")

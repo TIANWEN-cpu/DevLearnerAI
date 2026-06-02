@@ -32,6 +32,7 @@ from PyQt5.QtWidgets import (
 
 from app.content_service import ContentService
 from app.database import AppDatabase
+from app.i18n import tr
 from app.styles import (
     ACCENT,
     ACCENT_SOFT,
@@ -133,7 +134,7 @@ class WelcomeWizard(QDialog):
         self._selected_track_id = ""
         self._goal_target = 1
 
-        self.setWindowTitle("欢迎使用 DevLearner AI")
+        self.setWindowTitle(tr("wizard.title"))
         self.setMinimumSize(720, 560)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
 
@@ -164,24 +165,24 @@ class WelcomeWizard(QDialog):
         nav = QHBoxLayout()
         nav.setSpacing(14)
 
-        self._skip_btn = QPushButton("跳过设置")
+        self._skip_btn = QPushButton(tr("wizard.skip"))
         self._skip_btn.setProperty("variant", "ghost")
         self._skip_btn.setCursor(Qt.PointingHandCursor)
-        self._skip_btn.setToolTip("跳过向导，稍后可在设置中配置")
+        self._skip_btn.setToolTip(tr("wizard.skip_tip"))
         self._skip_btn.clicked.connect(self._on_skip)
         nav.addWidget(self._skip_btn)
 
         nav.addStretch()
 
-        self._back_btn = QPushButton("上一步")
+        self._back_btn = QPushButton(tr("wizard.back"))
         self._back_btn.setProperty("variant", "secondary")
         self._back_btn.setCursor(Qt.PointingHandCursor)
         self._back_btn.clicked.connect(self._on_back)
         nav.addWidget(self._back_btn)
 
-        self._next_btn = QPushButton("下一步")
+        self._next_btn = QPushButton(tr("wizard.next"))
         self._next_btn.setCursor(Qt.PointingHandCursor)
-        self._next_btn.setToolTip("进入下一步设置")
+        self._next_btn.setToolTip(tr("wizard.next_tip"))
         self._next_btn.clicked.connect(self._on_next)
         nav.addWidget(self._next_btn)
 
@@ -202,17 +203,14 @@ class WelcomeWizard(QDialog):
         hero.setAlignment(Qt.AlignCenter)
         layout.addWidget(hero)
 
-        tagline = QLabel("Python / 数据库 / 融合项目一体化学习平台")
+        tagline = QLabel(tr("app.subtitle"))
         tagline.setStyleSheet(f"color: {TEXT_SUB}; font-size: 22px;")
         tagline.setAlignment(Qt.AlignCenter)
         layout.addWidget(tagline)
 
         layout.addSpacing(12)
 
-        description = QLabel(
-            "DevLearner AI 将学习路径、动手练习、实战项目和 AI 导师整合到一个工作台中。\n\n"
-            "接下来只需几步即可完成初始配置，让你的学习之旅更加顺畅。"
-        )
+        description = QLabel(tr("wizard.description"))
         description.setWordWrap(True)
         description.setStyleSheet(f"color: {TEXT_MAIN}; font-size: 20px; line-height: 1.6;")
         description.setAlignment(Qt.AlignCenter)
@@ -221,11 +219,11 @@ class WelcomeWizard(QDialog):
         layout.addSpacing(12)
 
         features = [
-            ("学习路径", "按技术栈递进学习，从基础到实战"),
-            ("练习中心", "在线编码、自动评测、即时反馈"),
-            ("融合项目", "将知识整合成可交付的完整项目"),
-            ("AI 导师", "智能问答、代码分析、学习建议"),
-            ("成就系统", "学习打卡、里程碑、持续激励"),
+            (tr("wizard.feature_learn"), tr("wizard.feature_learn_desc")),
+            (tr("wizard.feature_practice"), tr("wizard.feature_practice_desc")),
+            (tr("wizard.feature_projects"), tr("wizard.feature_projects_desc")),
+            (tr("wizard.feature_ai"), tr("wizard.feature_ai_desc")),
+            (tr("wizard.feature_achievements"), tr("wizard.feature_achievements_desc")),
         ]
         for title, desc in features:
             row = QHBoxLayout()
@@ -254,15 +252,12 @@ class WelcomeWizard(QDialog):
         layout.setContentsMargins(24, 16, 24, 16)
         layout.setSpacing(18)
 
-        title = QLabel("配置 AI API")
+        title = QLabel(tr("wizard.api_title"))
         title.setFont(QFont(FONT, F_TITLE - 12, QFont.Bold))
         title.setStyleSheet(f"color: {TEXT_MAIN};")
         layout.addWidget(title)
 
-        desc = QLabel(
-            "配置 AI 接口后可使用 AI 导师功能，包括智能问答、代码分析和学习建议。\n"
-            "此步骤可跳过，稍后在 AI 工作台中设置。"
-        )
+        desc = QLabel(tr("wizard.api_desc"))
         desc.setWordWrap(True)
         desc.setStyleSheet(f"color: {TEXT_SUB}; font-size: 18px;")
         layout.addWidget(desc)
@@ -270,32 +265,32 @@ class WelcomeWizard(QDialog):
         layout.addSpacing(8)
 
         # Host input
-        host_label = QLabel("API 地址")
+        host_label = QLabel(tr("wizard.api_host"))
         host_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 16px; font-weight: 600;")
         layout.addWidget(host_label)
         self._api_host = QLineEdit()
         self._api_host.setPlaceholderText("https://api.openai.com/v1")
-        self._api_host.setToolTip("输入 API 端点地址，例如 OpenAI、DeepSeek 等")
+        self._api_host.setToolTip(tr("wizard.api_host_tip"))
         layout.addWidget(self._api_host)
 
         # API Key input
-        key_label = QLabel("API 密钥")
+        key_label = QLabel(tr("wizard.api_key"))
         key_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 16px; font-weight: 600;")
         layout.addWidget(key_label)
         self._api_key = QLineEdit()
         self._api_key.setPlaceholderText("sk-...")
         self._api_key.setEchoMode(QLineEdit.Password)
-        self._api_key.setToolTip("输入你的 API 密钥，密钥将安全存储在系统密钥库中")
+        self._api_key.setToolTip(tr("wizard.api_key_tip"))
         layout.addWidget(self._api_key)
 
         # Model selector
-        model_label = QLabel("模型")
+        model_label = QLabel(tr("wizard.api_model"))
         model_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 16px; font-weight: 600;")
         layout.addWidget(model_label)
         self._api_model = QComboBox()
         self._api_model.setEditable(True)
         self._api_model.addItems(["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo", "deepseek-chat", "claude-3-5-sonnet"])
-        self._api_model.setToolTip("选择或输入要使用的 AI 模型名称")
+        self._api_model.setToolTip(tr("wizard.api_model_tip"))
         layout.addWidget(self._api_model)
 
         # Pre-fill existing config if available
@@ -322,12 +317,12 @@ class WelcomeWizard(QDialog):
         layout.setContentsMargins(24, 16, 24, 16)
         layout.setSpacing(18)
 
-        title = QLabel("选择学习路线")
+        title = QLabel(tr("wizard.track_title"))
         title.setFont(QFont(FONT, F_TITLE - 12, QFont.Bold))
         title.setStyleSheet(f"color: {TEXT_MAIN};")
         layout.addWidget(title)
 
-        desc = QLabel("选择你最想开始学习的技术栈。你随时可以切换或同时学习多条路线。")
+        desc = QLabel(tr("wizard.track_desc"))
         desc.setWordWrap(True)
         desc.setStyleSheet(f"color: {TEXT_SUB}; font-size: 18px;")
         layout.addWidget(desc)
@@ -371,13 +366,13 @@ class WelcomeWizard(QDialog):
             text_col.addWidget(name)
 
             lesson_count = len(track.lessons)
-            summary = QLabel(f"{lesson_count} 节课程")
+            summary = QLabel(tr("wizard.track_lesson_count", count=lesson_count))
             summary.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 16px;")
             text_col.addWidget(summary)
             card_layout.addLayout(text_col, 1)
 
             radio = QRadioButton()
-            radio.setToolTip(f"选择 {track.title} 学习路线")
+            radio.setToolTip(tr("wizard.track_radio_tip", title=track.title))
             self._track_group.addButton(radio, i)
             card_layout.addWidget(radio)
 
@@ -391,7 +386,7 @@ class WelcomeWizard(QDialog):
                 self._selected_track_id = track.id
 
         if not tracks:
-            no_tracks = QLabel("暂时没有可用的学习路线。")
+            no_tracks = QLabel(tr("dashboard.no_tracks"))
             no_tracks.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 18px;")
             layout.addWidget(no_tracks)
 
@@ -409,12 +404,12 @@ class WelcomeWizard(QDialog):
         layout.setContentsMargins(24, 16, 24, 16)
         layout.setSpacing(18)
 
-        title = QLabel("设定学习目标")
+        title = QLabel(tr("wizard.goal_title"))
         title.setFont(QFont(FONT, F_TITLE - 12, QFont.Bold))
         title.setStyleSheet(f"color: {TEXT_MAIN};")
         layout.addWidget(title)
 
-        desc = QLabel("选择一个适合你的学习节奏。目标可以随时在首页调整。")
+        desc = QLabel(tr("wizard.goal_desc"))
         desc.setWordWrap(True)
         desc.setStyleSheet(f"color: {TEXT_SUB}; font-size: 18px;")
         layout.addWidget(desc)
@@ -425,9 +420,9 @@ class WelcomeWizard(QDialog):
         self._goal_group.setExclusive(True)
 
         goals = [
-            ("轻松入门", "每天 1 节课", 1, "适合忙碌的日程，每天花 15-30 分钟学习"),
-            ("稳步前进", "每周 5 节课", 5, "平衡的学习节奏，适合大多数学习者"),
-            ("高强度冲刺", "每月 20 节课", 20, "加速学习进度，适合集中学习期"),
+            (tr("wizard.goal_easy"), tr("wizard.goal_easy_sub"), 1, tr("wizard.goal_easy_desc")),
+            (tr("wizard.goal_steady"), tr("wizard.goal_steady_sub"), 5, tr("wizard.goal_steady_desc")),
+            (tr("wizard.goal_intense"), tr("wizard.goal_intense_sub"), 20, tr("wizard.goal_intense_desc")),
         ]
 
         for i, (label, subtitle, target, desc_text) in enumerate(goals):
@@ -451,7 +446,7 @@ class WelcomeWizard(QDialog):
             card_layout.setSpacing(14)
 
             radio = QRadioButton()
-            radio.setToolTip(f"选择{label}目标")
+            radio.setToolTip(tr("wizard.goal_radio_tip", label=label))
             self._goal_group.addButton(radio, i)
             card_layout.addWidget(radio)
 
@@ -488,12 +483,12 @@ class WelcomeWizard(QDialog):
         layout.setContentsMargins(24, 16, 24, 16)
         layout.setSpacing(18)
 
-        title = QLabel("功能导览")
+        title = QLabel(tr("wizard.tour_title"))
         title.setFont(QFont(FONT, F_TITLE - 12, QFont.Bold))
         title.setStyleSheet(f"color: {TEXT_MAIN};")
         layout.addWidget(title)
 
-        desc = QLabel("以下是应用的主要功能区域，帮助你快速上手。")
+        desc = QLabel(tr("wizard.tour_desc"))
         desc.setWordWrap(True)
         desc.setStyleSheet(f"color: {TEXT_SUB}; font-size: 18px;")
         layout.addWidget(desc)
@@ -501,11 +496,11 @@ class WelcomeWizard(QDialog):
         layout.addSpacing(8)
 
         tour_items = [
-            ("侧边导航", "左侧导航栏切换不同功能页面，可展开/收起"),
-            ("首页仪表板", "查看学习统计、进度总览、成就和收藏"),
-            ("学习路径", "按技术栈递进学习，包含课程和模块"),
-            ("练习中心", "在线编码练习，自动评测，支持提示和草稿"),
-            ("AI 工作台", "与 AI 导师对话，获取代码分析和学习建议"),
+            (tr("wizard.tour_sidebar"), tr("wizard.tour_sidebar_desc")),
+            (tr("wizard.tour_dashboard"), tr("wizard.tour_dashboard_desc")),
+            (tr("wizard.tour_learn"), tr("wizard.tour_learn_desc")),
+            (tr("wizard.tour_practice"), tr("wizard.tour_practice_desc")),
+            (tr("wizard.tour_ai"), tr("wizard.tour_ai_desc")),
         ]
         for i, (name, detail) in enumerate(tour_items):
             row = QHBoxLayout()
@@ -533,7 +528,7 @@ class WelcomeWizard(QDialog):
 
         layout.addSpacing(8)
 
-        finish_note = QLabel("点击「开始学习」即可进入主界面。祝你学习愉快！")
+        finish_note = QLabel(tr("wizard.finish_note"))
         finish_note.setWordWrap(True)
         finish_note.setStyleSheet(f"color: {SUCCESS}; font-size: 19px; font-weight: 600;")
         finish_note.setAlignment(Qt.AlignCenter)
@@ -552,11 +547,11 @@ class WelcomeWizard(QDialog):
         # Update button states
         self._back_btn.setVisible(step > 0)
         if step == self._STEPS - 1:
-            self._next_btn.setText("开始学习")
-            self._next_btn.setToolTip("完成设置，进入主界面")
+            self._next_btn.setText(tr("wizard.start_learning"))
+            self._next_btn.setToolTip(tr("wizard.start_learning_tip"))
         else:
             self._next_btn.setText("下一步")
-            self._next_btn.setToolTip("进入下一步设置")
+            self._next_btn.setToolTip(tr("wizard.next_tip"))
 
     def _on_back(self) -> None:
         if self._current_step > 0:

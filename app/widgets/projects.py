@@ -1,3 +1,7 @@
+"""Projects widget for browsing integration/capstone projects."""
+
+from __future__ import annotations
+
 import mistune
 from PyQt5.QtCore import QEvent, QSize, Qt
 from PyQt5.QtGui import QFont
@@ -50,7 +54,7 @@ class ProjectsWidget(QWidget):
         if self.project_list.count():
             self.project_list.setCurrentRow(0)
 
-    def _project_category_theme(self, module_title: str):
+    def _project_category_theme(self, module_title: str) -> tuple[str, str]:
         if module_title.startswith("基础模块"):
             return "#2f6df6", "基础模块"
         if module_title.startswith("精选模块"):

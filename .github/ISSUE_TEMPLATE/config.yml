@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 使用问题
+    url: https://github.com/TIANWEN-cpu/DevLearnerAI/discussions
+    about: 使用过程中的问题请到 Discussions 提问，Issue 用于报告 Bug 和功能请求。
+  - name: 文档中心
+    url: https://github.com/TIANWEN-cpu/DevLearnerAI/blob/main/docs/README.md
+    about: 查看完整文档，包括架构说明、开发指南和 API 参考。

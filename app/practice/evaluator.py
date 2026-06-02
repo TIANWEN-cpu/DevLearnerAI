@@ -42,6 +42,7 @@ _DANGEROUS_PRAGMAS = frozenset(
         "database_list",
         "compile_options",
         "temp_store_directory",
+        "journal_mode",
     }
 )
 
@@ -50,7 +51,11 @@ _SQL_EXEC_TIMEOUT_SEC = 5  # maximum seconds for user SQL execution
 
 def _check_sql_safety(code: str) -> Optional[str]:
     """Return an error message if *code* contains dangerous SQL patterns, else None."""
-    normalized = " ".join(code.lower().split())
+    # Strip block comments (/* ... */) and line comments (-- ...) before checking,
+    # otherwise AT/**/TACH would bypass the word-boundary regex.
+    decommented = re.sub(r"/\*.*?\*/", " ", code, flags=re.DOTALL)
+    decommented = re.sub(r"--[^\n]*", " ", decommented)
+    normalized = " ".join(decommented.lower().split())
     for keyword in _DANGEROUS_SQL_KEYWORDS:
         # Match the keyword as a standalone word (not part of a longer identifier)
         if re.search(r"\b" + keyword + r"\b", normalized):

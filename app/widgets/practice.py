@@ -1,3 +1,7 @@
+"""Practice widget for coding exercises with auto-evaluation."""
+
+from __future__ import annotations
+
 import logging
 import threading
 import time
@@ -1029,7 +1033,7 @@ class PracticeWidget(QWidget):
 
         dialog.exec_()
 
-    def _find_mentor_panel(self):
+    def _find_mentor_panel(self):  # noqa: ANN202
         """Walk up the widget tree to find an AIMentorPanel instance."""
         from app.ai.chat_handler import AIMentorPanel
 
@@ -1043,7 +1047,7 @@ class PracticeWidget(QWidget):
             widget = widget.parent()
         return None
 
-    def _dispatch_analysis(self, mentor_panel, analyzer_panel, code, language):
+    def _dispatch_analysis(self, mentor_panel, analyzer_panel, code: str, language: str) -> None:
         """Dispatch code analysis via the mentor panel's AI backend."""
 
         def _on_result(analysis_type, result):
@@ -1154,7 +1158,7 @@ class PracticeWidget(QWidget):
         self._hint_index = min(self._hint_index + 1, len(hints) - 1)
         self._update_hint_usage_display()
 
-    def _notify_achievements(self, achievement_ids: list) -> None:
+    def _notify_achievements(self, achievement_ids: list[str]) -> None:
         """Show achievement notification popups."""
         for aid in achievement_ids:
             ach_rows = self.db.list_achievements()

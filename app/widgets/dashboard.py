@@ -372,6 +372,7 @@ class DashboardWidget(QWidget):
             )
             weak_text = f"发现 {len(weak_rows)} 个薄弱领域" if weak_rows else ""
         except Exception:
+            logger.debug("查询薄弱领域失败", exc_info=True)
             weak_text = ""
 
         # Build summary text
@@ -579,6 +580,7 @@ class DashboardWidget(QWidget):
             else:
                 msg = f"数据点 #{index + 1}: {value:.0f}"
         except Exception:
+            logger.debug("获取练习详情失败 (index=%d)", index, exc_info=True)
             msg = f"数据点 #{index + 1}: {value:.0f}"
         self._show_info_dialog("练习详情", msg)
 
@@ -627,6 +629,7 @@ class DashboardWidget(QWidget):
                 track_stats = self.db.get_analytics_track_stats()
                 avg = track_stats.get(track.id, 0.0)
             except Exception:
+                logger.debug("获取 track 统计数据失败 (track=%s)", track.id, exc_info=True)
                 # Fallback: compute from lesson statuses
                 completed = sum(1 for lesson in track.lessons if self.db.lesson_status(lesson.id) == "completed")
                 avg = (completed / max(len(track.lessons), 1)) * 100

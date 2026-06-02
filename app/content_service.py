@@ -392,8 +392,13 @@ class ContentService:
                     self._markdown_cache.popitem(last=False)
                 self._markdown_cache[cache_key] = content
                 return content
-        except (OSError, ValueError):
-            pass
+        except (OSError, ValueError) as exc:
+            logger.warning("课程路径解析失败: %s - %s", lesson.path, exc)
+            content = f"# {lesson.title}\n\n课程文件路径无效。"
+            while len(self._markdown_cache) >= self._MAX_MARKDOWN_CACHE:
+                self._markdown_cache.popitem(last=False)
+            self._markdown_cache[cache_key] = content
+            return content
         try:
             content = path.read_text(encoding="utf-8")
         except FileNotFoundError:

@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from app.i18n import tr
 from app.styles import (
     ACCENT,
     BG_CARD,
@@ -45,28 +46,28 @@ class FeatureTourOverlay(QWidget):
     STEPS = [
         {
             "target": "sidebar",
-            "title": "侧边导航栏",
-            "desc": "这里可以切换不同的功能页面。点击顶部按钮可以展开或收起导航栏。",
+            "title": tr("tour.sidebar_title"),
+            "desc": tr("tour.sidebar_desc"),
         },
         {
             "target": "dashboard",
-            "title": "首页仪表板",
-            "desc": "查看学习统计、进度图表、成就徽章和收藏列表。设置学习目标并追踪进度。",
+            "title": tr("tour.dashboard_title"),
+            "desc": tr("tour.dashboard_desc"),
         },
         {
             "target": "learn",
-            "title": "学习路径",
-            "desc": "按技术栈递进学习。每个技术栈包含多个模块，模块内有丰富的课程内容。",
+            "title": tr("tour.learn_title"),
+            "desc": tr("tour.learn_desc"),
         },
         {
             "target": "practice",
-            "title": "练习中心",
-            "desc": "动手编码练习，自动评测，即时反馈。支持提示、草稿保存和间隔复习。",
+            "title": tr("tour.practice_title"),
+            "desc": tr("tour.practice_desc"),
         },
         {
             "target": "ai_mentor",
-            "title": "AI 导师",
-            "desc": "与 AI 对话获取帮助。支持代码分析、学习建议和知识问答。按 Ctrl+Shift+A 快速提问。",
+            "title": tr("tour.ai_title"),
+            "desc": tr("tour.ai_desc"),
         },
     ]
 
@@ -124,24 +125,24 @@ class FeatureTourOverlay(QWidget):
         nav = QHBoxLayout()
         nav.setSpacing(10)
 
-        self._skip_btn = QPushButton("跳过导览")
+        self._skip_btn = QPushButton(tr("tour.skip"))
         self._skip_btn.setProperty("variant", "ghost")
         self._skip_btn.setCursor(Qt.PointingHandCursor)
-        self._skip_btn.setToolTip("跳过功能导览")
+        self._skip_btn.setToolTip(tr("tour.skip_tip"))
         self._skip_btn.clicked.connect(self._finish_tour)
         nav.addWidget(self._skip_btn)
 
         nav.addStretch()
 
-        self._prev_btn = QPushButton("上一个")
+        self._prev_btn = QPushButton(tr("tour.prev"))
         self._prev_btn.setProperty("variant", "secondary")
         self._prev_btn.setCursor(Qt.PointingHandCursor)
         self._prev_btn.clicked.connect(self._prev_step)
         nav.addWidget(self._prev_btn)
 
-        self._next_btn = QPushButton("下一个")
+        self._next_btn = QPushButton(tr("tour.next"))
         self._next_btn.setCursor(Qt.PointingHandCursor)
-        self._next_btn.setToolTip("查看下一个功能区域")
+        self._next_btn.setToolTip(tr("tour.next_tip"))
         self._next_btn.clicked.connect(self._next_step)
         nav.addWidget(self._next_btn)
 
@@ -172,11 +173,11 @@ class FeatureTourOverlay(QWidget):
         # Update navigation buttons
         self._prev_btn.setVisible(self._current_step > 0)
         if self._current_step == total - 1:
-            self._next_btn.setText("完成")
-            self._next_btn.setToolTip("完成功能导览")
+            self._next_btn.setText(tr("tour.finish"))
+            self._next_btn.setToolTip(tr("tour.finish_tip"))
         else:
             self._next_btn.setText("下一个")
-            self._next_btn.setToolTip("查看下一个功能区域")
+            self._next_btn.setToolTip(tr("tour.next_tip"))
 
         # Find and highlight target widget
         target_widget = self._find_target(target_name)

@@ -1,3 +1,7 @@
+"""Algorithm visualization widget with animated sorting and searching demos."""
+
+from __future__ import annotations
+
 import random
 
 from PyQt5.QtCore import QTimer
@@ -147,7 +151,7 @@ class AlgoVisualizerWidget(QWidget):
         self.run_btn.clicked.connect(self.run_algorithm)
         self.update_desc(self.algo_combo.currentText())
 
-    def update_desc(self, name: str):
+    def update_desc(self, name: str) -> None:
         descriptions = {
             "冒泡排序": "一轮轮比较相邻元素，把更大的数慢慢推到右边。适合练熟双层循环、比较和交换。",
             "选择排序": "每轮从未排序区域里挑出最小值，放到左侧。适合理解“先找再换”的过程。",
@@ -159,7 +163,7 @@ class AlgoVisualizerWidget(QWidget):
         }
         self.desc.setPlainText(descriptions.get(name, ""))
 
-    def draw_bars(self, data, highlights=None):
+    def draw_bars(self, data: list[int], highlights: set[int] | None = None) -> None:
         self.scene.clear()
         if not data:
             return
@@ -179,7 +183,7 @@ class AlgoVisualizerWidget(QWidget):
             target_label.setDefaultTextColor(QColor(TEXT_SUB))
             target_label.setPos(0, 0)
 
-    def run_algorithm(self):
+    def run_algorithm(self) -> None:
         data = [random.randint(8, 99) for _ in range(self.size_spin.value())]
         self.active_data = data[:]
         steps = []
@@ -205,7 +209,7 @@ class AlgoVisualizerWidget(QWidget):
             self._binary_search_steps(data[:], self.active_target, steps)
         self._animate(steps)
 
-    def _bubble_steps(self, data, steps):
+    def _bubble_steps(self, data: list[int], steps: list) -> None:
         for i in range(len(data)):
             for j in range(len(data) - i - 1):
                 steps.append((data[:], {j, j + 1}))
@@ -213,7 +217,7 @@ class AlgoVisualizerWidget(QWidget):
                     data[j], data[j + 1] = data[j + 1], data[j]
                     steps.append((data[:], {j, j + 1}))
 
-    def _selection_steps(self, data, steps):
+    def _selection_steps(self, data: list[int], steps: list) -> None:
         for i in range(len(data)):
             minimum = i
             for j in range(i + 1, len(data)):
@@ -223,7 +227,7 @@ class AlgoVisualizerWidget(QWidget):
             data[i], data[minimum] = data[minimum], data[i]
             steps.append((data[:], {i, minimum}))
 
-    def _insertion_steps(self, data, steps):
+    def _insertion_steps(self, data: list[int], steps: list) -> None:
         for i in range(1, len(data)):
             current = data[i]
             j = i - 1
@@ -235,7 +239,7 @@ class AlgoVisualizerWidget(QWidget):
             data[j + 1] = current
             steps.append((data[:], {j + 1}))
 
-    def _merge_steps(self, data, steps):
+    def _merge_steps(self, data: list[int], steps: list) -> None:
         def merge_sort(arr, left, right):
             if left >= right:
                 return
@@ -260,7 +264,7 @@ class AlgoVisualizerWidget(QWidget):
 
         merge_sort(data, 0, len(data) - 1)
 
-    def _quick_steps(self, data, steps):
+    def _quick_steps(self, data: list[int], steps: list) -> None:
         def quick_sort(arr, low, high):
             if low >= high:
                 return
@@ -279,14 +283,14 @@ class AlgoVisualizerWidget(QWidget):
 
         quick_sort(data, 0, len(data) - 1)
 
-    def _linear_search_steps(self, data, target, steps):
+    def _linear_search_steps(self, data: list[int], target: int, steps: list) -> None:
         for index, value in enumerate(data):
             steps.append((data[:], {index}))
             if value == target:
                 steps.append((data[:], {index}))
                 break
 
-    def _binary_search_steps(self, data, target, steps):
+    def _binary_search_steps(self, data: list[int], target: int, steps: list) -> None:
         left, right = 0, len(data) - 1
         while left <= right:
             mid = (left + right) // 2
@@ -299,7 +303,7 @@ class AlgoVisualizerWidget(QWidget):
             else:
                 right = mid - 1
 
-    def _animate(self, steps):
+    def _animate(self, steps: list) -> None:
         index = {"value": 0}
 
         def tick():

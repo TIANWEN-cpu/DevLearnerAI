@@ -206,6 +206,7 @@ _DANGEROUS_BUILTINS_CALLS = frozenset(
         "locals",
         "memoryview",
         "bytearray",
+        "__import__",
     }
 )
 

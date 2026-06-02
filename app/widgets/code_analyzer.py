@@ -27,6 +27,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from app.i18n import tr
 from app.styles import (
     ACCENT,
     ACCENT_SOFT,
@@ -158,10 +159,10 @@ def estimate_complexity(code: str, language: str = "python") -> dict:
         "score": complexity_score,
         "level": level,
         "level_label": {
-            "low": "低复杂度",
-            "medium": "中等复杂度",
-            "high": "较高复杂度",
-            "very_high": "高复杂度",
+            "low": tr("analyzer.level_low"),
+            "medium": tr("analyzer.level_medium"),
+            "high": tr("analyzer.level_high"),
+            "very_high": tr("analyzer.level_very_high"),
         }.get(level, "未知"),
         "details": details,
         "lines": lines,
@@ -329,21 +330,21 @@ class CodeAnalyzerPanel(QWidget):
         header_layout.addWidget(icon_label)
 
         title_col = QVBoxLayout()
-        title = QLabel("AI 代码分析")
+        title = QLabel(tr("analyzer.title"))
         title.setFont(QFont(FONT, F_SUB - 8, QFont.Bold))
         title.setStyleSheet(f"color: {TEXT_MAIN};")
-        subtitle = QLabel("使用 AI 深度分析代码，获取解释、审查和 Bug 检测结果。")
+        subtitle = QLabel(tr("analyzer.subtitle"))
         subtitle.setWordWrap(True)
         subtitle.setStyleSheet(f"color: {TEXT_SUB}; font-size: 14px;")
         title_col.addWidget(title)
         title_col.addWidget(subtitle)
         header_layout.addLayout(title_col, 1)
 
-        self.analyze_btn = QPushButton("开始分析")
+        self.analyze_btn = QPushButton(tr("analyzer.start_btn"))
         self.analyze_btn.setMinimumWidth(120)
-        self.analyze_btn.setToolTip("对当前代码运行全部分析")
-        self.analyze_btn.setAccessibleName("开始分析")
-        self.analyze_btn.setAccessibleDescription("对当前代码运行 AI 全部分析，包括解释、审查和 Bug 检测")
+        self.analyze_btn.setToolTip(tr("analyzer.start_tip"))
+        self.analyze_btn.setAccessibleName(tr("analyzer.start_btn"))
+        self.analyze_btn.setAccessibleDescription(tr("analyzer.start_desc"))
         self.analyze_btn.clicked.connect(self._run_all_analysis)
         header_layout.addWidget(self.analyze_btn)
 
@@ -377,12 +378,12 @@ class CodeAnalyzerPanel(QWidget):
             """
         )
 
-        self.tabs.addTab(self._build_explanation_tab(), "逐步解释")
-        self.tabs.addTab(self._build_review_tab(), "代码审查")
-        self.tabs.addTab(self._build_bug_tab(), "Bug 检测")
-        self.tabs.addTab(self._build_complexity_tab(), "复杂度分析")
-        self.tabs.setAccessibleName("代码分析选项卡")
-        self.tabs.setAccessibleDescription("切换不同类型的代码分析结果视图")
+        self.tabs.addTab(self._build_explanation_tab(), tr("analyzer.tab_explain"))
+        self.tabs.addTab(self._build_review_tab(), tr("analyzer.tab_review"))
+        self.tabs.addTab(self._build_bug_tab(), tr("analyzer.tab_bug"))
+        self.tabs.addTab(self._build_complexity_tab(), tr("analyzer.tab_complexity"))
+        self.tabs.setAccessibleName(tr("analyzer.tabs_name"))
+        self.tabs.setAccessibleDescription(tr("analyzer.tabs_desc"))
 
         root.addWidget(self.tabs, 1)
 
@@ -402,7 +403,7 @@ class CodeAnalyzerPanel(QWidget):
         self.explanation_layout.setContentsMargins(16, 16, 16, 16)
         self.explanation_layout.setSpacing(10)
 
-        self.explanation_placeholder = QLabel("点击「开始分析」或选择代码后获取逐步解释。")
+        self.explanation_placeholder = QLabel(tr("analyzer.explain_placeholder"))
         self.explanation_placeholder.setAlignment(Qt.AlignCenter)
         self.explanation_placeholder.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 15px; padding: 40px;")
         self.explanation_layout.addWidget(self.explanation_placeholder)
@@ -437,7 +438,7 @@ class CodeAnalyzerPanel(QWidget):
             }}
             """
         )
-        self.review_text.setPlainText("代码审查结果将显示在这里。")
+        self.review_text.setPlainText(tr("analyzer.review_placeholder"))
         self.review_layout.addWidget(self.review_text)
 
         scroll.setWidget(container)
@@ -469,7 +470,7 @@ class CodeAnalyzerPanel(QWidget):
             }}
             """
         )
-        self.bug_text.setPlainText("Bug 检测结果将显示在这里。")
+        self.bug_text.setPlainText(tr("analyzer.bug_placeholder"))
         self.bug_layout.addWidget(self.bug_text)
 
         scroll.setWidget(container)
@@ -491,11 +492,11 @@ class CodeAnalyzerPanel(QWidget):
         summary_col = QVBoxLayout()
         summary_col.setSpacing(8)
 
-        self.complexity_title = QLabel("复杂度分析")
+        self.complexity_title = QLabel(tr("analyzer.complexity_title"))
         self.complexity_title.setFont(QFont(FONT, 16, QFont.Bold))
         self.complexity_title.setStyleSheet(f"color: {TEXT_MAIN};")
 
-        self.complexity_summary = QLabel("加载代码后自动计算复杂度指标。")
+        self.complexity_summary = QLabel(tr("analyzer.complexity_summary"))
         self.complexity_summary.setWordWrap(True)
         self.complexity_summary.setStyleSheet(f"color: {TEXT_SUB}; font-size: 14px;")
 
@@ -511,7 +512,7 @@ class CodeAnalyzerPanel(QWidget):
         layout.addLayout(top_row)
 
         # Breakdown section
-        breakdown_group = QGroupBox("决策点分布")
+        breakdown_group = QGroupBox(tr("analyzer.decision_dist"))
         breakdown_group.setStyleSheet(
             f"""
             QGroupBox {{
@@ -531,7 +532,7 @@ class CodeAnalyzerPanel(QWidget):
         self.breakdown_layout = QVBoxLayout(breakdown_group)
         self.breakdown_layout.setContentsMargins(14, 14, 14, 14)
         self.breakdown_layout.setSpacing(6)
-        self.breakdown_placeholder = QLabel("暂无数据")
+        self.breakdown_placeholder = QLabel(tr("analyzer.no_data"))
         self.breakdown_placeholder.setStyleSheet(f"color: {TEXT_MUTED};")
         self.breakdown_layout.addWidget(self.breakdown_placeholder)
         layout.addWidget(breakdown_group, 1)
@@ -550,9 +551,16 @@ class CodeAnalyzerPanel(QWidget):
         """Update the complexity tab with static analysis results."""
         metrics = estimate_complexity(code, language)
         self.complexity_gauge.set_complexity(metrics["score"], metrics["level"], metrics["level_label"])
-        self.complexity_summary.setText(f"圈复杂度评估为 {metrics['score']}，属于{metrics['level_label']}。")
+        self.complexity_summary.setText(
+            tr("analyzer.complexity_result", score=metrics["score"], level=metrics["level_label"])
+        )
         self.complexity_stats.setText(
-            f"代码行数: {metrics['lines']}  |  函数: {metrics['functions']}  |  类: {metrics['classes']}"
+            tr(
+                "analyzer.stats_format",
+                lines=metrics["lines"],
+                functions=metrics["functions"],
+                classes=metrics["classes"],
+            )
         )
         # Update breakdown bars
         self._clear_layout(self.breakdown_layout)
@@ -583,7 +591,7 @@ class CodeAnalyzerPanel(QWidget):
                 row.addWidget(count_label)
                 self.breakdown_layout.addLayout(row)
         else:
-            placeholder = QLabel("未检测到决策点。")
+            placeholder = QLabel(tr("analyzer.no_decisions"))
             placeholder.setStyleSheet(f"color: {TEXT_MUTED};")
             self.breakdown_layout.addWidget(placeholder)
 
@@ -599,14 +607,14 @@ class CodeAnalyzerPanel(QWidget):
     def _run_all_analysis(self) -> None:
         """Trigger all analysis types."""
         if not self._current_code.strip():
-            self._show_status("请先加载或选择一段代码。", is_error=True)
+            self._show_status(tr("analyzer.no_code"), is_error=True)
             return
         if self._is_analyzing:
             return
         self._is_analyzing = True
-        self.analyze_btn.setText("分析中...")
+        self.analyze_btn.setText(tr("analyzer.analyzing"))
         self.analyze_btn.setEnabled(False)
-        self._show_status("AI 正在分析代码，请稍候...")
+        self._show_status(tr("analyzer.analyzing_hint"))
         self.analysis_requested.emit("all", self._current_code, self._current_language)
 
     def display_explanation(self, reply: str) -> None:
@@ -642,14 +650,14 @@ class CodeAnalyzerPanel(QWidget):
     def set_analysis_complete(self) -> None:
         """Reset UI state after analysis completes."""
         self._is_analyzing = False
-        self.analyze_btn.setText("开始分析")
+        self.analyze_btn.setText(tr("analyzer.start_btn"))
         self.analyze_btn.setEnabled(True)
-        self._show_status("分析完成。")
+        self._show_status(tr("analysis.complete"))
 
     def set_analysis_error(self, error_msg: str) -> None:
         """Show an analysis error."""
         self._is_analyzing = False
-        self.analyze_btn.setText("开始分析")
+        self.analyze_btn.setText(tr("analyzer.start_btn"))
         self.analyze_btn.setEnabled(True)
         self._show_status(error_msg, is_error=True)
 
@@ -695,7 +703,7 @@ class CodeAnalyzerDialog(QWidget):
 
     def __init__(self, code: str, language: str = "python", parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("AI 代码分析")
+        self.setWindowTitle(tr("analyzer.title"))
         self.setMinimumSize(760, 620)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)

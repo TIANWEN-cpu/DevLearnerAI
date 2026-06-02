@@ -8,7 +8,10 @@ Supports:
 - Full backup and restore
 """
 
+from __future__ import annotations
+
 import json
+from collections.abc import Callable
 from pathlib import Path
 
 from PyQt5.QtCore import Qt
@@ -168,7 +171,7 @@ class ExportImportDialog(QDialog):
         close_row.addWidget(close_btn)
         root.addLayout(close_row)
 
-    def _action_row(self, title: str, desc: str, btn_text: str, callback) -> QHBoxLayout:
+    def _action_row(self, title: str, desc: str, btn_text: str, callback: Callable[[], None]) -> QHBoxLayout:
         row = QHBoxLayout()
         row.setSpacing(14)
 

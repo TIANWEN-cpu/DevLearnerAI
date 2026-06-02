@@ -25,6 +25,7 @@ dependencies = [
     "PyQt5>=5.15",
     "mistune>=3.0",
     "keyring>=24.0",
+    "psutil>=5.9",
 ]
 
 [project.gui-scripts]

@@ -52,7 +52,7 @@ def _get_rss_windows() -> float:
         if psapi.GetProcessMemoryInfo(handle, ctypes.byref(counters), counters.cb):
             return counters.WorkingSetSize / (1024 * 1024)
     except Exception:
-        pass
+        logger.debug("通过 Win32 API 获取进程内存失败", exc_info=True)
     return 0.0
 
 
@@ -99,7 +99,7 @@ def get_rss_mb() -> float:
                 maxrss /= 1024
             return maxrss
         except Exception:
-            pass
+            logger.debug("通过 resource 模块获取 RSS 失败", exc_info=True)
 
     return 0.0
 

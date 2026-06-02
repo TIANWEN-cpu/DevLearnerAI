@@ -23,6 +23,7 @@ from PyQt5.QtWidgets import (
 
 from app.database import AppDatabase
 from app.effects import apply_shadow
+from app.i18n import tr
 from app.styles import (
     ACCENT,
     BG_CARD,
@@ -166,7 +167,7 @@ class SetupChecklistWidget(QFrame):
 
         # Header
         header = QHBoxLayout()
-        title = QLabel("新手清单")
+        title = QLabel(tr("checklist.title"))
         title.setFont(QFont(FONT, F_TITLE - 16, QFont.Bold))
         title.setStyleSheet(f"color: {TEXT_MAIN};")
         header.addWidget(title)
@@ -178,45 +179,45 @@ class SetupChecklistWidget(QFrame):
         header.addWidget(self._progress_label)
         layout.addLayout(header)
 
-        subtitle = QLabel("完成以下步骤，开启你的学习之旅。")
+        subtitle = QLabel(tr("checklist.subtitle"))
         subtitle.setStyleSheet(f"color: {TEXT_SUB}; font-size: 17px;")
         layout.addWidget(subtitle)
 
         # Checklist items
         self._item_api = ChecklistItem(
-            "配置 AI API",
-            "设置 API 地址和密钥，启用 AI 导师功能",
-            "去配置",
+            tr("checklist.api_title"),
+            tr("checklist.api_desc"),
+            tr("checklist.api_action"),
         )
         self._item_api.action_clicked.connect(lambda: self.navigate_page.emit(5))
         layout.addWidget(self._item_api)
 
         self._item_lesson = ChecklistItem(
-            "完成第一节课",
-            "进入学习路径，选择并完成一节课程",
-            "去学习",
+            tr("checklist.lesson_title"),
+            tr("checklist.lesson_desc"),
+            tr("checklist.lesson_action"),
         )
         self._item_lesson.action_clicked.connect(lambda: self.navigate_page.emit(1))
         layout.addWidget(self._item_lesson)
 
         self._item_exercise = ChecklistItem(
-            "完成第一道练习",
-            "在练习中心提交一道编码练习",
-            "去练习",
+            tr("checklist.exercise_title"),
+            tr("checklist.exercise_desc"),
+            tr("checklist.exercise_action"),
         )
         self._item_exercise.action_clicked.connect(lambda: self.navigate_page.emit(2))
         layout.addWidget(self._item_exercise)
 
         self._item_chat = ChecklistItem(
-            "与 AI 导师对话",
-            "向 AI 导师提一个问题或请求代码分析",
-            "去聊天",
+            tr("checklist.chat_title"),
+            tr("checklist.chat_desc"),
+            tr("checklist.chat_action"),
         )
         self._item_chat.action_clicked.connect(self.open_ai_chat.emit)
         layout.addWidget(self._item_chat)
 
         # Congratulations message (hidden initially)
-        self._congrats = QLabel("恭喜！你已完成所有初始设置，开始尽情学习吧！")
+        self._congrats = QLabel(tr("checklist.congrats"))
         self._congrats.setWordWrap(True)
         self._congrats.setStyleSheet(f"color: {SUCCESS}; font-size: 18px; font-weight: 600;")
         self._congrats.setAlignment(Qt.AlignCenter)
@@ -226,10 +227,10 @@ class SetupChecklistWidget(QFrame):
         # Dismiss button (hidden initially)
         dismiss_row = QHBoxLayout()
         dismiss_row.addStretch()
-        self._dismiss_btn = QPushButton("关闭清单")
+        self._dismiss_btn = QPushButton(tr("checklist.dismiss"))
         self._dismiss_btn.setProperty("variant", "ghost")
         self._dismiss_btn.setCursor(Qt.PointingHandCursor)
-        self._dismiss_btn.setToolTip("关闭新手清单")
+        self._dismiss_btn.setToolTip(tr("checklist.dismiss_tip"))
         self._dismiss_btn.clicked.connect(self._dismiss)
         self._dismiss_btn.setVisible(False)
         dismiss_row.addWidget(self._dismiss_btn)
@@ -244,6 +245,7 @@ class SetupChecklistWidget(QFrame):
             host, key, _model = self.db.load_api_config()
             api_done = bool(host and key)
         except Exception:
+            logger.debug("检查 API 配置状态失败", exc_info=True)
             api_done = False
         self._item_api.set_completed(api_done)
         if api_done:
@@ -253,6 +255,7 @@ class SetupChecklistWidget(QFrame):
         try:
             lesson_done = self.db.completed_lessons() > 0
         except Exception:
+            logger.debug("检查课程完成状态失败", exc_info=True)
             lesson_done = False
         self._item_lesson.set_completed(lesson_done)
         if lesson_done:
@@ -263,6 +266,7 @@ class SetupChecklistWidget(QFrame):
             row = self.db.fetchone("SELECT COUNT(*) FROM practice_attempts")
             exercise_done = bool(row and row[0] > 0)
         except Exception:
+            logger.debug("检查练习状态失败", exc_info=True)
             exercise_done = False
         self._item_exercise.set_completed(exercise_done)
         if exercise_done:
@@ -272,6 +276,7 @@ class SetupChecklistWidget(QFrame):
         try:
             chat_done = self._has_ai_messages()
         except Exception:
+            logger.debug("检查 AI 聊天状态失败", exc_info=True)
             chat_done = False
         self._item_chat.set_completed(chat_done)
         if chat_done:

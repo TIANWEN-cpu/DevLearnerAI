@@ -1,3 +1,7 @@
+"""Learning path widget for browsing tracks, modules, and lessons."""
+
+from __future__ import annotations
+
 import logging
 
 import mistune
@@ -75,7 +79,7 @@ class LearnWidget(QWidget):
                 self.track_combo.setCurrentIndex(index)
                 return
 
-    def _module_category_theme(self, module_key: str):
+    def _module_category_theme(self, module_key: str) -> tuple[str, str]:
         module_key = module_key or ""
         if "foundations" in module_key:
             return "#2f6df6", "基础模块"
@@ -694,7 +698,7 @@ class LearnWidget(QWidget):
         }
         return lang_map.get(self.current_track.id, "python")
 
-    def _find_mentor_panel(self):
+    def _find_mentor_panel(self):  # noqa: ANN202
         """Walk up the widget tree to find an AIMentorPanel instance."""
         from app.ai.chat_handler import AIMentorPanel
 
@@ -707,7 +711,7 @@ class LearnWidget(QWidget):
             widget = widget.parent()
         return None
 
-    def _dispatch_explanation(self, mentor_panel, analyzer_panel, code, language):
+    def _dispatch_explanation(self, mentor_panel, analyzer_panel, code: str, language: str) -> None:
         """Dispatch code explanation via the mentor panel's AI backend."""
 
         def _on_result(analysis_type, result):
@@ -793,7 +797,7 @@ class LearnWidget(QWidget):
 
     # ── Achievement notifications ────────────────────────────────────────────
 
-    def _notify_achievements(self, achievement_ids: list) -> None:
+    def _notify_achievements(self, achievement_ids: list[str]) -> None:
         """Show achievement notification popups."""
         for aid in achievement_ids:
             ach_rows = self.db.list_achievements()
