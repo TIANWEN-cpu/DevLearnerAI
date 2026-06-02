@@ -60,9 +60,7 @@ class TestLooksLikeCorruptedMessage:
         assert AppDatabase._looks_like_corrupted_message("") is False
 
     def test_placeholder_not_corrupted(self):
-        assert AppDatabase._looks_like_corrupted_message(
-            "旧消息因早期编码问题已自动清理"
-        ) is False
+        assert AppDatabase._looks_like_corrupted_message("旧消息因早期编码问题已自动清理") is False
 
     def test_garbled_high_question_ratio_detected(self):
         # Many question marks, no Chinese characters, compact length > 6

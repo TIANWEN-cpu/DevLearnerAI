@@ -1,10 +1,11 @@
 import shutil
 import sqlite3
 import threading
+from collections.abc import Sequence
 from contextlib import contextmanager
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple
+from typing import Optional
 
 from app.config import API_CREDENTIAL_ALIAS, DB_DIR, DB_PATH, LEGACY_DB_PATH, ensure_runtime_dirs
 from app.credentials import load_secret, save_secret
@@ -201,9 +202,7 @@ class AppDatabase:
             self.set_active_mentor_session(default_id)
 
     def _migrate_legacy_api_key_if_needed(self) -> None:
-        row = self.fetchone(
-            "SELECT host, api_key, key_alias, model FROM mentor_api_config WHERE id = 1"
-        )
+        row = self.fetchone("SELECT host, api_key, key_alias, model FROM mentor_api_config WHERE id = 1")
         if not row:
             return
         host, legacy_api_key, key_alias, model = row
@@ -223,11 +222,11 @@ class AppDatabase:
                     (host or "", model or "", API_CREDENTIAL_ALIAS),
                 )
 
-    def fetchall(self, sql: str, params: Sequence = ()) -> List[Tuple]:
+    def fetchall(self, sql: str, params: Sequence = ()) -> list[tuple]:
         with self.connect() as conn:
             return conn.execute(sql, params).fetchall()
 
-    def fetchone(self, sql: str, params: Sequence = ()) -> Optional[Tuple]:
+    def fetchone(self, sql: str, params: Sequence = ()) -> Optional[tuple]:
         with self.connect() as conn:
             return conn.execute(sql, params).fetchone()
 
@@ -350,7 +349,7 @@ class AppDatabase:
             ),
         )
 
-    def recent_attempts(self, limit: int = 10) -> List[Tuple]:
+    def recent_attempts(self, limit: int = 10) -> list[tuple]:
         return self.fetchall(
             """
             SELECT
@@ -379,7 +378,7 @@ class AppDatabase:
             (exercise_id, exercise_title_snapshot, code_snapshot, now_text()),
         )
 
-    def load_exercise_draft(self, exercise_id: str) -> Optional[Tuple[str, str]]:
+    def load_exercise_draft(self, exercise_id: str) -> Optional[tuple[str, str]]:
         return self.fetchone(
             "SELECT exercise_title_snapshot, code_snapshot FROM exercise_drafts WHERE exercise_id = ?",
             (exercise_id,),
@@ -449,10 +448,8 @@ class AppDatabase:
                 (host, model, API_CREDENTIAL_ALIAS),
             )
 
-    def load_api_config(self) -> Tuple[str, str, str]:
-        row = self.fetchone(
-            "SELECT host, api_key, model, key_alias FROM mentor_api_config WHERE id = 1"
-        )
+    def load_api_config(self) -> tuple[str, str, str]:
+        row = self.fetchone("SELECT host, api_key, model, key_alias FROM mentor_api_config WHERE id = 1")
         if not row:
             return "", "", ""
 
@@ -461,7 +458,7 @@ class AppDatabase:
             return host or "", load_secret(key_alias) or "", model or ""
         return host or "", legacy_api_key or "", model or ""
 
-    def list_mentor_sessions(self) -> List[Tuple[int, str, str]]:
+    def list_mentor_sessions(self) -> list[tuple[int, str, str]]:
         return self.fetchall(
             """
             SELECT id, name, updated_at
@@ -572,9 +569,7 @@ class AppDatabase:
         with self.connect() as conn:
             conn.execute("DELETE FROM mentor_messages WHERE session_id = ?", (session_id,))
             conn.execute("DELETE FROM mentor_sessions WHERE id = ?", (session_id,))
-            active_row = conn.execute(
-                "SELECT active_session_id FROM mentor_workspace_state WHERE id = 1"
-            ).fetchone()
+            active_row = conn.execute("SELECT active_session_id FROM mentor_workspace_state WHERE id = 1").fetchone()
             if active_row and active_row[0] == session_id:
                 fallback = conn.execute(
                     "SELECT id FROM mentor_sessions ORDER BY updated_at DESC, id DESC LIMIT 1"
@@ -617,7 +612,7 @@ class AppDatabase:
                 (timestamp, session_id),
             )
 
-    def load_mentor_messages(self, session_id: int) -> List[Tuple[str, str, str]]:
+    def load_mentor_messages(self, session_id: int) -> list[tuple[str, str, str]]:
         return self.fetchall(
             """
             SELECT role, content, created_at
@@ -654,7 +649,7 @@ class AppDatabase:
             "use_custom": bool(row[2]),
         }
 
-    def list_knowledge_files(self) -> List[Tuple[int, str, str, str]]:
+    def list_knowledge_files(self) -> list[tuple[int, str, str, str]]:
         return self.fetchall(
             """
             SELECT id, display_name, file_path, excerpt
@@ -663,7 +658,7 @@ class AppDatabase:
             """
         )
 
-    def get_knowledge_file(self, file_id: int) -> Optional[Tuple[int, str, str, str, str]]:
+    def get_knowledge_file(self, file_id: int) -> Optional[tuple[int, str, str, str, str]]:
         return self.fetchone(
             """
             SELECT id, display_name, file_path, excerpt, created_at

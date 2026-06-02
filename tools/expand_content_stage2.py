@@ -1,23 +1,23 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CONTENT_DIR = ROOT / 'content'
-METADATA_DIR = CONTENT_DIR / 'metadata'
-COURSE_MAP_PATH = METADATA_DIR / 'course_map.json'
-EXERCISES_PATH = METADATA_DIR / 'exercises.json'
+CONTENT_DIR = ROOT / "content"
+METADATA_DIR = CONTENT_DIR / "metadata"
+COURSE_MAP_PATH = METADATA_DIR / "course_map.json"
+EXERCISES_PATH = METADATA_DIR / "exercises.json"
 
 
 def render_lesson(info: dict) -> str:
-    outcomes = '\n'.join(f'- {item}' for item in info['outcomes'])
-    prerequisites = '\n'.join(f'- {item}' for item in info['prerequisites'])
-    focus = '\n'.join(f'- {item}' for item in info['focus'])
-    practice = '\n'.join(f'- {item}' for item in info['practice'])
-    references = '\n'.join(f'- [{title}]({url})' for title, url in info['references'])
-    papers = '\n'.join(f'- [{title}]({url})' for title, url in info['papers'])
-    return f"""# {info['title']}
+    outcomes = "\n".join(f"- {item}" for item in info["outcomes"])
+    prerequisites = "\n".join(f"- {item}" for item in info["prerequisites"])
+    focus = "\n".join(f"- {item}" for item in info["focus"])
+    practice = "\n".join(f"- {item}" for item in info["practice"])
+    references = "\n".join(f"- [{title}]({url})" for title, url in info["references"])
+    papers = "\n".join(f"- [{title}]({url})" for title, url in info["papers"])
+    return f"""# {info["title"]}
 
 ## 你会学到
 {outcomes}
@@ -26,14 +26,14 @@ def render_lesson(info: dict) -> str:
 {prerequisites}
 
 ## 为什么这节课重要
-{info['why']}
+{info["why"]}
 
 ## 核心知识
 {focus}
 
 ## 示例
-```{info['example_lang']}
-{info['example']}
+```{info["example_lang"]}
+{info["example"]}
 ```
 
 ## 继续练什么
@@ -47,62 +47,71 @@ def render_lesson(info: dict) -> str:
 """
 
 
-def ensure_track(course_map: dict, track_id: str, title: str, icon: str, summary: str, insert_before: str | None = None) -> dict:
-    for track in course_map['tracks']:
-        if track['id'] == track_id:
-            track['title'] = title
-            track['icon'] = icon
-            track['summary'] = summary
+def ensure_track(
+    course_map: dict, track_id: str, title: str, icon: str, summary: str, insert_before: str | None = None
+) -> dict:
+    for track in course_map["tracks"]:
+        if track["id"] == track_id:
+            track["title"] = title
+            track["icon"] = icon
+            track["summary"] = summary
             return track
-    track = {'id': track_id, 'title': title, 'icon': icon, 'summary': summary, 'modules': []}
+    track = {"id": track_id, "title": title, "icon": icon, "summary": summary, "modules": []}
     if insert_before:
-        for i, item in enumerate(course_map['tracks']):
-            if item['id'] == insert_before:
-                course_map['tracks'].insert(i, track)
+        for i, item in enumerate(course_map["tracks"]):
+            if item["id"] == insert_before:
+                course_map["tracks"].insert(i, track)
                 return track
-    course_map['tracks'].append(track)
+    course_map["tracks"].append(track)
     return track
 
 
 def ensure_module(track: dict, module_id: str, title: str, summary: str) -> dict:
-    for module in track['modules']:
-        if module['id'] == module_id:
-            module['title'] = title
-            module['summary'] = summary
+    for module in track["modules"]:
+        if module["id"] == module_id:
+            module["title"] = title
+            module["summary"] = summary
             return module
-    module = {'id': module_id, 'title': title, 'summary': summary, 'lessons': []}
-    track['modules'].append(module)
+    module = {"id": module_id, "title": title, "summary": summary, "lessons": []}
+    track["modules"].append(module)
     return module
 
 
 def upsert_lesson(course_map: dict, lesson: dict) -> None:
-    track = ensure_track(course_map, lesson['track_id'], lesson['track_title'], lesson['track_icon'], lesson['track_summary'], lesson.get('insert_before'))
-    module = ensure_module(track, lesson['module_id'], lesson['module_title'], lesson['module_summary'])
+    track = ensure_track(
+        course_map,
+        lesson["track_id"],
+        lesson["track_title"],
+        lesson["track_icon"],
+        lesson["track_summary"],
+        lesson.get("insert_before"),
+    )
+    module = ensure_module(track, lesson["module_id"], lesson["module_title"], lesson["module_summary"])
     payload = {
-        'id': lesson['id'],
-        'title': lesson['title'],
-        'summary': lesson['summary'],
-        'path': lesson['path'],
-        'difficulty': lesson['difficulty'],
-        'estimated_minutes': lesson['estimated_minutes'],
-        'tags': lesson['tags'],
-        'prerequisites': lesson['prerequisites_ids'],
-        'outcomes': lesson['outcomes'],
+        "id": lesson["id"],
+        "title": lesson["title"],
+        "summary": lesson["summary"],
+        "path": lesson["path"],
+        "difficulty": lesson["difficulty"],
+        "estimated_minutes": lesson["estimated_minutes"],
+        "tags": lesson["tags"],
+        "prerequisites": lesson["prerequisites_ids"],
+        "outcomes": lesson["outcomes"],
     }
-    for i, item in enumerate(module['lessons']):
-        if item['id'] == lesson['id']:
-            module['lessons'][i] = payload
+    for i, item in enumerate(module["lessons"]):
+        if item["id"] == lesson["id"]:
+            module["lessons"][i] = payload
             break
     else:
-        module['lessons'].append(payload)
-    target = CONTENT_DIR / lesson['path']
+        module["lessons"].append(payload)
+    target = CONTENT_DIR / lesson["path"]
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(render_lesson(lesson), encoding='utf-8')
+    target.write_text(render_lesson(lesson), encoding="utf-8")
 
 
 def upsert_exercise(exercises: list[dict], exercise: dict) -> None:
     for i, item in enumerate(exercises):
-        if item['id'] == exercise['id']:
+        if item["id"] == exercise["id"]:
             exercises[i] = exercise
             return
     exercises.append(exercise)
@@ -110,153 +119,1859 @@ def upsert_exercise(exercises: list[dict], exercise: dict) -> None:
 
 def sql_exercise(exercise_id, title, difficulty, prompt, lesson_id, hints, required_keywords, starter_code):
     return {
-        'id': exercise_id, 'title': title, 'track_id': 'database', 'difficulty': difficulty, 'prompt': prompt, 'lesson_id': lesson_id,
-        'hints': hints, 'starter_code': starter_code, 'expected_nodes': [], 'required_names': [], 'tests': [],
-        'required_keywords': required_keywords, 'forbidden_keywords': []
+        "id": exercise_id,
+        "title": title,
+        "track_id": "database",
+        "difficulty": difficulty,
+        "prompt": prompt,
+        "lesson_id": lesson_id,
+        "hints": hints,
+        "starter_code": starter_code,
+        "expected_nodes": [],
+        "required_names": [],
+        "tests": [],
+        "required_keywords": required_keywords,
+        "forbidden_keywords": [],
     }
 
 
-def keyword_exercise(exercise_id, title, track_id, difficulty, prompt, lesson_id, hints, required_keywords, starter_code, forbidden_keywords=None):
+def keyword_exercise(
+    exercise_id,
+    title,
+    track_id,
+    difficulty,
+    prompt,
+    lesson_id,
+    hints,
+    required_keywords,
+    starter_code,
+    forbidden_keywords=None,
+):
     return {
-        'id': exercise_id, 'title': title, 'track_id': track_id, 'difficulty': difficulty, 'prompt': prompt, 'lesson_id': lesson_id,
-        'hints': hints, 'starter_code': starter_code, 'expected_nodes': [], 'required_names': [], 'tests': [],
-        'required_keywords': required_keywords, 'forbidden_keywords': forbidden_keywords or []
+        "id": exercise_id,
+        "title": title,
+        "track_id": track_id,
+        "difficulty": difficulty,
+        "prompt": prompt,
+        "lesson_id": lesson_id,
+        "hints": hints,
+        "starter_code": starter_code,
+        "expected_nodes": [],
+        "required_names": [],
+        "tests": [],
+        "required_keywords": required_keywords,
+        "forbidden_keywords": forbidden_keywords or [],
     }
 
 
 def python_exercise(exercise_id, title, difficulty, prompt, lesson_id, hints, starter_code, required_names, tests):
     return {
-        'id': exercise_id, 'title': title, 'track_id': 'algorithms', 'difficulty': difficulty, 'prompt': prompt, 'lesson_id': lesson_id,
-        'hints': hints, 'starter_code': starter_code, 'expected_nodes': ['FunctionDef', 'Return'], 'required_names': required_names,
-        'tests': tests, 'required_keywords': [], 'forbidden_keywords': []
+        "id": exercise_id,
+        "title": title,
+        "track_id": "algorithms",
+        "difficulty": difficulty,
+        "prompt": prompt,
+        "lesson_id": lesson_id,
+        "hints": hints,
+        "starter_code": starter_code,
+        "expected_nodes": ["FunctionDef", "Return"],
+        "required_names": required_names,
+        "tests": tests,
+        "required_keywords": [],
+        "forbidden_keywords": [],
     }
 
 
 LESSONS = [
-    {'id':'db-upsert-merge-patterns','track_id':'database','track_title':'数据库主线','track_icon':'🗃️','track_summary':'把 SQL、建模、事务和数据连接整理成一条完整主线。','module_id':'db-advanced-modeling','module_title':'精选模块 · 事务、优化与 PostgreSQL','module_summary':'从会写 SQL 继续往数据变更、性能和跨环境实践推进。','path':'database/db_upsert_merge_patterns.md','title':'UPSERT 与幂等写入模式','summary':'把重复写入、补写日报和增量同步这类任务做稳。','difficulty':'精选','estimated_minutes':30,'tags':['UPSERT','幂等','数据同步'],'prerequisites':['基础 CRUD','主键与唯一键'],'prerequisites_ids':['db-crud','db-constraints-foreign-keys'],'outcomes':['理解 insert / update / upsert 的边界','知道幂等写入为什么重要','会给日报和指标表设计唯一键'],'why':'只要任务会重试、会补数、会重跑，UPSERT 和幂等写入就会直接决定数据会不会脏。','focus':['先给数据找唯一身份，再决定冲突时覆盖还是跳过','SQLite 常用 INSERT ... ON CONFLICT DO UPDATE','不要把去重逻辑全扔给应用层，数据库约束更可靠'],'example_lang':'sql','example':'CREATE TABLE daily_kpi(day TEXT PRIMARY KEY, total INTEGER);\nINSERT INTO daily_kpi(day, total)\nVALUES (''2026-04-01'', 8)\nON CONFLICT(day) DO UPDATE SET total = excluded.total;','practice':['给日报表补一条 upsert 语句','设计一个按 user_id + day 唯一的指标表'],'references':[('SQLite ON CONFLICT','https://sqlite.org/lang_upsert.html'),('PostgreSQL INSERT','https://www.postgresql.org/docs/current/sql-insert.html')],'papers':[('A Relational Model of Data for Large Shared Data Banks','https://research.ibm.com/publications/a-relational-model-of-data-for-large-shared-data-banks')]},
-    {'id':'db-normalization-tradeoffs','track_id':'database','track_title':'数据库主线','track_icon':'🗃️','track_summary':'把 SQL、建模、事务和数据连接整理成一条完整主线。','module_id':'db-advanced-modeling','module_title':'精选模块 · 事务、优化与 PostgreSQL','module_summary':'从会写 SQL 继续往数据变更、性能和跨环境实践推进。','path':'database/db_normalization_tradeoffs.md','title':'范式与反范式的取舍','summary':'不是背 1NF/2NF/3NF，而是学会什么时候该拆、什么时候该留。','difficulty':'精选','estimated_minutes':30,'tags':['范式','反范式','建模'],'prerequisites':['表、行、列与主键','JOIN 基础'],'prerequisites_ids':['db-concepts','db-join-patterns'],'outcomes':['知道为什么会有数据冗余和更新异常','会识别需要拆表的典型信号','能说清楚反范式的收益和代价'],'why':'数据库设计最难的不是建第一张表，而是业务变复杂以后你敢不敢拆、敢不敢冗余、知道代价在哪里。','focus':['范式关注的是减少冗余和更新异常','反范式关注的是读性能和查询简化','先保证数据正确，再讨论是否为了读性能做冗余'],'example_lang':'sql','example':'CREATE TABLE orders(id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, total_amount REAL NOT NULL);\nCREATE TABLE order_items(order_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER NOT NULL, price REAL NOT NULL);','practice':['拿用户-订单-订单项结构分析为什么要拆表','思考报表宽表和交易库范式表的边界'],'references':[('PostgreSQL Tutorial','https://www.postgresql.org/docs/current/tutorial.html'),('SQLite Foreign Keys','https://sqlite.org/foreignkeys.html')],'papers':[('On the Criteria To Be Used in Decomposing Systems into Modules','https://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf')]},
-    {'id':'db-covering-indexes','track_id':'database','track_title':'数据库主线','track_icon':'🗃️','track_summary':'把 SQL、建模、事务和数据连接整理成一条完整主线。','module_id':'db-advanced-modeling','module_title':'精选模块 · 事务、优化与 PostgreSQL','module_summary':'从会写 SQL 继续往数据变更、性能和跨环境实践推进。','path':'database/db_covering_indexes.md','title':'覆盖索引与查询命中路径','summary':'让你不只是会加索引，还知道为什么有的索引加了也不快。','difficulty':'精选','estimated_minutes':28,'tags':['索引','覆盖索引','性能'],'prerequisites':['索引基础','执行计划'],'prerequisites_ids':['db-indexes-transactions','db-explain-query-plans'],'outcomes':['理解覆盖索引为什么能减少回表','会给典型报表查询设计索引列顺序','知道索引不是越多越好'],'why':'数据库性能问题常常不是写不出 SQL，而是写得出来却跑不动。覆盖索引是最值得先掌握的优化手感之一。','focus':['把过滤列和排序列的顺序想清楚','覆盖索引的价值在于减少额外的数据页访问','先看真实查询，再决定是否建索引'],'example_lang':'sql','example':'CREATE INDEX idx_reports_created_status\nON reports(created_at, status);','practice':['给按 created_at + status 检索的报表表设计索引','比较单列索引和组合索引的命中效果'],'references':[('SQLite Query Planner','https://sqlite.org/queryplanner.html'),('PostgreSQL Indexes','https://www.postgresql.org/docs/current/indexes.html')],'papers':[('Access Path Selection in a Relational Database Management System','https://stratos.seas.harvard.edu/files/stratos/files/accesspathselection.pdf')]},
-    {'id':'db-query-debugging-workflow','track_id':'database','track_title':'数据库主线','track_icon':'🗃️','track_summary':'把 SQL、建模、事务和数据连接整理成一条完整主线。','module_id':'db-advanced-modeling','module_title':'精选模块 · 事务、优化与 PostgreSQL','module_summary':'从会写 SQL 继续往数据变更、性能和跨环境实践推进。','path':'database/db_query_debugging_workflow.md','title':'查询调试工作流','summary':'把“SQL 跑不对”拆成可定位、可验证、可修复的步骤。','difficulty':'精选','estimated_minutes':25,'tags':['调试','EXPLAIN','验证'],'prerequisites':['聚合与 JOIN','执行计划入门'],'prerequisites_ids':['db-aggregation','db-explain-query-plans'],'outcomes':['会从样例数据开始复现问题','知道先验结果怎么写','会用 explain 判断索引和扫描路径'],'why':'真正让人卡住的通常不是不会写，而是写完以后不知道错在哪。学会调试工作流，你以后面对复杂报表就没那么慌。','focus':['先缩小数据集，再验证结果','把复杂 SQL 拆成子查询和中间结果','执行计划是解释“为什么慢”的证据，不是装饰品'],'example_lang':'sql','example':'EXPLAIN QUERY PLAN\nSELECT user_id, COUNT(*)\nFROM orders\nWHERE created_at >= ''2026-04-01''\nGROUP BY user_id;','practice':['拿一条 join + group by SQL，先手工算出预期结果','练习把复杂 SQL 拆成 2 到 3 个中间查询'],'references':[('SQLite EXPLAIN QUERY PLAN','https://sqlite.org/eqp.html'),('Use the Index, Luke','https://use-the-index-luke.com/')],'papers':[('Volcano - An Extensible and Parallel Query Evaluation System','https://www.vldb.org/conf/1990/P379.PDF')]},
-    {'id':'db-sql-test-data','track_id':'database','track_title':'数据库主线','track_icon':'🗃️','track_summary':'把 SQL、建模、事务和数据连接整理成一条完整主线。','module_id':'db-advanced-modeling','module_title':'精选模块 · 事务、优化与 PostgreSQL','module_summary':'从会写 SQL 继续往数据变更、性能和跨环境实践推进。','path':'database/db_sql_test_data.md','title':'用测试数据验证 SQL','summary':'把 SQL 题从“猜结果”变成“先造样例，再验证”。','difficulty':'精选','estimated_minutes':25,'tags':['测试数据','样例','验证'],'prerequisites':['CRUD','WHERE / GROUP BY'],'prerequisites_ids':['db-crud','db-aggregation'],'outcomes':['会写最小可验证样例数据','知道边界数据为什么重要','能用少量数据快速卡出 SQL bug'],'why':'不会造样例数据，很多 SQL 只能靠感觉。会自己造 5 到 10 行测试数据，是从初学者走向靠谱开发者的分水岭。','focus':['样例数据要覆盖正常值、空值、重复值和边界值','先构造你能手算出结果的小数据集','测试 SQL 就像测试函数，也要有预期输出'],'example_lang':'sql','example':'CREATE TABLE users(id INTEGER, city TEXT);\nINSERT INTO users VALUES\n(1, ''Shanghai''),\n(2, NULL),\n(3, ''Shenzhen'');','practice':['为一条 group by SQL 设计 6 行以内测试数据','给 left join 场景补一行“右表缺失”的数据'],'references':[('SQLite SQL Language','https://sqlite.org/lang.html'),('Agile Data Database Testing','https://www.agiledata.org/essays/databaseTesting.html')],'papers':[('An Axiomatic Basis for Computer Programming','https://bitfragment.net/notes/proglang-src-hoare-axiomatic-1969/')]},
-    {'id':'db-orm-boundary','track_id':'database','track_title':'数据库主线','track_icon':'🗃️','track_summary':'把 SQL、建模、事务和数据连接整理成一条完整主线。','module_id':'db-advanced-modeling','module_title':'精选模块 · 事务、优化与 PostgreSQL','module_summary':'从会写 SQL 继续往数据变更、性能和跨环境实践推进。','path':'database/db_orm_boundary.md','title':'ORM 的边界与 SQL 回退时机','summary':'知道什么时候该继续用 ORM，什么时候该直接写 SQL。','difficulty':'精选','estimated_minutes':25,'tags':['ORM','SQLAlchemy','边界'],'prerequisites':['Python + sqlite3','SQLAlchemy 基础'],'prerequisites_ids':['db-sqlite-python','db-sqlalchemy'],'outcomes':['能说清 ORM 解决的主要问题','知道复杂报表和批量更新什么时候要回到 SQL','会避免 N+1 查询'],'why':'ORM 很好用，但把所有问题都丢给 ORM，后面你会在性能和可控性上吃亏。懂边界，项目才能稳。','focus':['ORM 擅长对象映射和简单 CRUD','复杂聚合、窗口函数、批量数据修复通常更适合直接写 SQL','先让数据层清晰，再决定封装层次'],'example_lang':'python','example':'from sqlalchemy import select, func\nstmt = select(User.id, func.count(Order.id)).join(Order).group_by(User.id)','practice':['找一条复杂报表，比较 ORM 写法和原生 SQL 写法','识别一个典型 N+1 查询场景'],'references':[('SQLAlchemy Unified Tutorial','https://docs.sqlalchemy.org/en/20/tutorial/'),('SQLite SQL Language','https://sqlite.org/lang.html')],'papers':[('Object-relational impedance mismatch','https://en.wikipedia.org/wiki/Object%E2%80%93relational_impedance_mismatch')]},
-    {'id':'c-arrays-memory-layout','track_id':'c','track_title':'C 主线','track_icon':'🧠','track_summary':'从语法、指针、文件和调试一路学到更像工程代码的 C。','module_id':'c-advanced-memory','module_title':'精选模块 · 内存、库函数与工具化','module_summary':'把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。','path':'c/c_arrays_memory_layout.md','title':'数组与内存布局','summary':'把数组看成连续内存，而不是“很多个变量拼起来”。','difficulty':'精选','estimated_minutes':28,'tags':['数组','内存','指针'],'prerequisites':['变量、类型与函数','指针入门'],'prerequisites_ids':['c-functions-arrays','c-pointers-memory'],'outcomes':['理解数组为什么是连续内存','知道数组名和指针的联系与差别','会根据内存布局推断下标访问'],'why':'很多 C 代码问题，根上都不是语法，而是你脑子里没有“内存布局”的画面。','focus':['数组元素在内存中连续排列','下标访问本质上是基地址加偏移','数组名在很多场景会退化为指针，但不是处处等价'],'example_lang':'c','example':'int nums[4] = {10, 20, 30, 40};\nprintf("%d\\n", nums[2]);','practice':['手算 int 数组第 3 个元素的偏移量','比较 sizeof(nums) 和 sizeof(ptr) 的结果'],'references':[('cppreference arrays','https://en.cppreference.com/w/c/language/array'),('GNU C Manual Arrays','https://www.gnu.org/software/c-intro-and-ref/manual/html_node/Arrays.html')],'papers':[('Go To Statement Considered Harmful','https://www.cs.utexas.edu/users/EWD/transcriptions/EWD02xx/EWD215.html')]},
-    {'id':'c-pointer-arithmetic','track_id':'c','track_title':'C 主线','track_icon':'🧠','track_summary':'从语法、指针、文件和调试一路学到更像工程代码的 C。','module_id':'c-advanced-memory','module_title':'精选模块 · 内存、库函数与工具化','module_summary':'把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。','path':'c/c_pointer_arithmetic.md','title':'指针运算与边界意识','summary':'让指针加减不再像魔法，而是有清晰尺寸感。','difficulty':'精选','estimated_minutes':28,'tags':['指针','边界','数组'],'prerequisites':['数组与内存布局','指针基础'],'prerequisites_ids':['c-arrays-memory-layout','c-pointers-memory'],'outcomes':['知道 p+1 为什么不是加 1 字节','会用 begin/end 写遍历','知道什么情况下指针比较是安全的'],'why':'一旦你能把指针运算想成“按元素尺寸跳格子”，很多难看的 C 代码都会变清楚。','focus':['指针偏移按目标类型大小计算','用 begin / end 范围遍历比手写魔法数字更稳','跨数组做指针比较是未定义风险'],'example_lang':'c','example':'int nums[] = {3, 5, 8};\nint *p = nums;\nprintf("%d\\n", *(p + 1));','practice':['用指针遍历一个整型数组','把下标版求和函数改写成 begin/end 版'],'references':[('cppreference pointer arithmetic','https://en.cppreference.com/w/c/language/operator_arithmetic'),('GNU C Manual Pointers','https://www.gnu.org/software/c-intro-and-ref/manual/html_node/Pointers.html')],'papers':[('Programming as an Experience','https://worrydream.com/EarlyHistoryOfSmalltalk/')]},
-    {'id':'c-string-library-patterns','track_id':'c','track_title':'C 主线','track_icon':'🧠','track_summary':'从语法、指针、文件和调试一路学到更像工程代码的 C。','module_id':'c-advanced-memory','module_title':'精选模块 · 内存、库函数与工具化','module_summary':'把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。','path':'c/c_string_library_patterns.md','title':'字符串库函数的安全用法','summary':'把 strcpy/strcmp/strlen 这些常见库函数用得稳，不踩边界坑。','difficulty':'精选','estimated_minutes':26,'tags':['字符串','库函数','边界'],'prerequisites':['数组与内存布局','文件与缓冲区基础'],'prerequisites_ids':['c-arrays-memory-layout','c-file-io-records'],'outcomes':['知道常见字符串函数的输入输出约定','会给目标缓冲区留空间','知道为什么 fgets 通常比 gets 稳'],'why':'C 的字符串问题很少是“不会拼接”，更多是边界、结束符和缓冲区管理没想透。','focus':['字符串以 \\0 结尾','复制和拼接时要先算容量','读一行文本时优先考虑带长度的 API'],'example_lang':'c','example':'char dest[16];\nstrncpy(dest, source, sizeof(dest) - 1);\ndest[sizeof(dest) - 1] = ''\\0'';','practice':['写一个安全复制用户名的函数','比较 strlen 和 sizeof 在字符数组上的差异'],'references':[('cppreference string handling','https://en.cppreference.com/w/c/string/byte'),('CERT C String Rules','https://wiki.sei.cmu.edu/confluence/display/c/STR00-C.+Represent+characters+using+an+appropriate+type')],'papers':[('Why Johnny Can''t Code','https://www.eecs.qmul.ac.uk/~mmh/ItP/why_johnny_cant_code.pdf')]},
-    {'id':'c-callback-qsort-patterns','track_id':'c','track_title':'C 主线','track_icon':'🧠','track_summary':'从语法、指针、文件和调试一路学到更像工程代码的 C。','module_id':'c-advanced-memory','module_title':'精选模块 · 内存、库函数与工具化','module_summary':'把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。','path':'c/c_callback_qsort_patterns.md','title':'回调与 qsort 模式','summary':'把函数指针真正用起来，理解“传处理方式”这件事。','difficulty':'精选','estimated_minutes':25,'tags':['回调','qsort','函数指针'],'prerequisites':['函数指针','数组'],'prerequisites_ids':['c-function-pointers','c-arrays-memory-layout'],'outcomes':['理解 qsort 比较函数签名','会写最小回调函数','知道为什么比较函数要稳定返回负零正'],'why':'很多人学完函数指针还是觉得虚，因为没把它放进真实 API 里。qsort 就是最好的第一站。','focus':['回调的核心是把“处理策略”当参数传入','qsort 比较函数要能比较两个元素','先把签名写对，再谈排序逻辑'],'example_lang':'c','example':'int cmp_int(const void *a, const void *b) {\n    int lhs = *(const int *)a;\n    int rhs = *(const int *)b;\n    return (lhs > rhs) - (lhs < rhs);\n}','practice':['写一个 int 数组升序排序的比较函数','尝试给结构体数组按 score 排序'],'references':[('cppreference qsort','https://en.cppreference.com/w/c/algorithm/qsort'),('GNU C Manual Function Pointers','https://www.gnu.org/software/c-intro-and-ref/manual/html_node/Function-Pointers.html')],'papers':[('Engineering a Sort Function','https://fliphtml5.com/capw/ttvz/Engineering_a_Sort_Function_-_Florida_Institute_of_Technology/')]},
-    {'id':'c-binary-file-indexer','track_id':'c','track_title':'C 主线','track_icon':'🧠','track_summary':'从语法、指针、文件和调试一路学到更像工程代码的 C。','module_id':'c-advanced-memory','module_title':'精选模块 · 内存、库函数与工具化','module_summary':'把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。','path':'c/c_binary_file_indexer.md','title':'二进制文件与记录索引','summary':'从文本文件迈进二进制记录，让 C 更像真正的工具开发语言。','difficulty':'精选','estimated_minutes':30,'tags':['二进制文件','结构体','记录'],'prerequisites':['文件读写','结构体'],'prerequisites_ids':['c-file-io-records','c-structs-files'],'outcomes':['知道 fread / fwrite 的基本模式','会设计简单记录头','理解文本文件和二进制文件的取舍'],'why':'只会读写文本文件，C 还像“练习语言”；会做记录文件和索引，你才开始碰到更真实的工具场景。','focus':['先设计稳定的记录结构','读写前后都要检查返回值','二进制格式更紧凑，但兼容性要自己负责'],'example_lang':'c','example':'typedef struct {\n    int id;\n    char name[32];\n} UserRecord;\n\nfwrite(&record, sizeof(UserRecord), 1, fp);','practice':['定义一条最小记录并写入文件','给二进制记录文件加一个文件头版本号'],'references':[('cppreference fread','https://en.cppreference.com/w/c/io/fread'),('cppreference fwrite','https://en.cppreference.com/w/c/io/fwrite')],'papers':[('The UNIX Time-Sharing System','https://people.eecs.berkeley.edu/~brewer/cs262/unix.pdf')]},
-    {'id':'c-defensive-coding','track_id':'c','track_title':'C 主线','track_icon':'🧠','track_summary':'从语法、指针、文件和调试一路学到更像工程代码的 C。','module_id':'c-advanced-memory','module_title':'精选模块 · 内存、库函数与工具化','module_summary':'把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。','path':'c/c_defensive_coding.md','title':'防御式 C 编码习惯','summary':'让 C 代码更稳：检查返回值、显式边界、清晰错误路径。','difficulty':'精选','estimated_minutes':24,'tags':['防御式编程','错误处理','边界'],'prerequisites':['动态内存','文件与字符串基础'],'prerequisites_ids':['c-pointers-memory','c-string-library-patterns'],'outcomes':['会主动检查空指针和返回值','知道什么情况下该提前 return','能把错误路径写清楚而不是堆成一团'],'why':'C 没有太多保护网，所以好习惯不是锦上添花，而是你和线上 bug 之间最现实的缓冲层。','focus':['先检查输入，再执行业务逻辑','一条错误路径只做一件事','写 C 时要比写脚本语言更主动地保护边界'],'example_lang':'c','example':'FILE *fp = fopen(path, "r");\nif (!fp) {\n    return -1;\n}','practice':['把一个简单文件读取函数加上错误路径','给命令行参数检查写出早返回版本'],'references':[('CERT C Coding Standard','https://wiki.sei.cmu.edu/confluence/display/c/SEI+CERT+C+Coding+Standard'),('GNU C Manual Errors','https://www.gnu.org/software/c-intro-and-ref/manual/html_node/Error-Reporting.html')],'papers':[('No Silver Bullet','https://worrydream.com/refs/Brooks_1986_-_No_Silver_Bullet.pdf')]},
-    {'id':'cs-generics-constraints','track_id':'csharp','track_title':'C# 主线','track_icon':'⚙️','track_summary':'把语法、OOP、LINQ、异步和 .NET 项目结构整理成一条完整主线。','module_id':'csharp-advanced-apps','module_title':'精选模块 · 架构、配置与 Web 起步','module_summary':'继续从会写语法推进到会组织项目、会接配置、会做服务。','path':'csharp/cs_generics_constraints.md','title':'泛型与约束：让复用更稳','summary':'不只是会写 List<T>，而是知道什么时候该让类型参数带约束。','difficulty':'精选','estimated_minutes':26,'tags':['泛型','约束','复用'],'prerequisites':['类与对象','接口基础'],'prerequisites_ids':['cs-oop-basics','cs-interfaces-abstractions'],'outcomes':['知道泛型解决的重复代码问题','会写 where 约束','理解约束让 API 更安全'],'why':'C# 很强的一点是可以把通用能力写得既复用又安全，泛型约束就是其中很关键的一步。','focus':['泛型让算法和数据结构对多类型复用','约束告诉编译器“这个类型至少有什么能力”','先想清楚调用方真正需要什么，再设计约束'],'example_lang':'csharp','example':'public static T FirstOrDefault<T>(List<T> items)\n{\n    return items.Count > 0 ? items[0] : default!;\n}','practice':['写一个带 where T : class 约束的方法','思考为什么仓储接口常配合泛型使用'],'references':[('Generics in C#','https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/'),('Constraints on type parameters','https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters')],'papers':[('Design Patterns as Language Constructs','https://birrell.org/andrew/papers/pat4.pdf')]},
-    {'id':'cs-linq-projection-aggregation','track_id':'csharp','track_title':'C# 主线','track_icon':'⚙️','track_summary':'把语法、OOP、LINQ、异步和 .NET 项目结构整理成一条完整主线。','module_id':'csharp-advanced-apps','module_title':'精选模块 · 架构、配置与 Web 起步','module_summary':'继续从会写语法推进到会组织项目、会接配置、会做服务。','path':'csharp/cs_linq_projection_aggregation.md','title':'LINQ 投影、分组与聚合','summary':'把 LINQ 从筛选升级成真正能做报表和数据整理的工具。','difficulty':'精选','estimated_minutes':28,'tags':['LINQ','Select','GroupBy'],'prerequisites':['集合与循环','LINQ 基础'],'prerequisites_ids':['cs-methods-collections','cs-linq-generics'],'outcomes':['会写 Select / GroupBy / OrderBy 组合','知道什么时候该回到 for 循环','能把 LINQ 结果映射成 DTO'],'why':'C# 的数据处理力很大一部分来自 LINQ。只会 Where 不够，真正常用的是投影、分组和聚合。','focus':['投影是把原始对象变成更适合展示的数据形态','GroupBy 之后通常要接 Select 做聚合输出','LINQ 写法清晰比“一个链条到底”更重要'],'example_lang':'csharp','example':'var result = orders\n    .GroupBy(x => x.UserId)\n    .Select(g => new { UserId = g.Key, Total = g.Sum(x => x.Amount) })\n    .OrderByDescending(x => x.Total);','practice':['把订单列表按用户聚合总金额','用 Select 投影成更适合 UI 的匿名对象'],'references':[('Working with LINQ','https://learn.microsoft.com/en-us/dotnet/csharp/linq/'),('Projection operations','https://learn.microsoft.com/en-us/dotnet/csharp/linq/standard-query-operators/projection-operations')],'papers':[('Language Integrated Query (LINQ)','https://www.microsoft.com/en-us/research/publication/language-integrated-query-linq/')]},
-    {'id':'cs-di-lifetimes','track_id':'csharp','track_title':'C# 主线','track_icon':'⚙️','track_summary':'把语法、OOP、LINQ、异步和 .NET 项目结构整理成一条完整主线。','module_id':'csharp-advanced-apps','module_title':'精选模块 · 架构、配置与 Web 起步','module_summary':'继续从会写语法推进到会组织项目、会接配置、会做服务。','path':'csharp/cs_di_lifetimes.md','title':'依赖注入生命周期','summary':'把 Singleton / Scoped / Transient 的使用边界想清楚。','difficulty':'精选','estimated_minutes':28,'tags':['DI','生命周期','架构'],'prerequisites':['接口','服务注册基础'],'prerequisites_ids':['cs-interfaces-abstractions','cs-repository-pattern-intro'],'outcomes':['理解三种常见生命周期的语义','知道为什么 Scoped 不能乱塞到 Singleton','会给典型服务做生命周期选择'],'why':'会注册服务不难，难的是注册对。生命周期错了，后面就是线程问题、状态串味和资源泄漏。','focus':['Singleton 适合无状态或全局共享对象','Scoped 常见于请求级上下文','Transient 适合轻量、一次性依赖'],'example_lang':'csharp','example':'services.AddSingleton<IClock, SystemClock>();\nservices.AddScoped<IUserContext, UserContext>();\nservices.AddTransient<ReportFormatter>();','practice':['判断日志服务、用户上下文、格式化器分别适合什么生命周期','解释一个 Scoped 依赖被 Singleton 引用的问题'],'references':[('Dependency injection in .NET','https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection'),('Service lifetimes','https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection#service-lifetimes')],'papers':[('Inversion of Control Containers and the Dependency Injection pattern','https://martinfowler.com/articles/injection.html')]},
-    {'id':'cs-options-validation','track_id':'csharp','track_title':'C# 主线','track_icon':'⚙️','track_summary':'把语法、OOP、LINQ、异步和 .NET 项目结构整理成一条完整主线。','module_id':'csharp-advanced-apps','module_title':'精选模块 · 架构、配置与 Web 起步','module_summary':'继续从会写语法推进到会组织项目、会接配置、会做服务。','path':'csharp/cs_options_validation.md','title':'配置对象与 Options 校验','summary':'把 appsettings.json 从“字符串字典”升级成类型化配置。','difficulty':'精选','estimated_minutes':24,'tags':['配置','Options','校验'],'prerequisites':['类与对象','JSON 基础'],'prerequisites_ids':['cs-oop-basics','cs-configuration-options'],'outcomes':['会定义配置对象','知道 Options 模式为什么更稳','会给关键配置加简单校验'],'why':'项目越往后，配置越多。越晚把配置收成类型化对象，后面越容易到处散落字符串键名。','focus':['配置对象让依赖更清晰','关键配置要在启动阶段就校验','别把 API Key、连接串写死在业务代码里'],'example_lang':'csharp','example':'public class ApiOptions\n{\n    public string BaseUrl { get; set; } = string.Empty;\n    public int TimeoutSeconds { get; set; } = 10;\n}','practice':['给 API 配置写一个 Options 类','给 timeout 增加大于 0 的校验规则'],'references':[('Options pattern in .NET','https://learn.microsoft.com/en-us/dotnet/core/extensions/options'),('Configuration in .NET','https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration')],'papers':[('The Twelve-Factor App - Config','https://12factor.net/config')]},
-    {'id':'cs-background-services-intro','track_id':'csharp','track_title':'C# 主线','track_icon':'⚙️','track_summary':'把语法、OOP、LINQ、异步和 .NET 项目结构整理成一条完整主线。','module_id':'csharp-advanced-apps','module_title':'精选模块 · 架构、配置与 Web 起步','module_summary':'继续从会写语法推进到会组织项目、会接配置、会做服务。','path':'csharp/cs_background_services_intro.md','title':'后台服务与周期任务入门','summary':'理解 Worker / BackgroundService 适合做什么，不再只会写控制台主函数。','difficulty':'精选','estimated_minutes':24,'tags':['BackgroundService','Worker','任务'],'prerequisites':['async / await','DI 基础'],'prerequisites_ids':['cs-async-task-workflow','cs-di-lifetimes'],'outcomes':['知道后台服务的典型场景','会写最小 ExecuteAsync 循环','理解取消令牌为什么重要'],'why':'很多桌面工具和后端服务都不是“点一下跑完就结束”，而是要长期监听、轮询、同步，这就要进入后台服务的视角。','focus':['后台服务适合轮询、同步、清理和观察任务','循环里要尊重取消信号','周期任务要控制节奏，不要死循环狂跑'],'example_lang':'csharp','example':'protected override async Task ExecuteAsync(CancellationToken stoppingToken)\n{\n    while (!stoppingToken.IsCancellationRequested)\n    {\n        await Task.Delay(1000, stoppingToken);\n    }\n}','practice':['写一个每 5 秒打印一次状态的后台服务','思考日志清理任务适不适合用 BackgroundService'],'references':[('Background tasks with hosted services','https://learn.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services'),('Generic Host','https://learn.microsoft.com/en-us/dotnet/core/extensions/generic-host')],'papers':[('The Datacenter as a Computer','https://static.googleusercontent.com/media/research.google.com/en//archive/gfs-sosp2003.pdf')]},
-    {'id':'cs-desktop-architecture-notes','track_id':'csharp','track_title':'C# 主线','track_icon':'⚙️','track_summary':'把语法、OOP、LINQ、异步和 .NET 项目结构整理成一条完整主线。','module_id':'csharp-advanced-apps','module_title':'精选模块 · 架构、配置与 Web 起步','module_summary':'继续从会写语法推进到会组织项目、会接配置、会做服务。','path':'csharp/cs_desktop_architecture_notes.md','title':'桌面应用的分层设计笔记','summary':'给 C# 桌面程序建立 UI、应用、数据层的边界感。','difficulty':'精选','estimated_minutes':26,'tags':['桌面应用','分层','架构'],'prerequisites':['类与对象','文件与 JSON','LINQ 基础'],'prerequisites_ids':['cs-oop-basics','cs-configuration-options','cs-linq-generics'],'outcomes':['知道 UI 层不该承载所有逻辑','会拆出应用服务和仓储层','理解 ViewModel / DTO / Entity 的边界'],'why':'桌面应用最容易写成“窗体代码一把梭”。早一点建立层次感，后面加功能时就不会越改越怕。','focus':['UI 负责展示和交互，应用层负责编排，数据层负责持久化','领域对象和展示对象不一定一一对应','先把依赖方向想清楚，再写代码'],'example_lang':'text','example':'UI -> Application Service -> Repository -> SQLite / File\n          \\-> ViewModel / DTO','practice':['把一个“保存笔记”功能拆成 UI、Service、Repository 三层','比较直接写文件和走仓储接口的区别'],'references':[('MVVM Toolkit','https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/'),('WPF overview','https://learn.microsoft.com/en-us/dotnet/desktop/wpf/')],'papers':[('Patterns of Enterprise Application Architecture','https://martinfowler.com/books/eaa.html')]},
-    {'id':'algo-thinking-map','track_id':'algorithms','track_title':'算法 / 数据结构主线','track_icon':'🧩','track_summary':'把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。','insert_before':'integration','module_id':'algo-foundations','module_title':'基础模块 · 复杂度与思维框架','module_summary':'先把怎么看题、怎么拆题、怎么验答案这套思维立起来。','path':'algorithms/algo_thinking_map.md','title':'算法学习地图与拆题顺序','summary':'建立一张不容易迷路的算法学习地图。','difficulty':'基础','estimated_minutes':22,'tags':['算法','学习方法','拆题'],'prerequisites':['Python 基础函数','循环与列表'],'prerequisites_ids':['py-functions','py-control-flow'],'outcomes':['知道题目为什么要按模式学','会把题拆成输入、状态、操作、输出','知道什么时候该先画例子而不是直接写代码'],'why':'刷题最容易把人带进焦虑，不是题难，而是没有地图。先把地图补上，后面的每个专题才有位置感。','focus':['先识别题型，再选工具','算法题先用小样例把过程走一遍','做题不是背答案，而是积累可迁移的模式'],'example_lang':'text','example':'输入 -> 约束 -> 能否排序 -> 是否需要哈希 -> 是否是区间/子数组 -> 是否需要状态转移','practice':['拿一道数组题，用“输入-状态-操作-输出”模板拆一遍','记录自己最常卡的 3 个题型'],'references':[('CP-Algorithms','https://cp-algorithms.com/'),('LeetCode 75','https://leetcode.com/studyplan/leetcode-75/')],'papers':[('Structured Programming','https://www.cs.utexas.edu/users/EWD/transcriptions/EWD02xx/EWD249/EWD249.html')]},
-    {'id':'algo-complexity-basics','track_id':'algorithms','track_title':'算法 / 数据结构主线','track_icon':'🧩','track_summary':'把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。','insert_before':'integration','module_id':'algo-foundations','module_title':'基础模块 · 复杂度与思维框架','module_summary':'先把怎么看题、怎么拆题、怎么验答案这套思维立起来。','path':'algorithms/algo_complexity_basics.md','title':'时间复杂度与空间复杂度入门','summary':'学会用复杂度判断方案，而不是凭感觉觉得“应该挺快”。','difficulty':'基础','estimated_minutes':24,'tags':['复杂度','Big-O','分析'],'prerequisites':['循环','函数'],'prerequisites_ids':['py-control-flow','py-functions'],'outcomes':['会判断常见循环的复杂度','知道哈希和排序常见复杂度','能比较两个方案的大致成本'],'why':'复杂度不是面试八股，它直接决定你能不能在题海里快速筛掉明显不合适的方案。','focus':['单层遍历常见 O(n)，双层嵌套常见 O(n^2)','哈希换时间，排序常见 O(n log n)','空间复杂度要看额外开销，不是把输入也算进去'],'example_lang':'python','example':'def has_duplicate(nums):\n    seen = set()\n    for value in nums:\n        if value in seen:\n            return True\n        seen.add(value)\n    return False','practice':['比较排序解法和哈希解法的复杂度','给双指针模板估一遍时间和空间复杂度'],'references':[('CP-Algorithms','https://cp-algorithms.com/'),('Big-O Cheat Sheet','https://www.bigocheatsheet.com/')],'papers':[('An Axiomatic Basis for Computer Programming','https://bitfragment.net/notes/proglang-src-hoare-axiomatic-1969/')]},
-    {'id':'algo-arrays-hashing','track_id':'algorithms','track_title':'算法 / 数据结构主线','track_icon':'🧩','track_summary':'把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。','insert_before':'integration','module_id':'algo-foundations','module_title':'基础模块 · 复杂度与思维框架','module_summary':'先把怎么看题、怎么拆题、怎么验答案这套思维立起来。','path':'algorithms/algo_arrays_hashing.md','title':'数组与哈希表的第一批模式','summary':'把 Two Sum、去重、计数这类高频题型放到一个框架里。','difficulty':'基础','estimated_minutes':28,'tags':['数组','哈希','计数'],'prerequisites':['复杂度基础','字典 / set'],'prerequisites_ids':['algo-complexity-basics','py-strings-collections'],'outcomes':['会识别“边扫边记”的哈希模式','知道计数表和去重表的区别','能把暴力双循环优化成单次遍历'],'why':'很多初级算法题并不复杂，关键是敢不敢想到“用空间换时间”。数组 + 哈希是第一批最值钱的模式。','focus':['Two Sum 类问题常用 value -> index 哈希','计数题要先想 key 是谁、value 是什么','先把题目翻成查找 / 去重 / 计数这几类需求'],'example_lang':'python','example':'def two_sum(nums, target):\n    seen = {}\n    for index, value in enumerate(nums):\n        need = target - value\n        if need in seen:\n            return [seen[need], index]\n        seen[value] = index\n    return []','practice':['写一个统计每个单词出现次数的函数','把 contains duplicate 从排序解法改成哈希解法'],'references':[('LeetCode Programming Skills','https://leetcode.com/studyplan/programming-skills/'),('CP-Algorithms data structures','https://cp-algorithms.com/data_structures/')],'papers':[('Dynamic Hash Tables','https://dl.acm.org/doi/10.1145/358728.358745')]},
-    {'id':'algo-prefix-sum-window','track_id':'algorithms','track_title':'算法 / 数据结构主线','track_icon':'🧩','track_summary':'把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。','insert_before':'integration','module_id':'algo-patterns','module_title':'精选模块 · 高频题型模式','module_summary':'把最常见的数组、栈、树、搜索模式打成专题。','path':'algorithms/algo_prefix_sum_window.md','title':'前缀和与滑动窗口','summary':'区间问题里非常高频的两把锤子。','difficulty':'精选','estimated_minutes':28,'tags':['前缀和','滑动窗口','区间'],'prerequisites':['数组与哈希','复杂度基础'],'prerequisites_ids':['algo-arrays-hashing','algo-complexity-basics'],'outcomes':['知道什么时候用前缀和处理静态区间','知道什么时候用窗口维护动态区间','能识别固定窗口和可变窗口'],'why':'很多题表面不同，本质都在问你：区间信息怎么快速拿到，窗口状态怎么低成本维护。','focus':['前缀和适合快速求连续区间和','固定窗口适合固定长度子数组','可变窗口常用于“满足条件的最短/最长子串”'],'example_lang':'python','example':'def max_sum_k(nums, k):\n    window = sum(nums[:k])\n    best = window\n    for i in range(k, len(nums)):\n        window += nums[i] - nums[i-k]\n        best = max(best, window)\n    return best','practice':['写固定长度窗口最大和','写最短长度满足和至少为 target 的子数组'],'references':[('CP-Algorithms','https://cp-algorithms.com/'),('LeetCode 75','https://leetcode.com/studyplan/leetcode-75/')],'papers':[('Programming Pearls','https://www.cs.virginia.edu/~robins/YouAndYourResearch.html')]},
-    {'id':'algo-two-pointers','track_id':'algorithms','track_title':'算法 / 数据结构主线','track_icon':'🧩','track_summary':'把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。','insert_before':'integration','module_id':'algo-patterns','module_title':'精选模块 · 高频题型模式','module_summary':'把最常见的数组、栈、树、搜索模式打成专题。','path':'algorithms/algo_two_pointers.md','title':'双指针：从相向走到快慢指针','summary':'把双指针拆成几个固定模型，就没那么容易乱。','difficulty':'精选','estimated_minutes':28,'tags':['双指针','快慢指针','数组'],'prerequisites':['数组','复杂度'],'prerequisites_ids':['algo-arrays-hashing','algo-complexity-basics'],'outcomes':['会区分左右夹逼和快慢指针','知道排序后双指针的优势','能识别回文、去重、环检测的双指针味道'],'why':'双指针是把 O(n^2) 暴力解法拉回 O(n) 或 O(n log n) 的常见手段，学会了能立刻感觉题变简单。','focus':['左右夹逼常用于有序数组','快慢指针常用于链表或原地覆盖','先写循环不变式，再决定谁移动'],'example_lang':'python','example':'def is_palindrome(s):\n    left, right = 0, len(s) - 1\n    while left < right:\n        if s[left] != s[right]:\n            return False\n        left += 1\n        right -= 1\n    return True','practice':['写一个有效回文判断','写一个原地去重后的新长度函数'],'references':[('LeetCode 75','https://leetcode.com/studyplan/leetcode-75/'),('CP-Algorithms','https://cp-algorithms.com/')],'papers':[('Algorithm Design Techniques and Data Structures','https://dl.acm.org/doi/book/10.5555/644132')]},
-    {'id':'algo-stack-queue','track_id':'algorithms','track_title':'算法 / 数据结构主线','track_icon':'🧩','track_summary':'把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。','insert_before':'integration','module_id':'algo-patterns','module_title':'精选模块 · 高频题型模式','module_summary':'把最常见的数组、栈、树、搜索模式打成专题。','path':'algorithms/algo_stack_queue.md','title':'栈、队列与单调结构入门','summary':'把括号匹配、层序遍历、单调栈这些高频场景串起来。','difficulty':'精选','estimated_minutes':28,'tags':['栈','队列','单调栈'],'prerequisites':['列表','循环'],'prerequisites_ids':['py-strings-collections','py-control-flow'],'outcomes':['知道后进先出和先进先出的典型应用','会用栈做括号匹配','对单调栈建立第一层直觉'],'why':'很多题一开始看不出来要用栈或队列，但只要抓住“最近还没处理完的东西”这个感觉，很多题会突然通。','focus':['栈适合处理嵌套、配对、回退','队列适合层序和按到达顺序处理','单调栈常用于“下一个更大元素”一类题'],'example_lang':'python','example':'def valid_parentheses(s):\n    stack = []\n    pairs = {'')'': ''('', '']'': ''['', ''}'': ''{''}\n    for ch in s:\n        if ch in pairs.values():\n            stack.append(ch)\n        elif not stack or stack.pop() != pairs[ch]:\n            return False\n    return not stack','practice':['写有效括号','用队列做二叉树层序遍历'],'references':[('collections.deque','https://docs.python.org/3/library/collections.html#collections.deque'),('CP-Algorithms data structures','https://cp-algorithms.com/data_structures/')],'papers':[('Depth-First Search and Linear Graph Algorithms','https://epubs.siam.org/doi/10.1137/0201010')]},
-    {'id':'algo-binary-search-greedy','track_id':'algorithms','track_title':'算法 / 数据结构主线','track_icon':'🧩','track_summary':'把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。','insert_before':'integration','module_id':'algo-patterns','module_title':'精选模块 · 高频题型模式','module_summary':'把最常见的数组、栈、树、搜索模式打成专题。','path':'algorithms/algo_binary_search_greedy.md','title':'二分查找与贪心直觉','summary':'先把“单调性”和“局部最优”两种感觉练出来。','difficulty':'精选','estimated_minutes':28,'tags':['二分','贪心','单调性'],'prerequisites':['复杂度','数组'],'prerequisites_ids':['algo-complexity-basics','algo-arrays-hashing'],'outcomes':['知道什么时候可以二分答案','知道贪心为什么依赖局部决策结构','能把一类题归到“找边界”或“做选择”'],'why':'很多题你差的不是代码，而是那一步“能不能看出这里有单调性 / 这里能不能贪”。这个专题就是补这层感觉。','focus':['二分的关键不是 mid，而是区间不变式','贪心通常要先证明局部选择不会破坏全局最优','先找模式，再写模板'],'example_lang':'python','example':'def binary_search(nums, target):\n    left, right = 0, len(nums) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if nums[mid] == target:\n            return mid\n        if nums[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1','practice':['写标准二分','找最小可行值的边界二分题'],'references':[('CP-Algorithms binary search','https://cp-algorithms.com/num_methods/binary_search.html'),('CP-Algorithms','https://cp-algorithms.com/')],'papers':[('Extra, Extra - Nearly All Binary Searches and Mergesorts are Broken','https://ai.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html')]},
-    {'id':'algo-tree-bfs-dfs','track_id':'algorithms','track_title':'算法 / 数据结构主线','track_icon':'🧩','track_summary':'把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。','insert_before':'integration','module_id':'algo-advanced','module_title':'精选模块 · 树、图与动态规划','module_summary':'开始接触更像中级专题的状态和图结构问题。','path':'algorithms/algo_tree_bfs_dfs.md','title':'树的 DFS / BFS 基础','summary':'把树当成递归结构和层级结构两种视角来理解。','difficulty':'精选','estimated_minutes':30,'tags':['树','DFS','BFS'],'prerequisites':['栈与队列','递归基础'],'prerequisites_ids':['algo-stack-queue','py-recursion-patterns'],'outcomes':['知道 DFS 和 BFS 在树上的直觉差异','会写前序 DFS','会写层序 BFS'],'why':'树题是很多人从数组题跨到“更抽象结构题”的第一道坎。先把 DFS / BFS 两套视角建立起来，后面就顺了。','focus':['DFS 更像把一条路走到底','BFS 更像按层推进','树题要先想节点定义和递归返回值代表什么'],'example_lang':'python','example':'def preorder(root):\n    if not root:\n        return []\n    return [root.val] + preorder(root.left) + preorder(root.right)','practice':['写二叉树前序遍历','写层序遍历返回每层节点值'],'references':[('CP-Algorithms DFS','https://cp-algorithms.com/graph/depth-first-search.html'),('CP-Algorithms BFS','https://cp-algorithms.com/graph/breadth-first-search.html')],'papers':[('Depth-First Search and Linear Graph Algorithms','https://epubs.siam.org/doi/10.1137/0201010')]},
-    {'id':'algo-dynamic-programming-intuition','track_id':'algorithms','track_title':'算法 / 数据结构主线','track_icon':'🧩','track_summary':'把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。','insert_before':'integration','module_id':'algo-advanced','module_title':'精选模块 · 树、图与动态规划','module_summary':'开始接触更像中级专题的状态和图结构问题。','path':'algorithms/algo_dynamic_programming_intuition.md','title':'动态规划的第一层直觉','summary':'先学会找状态、写转移，再谈高级优化。','difficulty':'精选','estimated_minutes':30,'tags':['动态规划','状态','转移'],'prerequisites':['递归','复杂度'],'prerequisites_ids':['py-recursion-patterns','algo-complexity-basics'],'outcomes':['知道什么叫重叠子问题','会写最小一维 DP','知道先从递归改记忆化再改表格法'],'why':'DP 往往不是难在代码，而是难在你不知道“状态到底是什么”。这节课先把那层抽象练出来。','focus':['先定义 dp[i] 代表什么','转移式描述“当前答案怎么由更小问题得到”','先保证状态定义清楚，再优化空间'],'example_lang':'python','example':'def climb_stairs(n):\n    if n <= 2:\n        return n\n    a, b = 1, 2\n    for _ in range(3, n + 1):\n        a, b = b, a + b\n    return b','practice':['写爬楼梯','写打家劫舍的一维 DP 版'],'references':[('CP-Algorithms DP intro','https://cp-algorithms.com/dynamic_programming/intro-to-dp.html'),('LeetCode DP','https://leetcode.com/tag/dynamic-programming/')],'papers':[('Bellman on the theory of dynamic programming','https://www.rand.org/content/dam/rand/pubs/papers/2008/P550.pdf')]},
-    {'id':'algo-graph-shortest-path','track_id':'algorithms','track_title':'算法 / 数据结构主线','track_icon':'🧩','track_summary':'把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。','insert_before':'integration','module_id':'algo-advanced','module_title':'精选模块 · 树、图与动态规划','module_summary':'开始接触更像中级专题的状态和图结构问题。','path':'algorithms/algo_graph_shortest_path.md','title':'图与最短路第一眼','summary':'先学会把题目翻成图，再看 BFS / Dijkstra 这类工具。','difficulty':'精选','estimated_minutes':30,'tags':['图','最短路','BFS'],'prerequisites':['树的 BFS/DFS','队列'],'prerequisites_ids':['algo-tree-bfs-dfs','algo-stack-queue'],'outcomes':['会把节点和边从题目里抽出来','知道无权图最短路为什么常用 BFS','知道带权图最短路和 Dijkstra 的基本前提'],'why':'图题最可怕的不是代码长，而是看不出“这其实是个图”。把这层视角建立好，后面很多题会突然有路走。','focus':['先明确节点是谁、边是谁','无权图最短路常用 BFS','非负权图常用 Dijkstra，先不要急着背堆优化'],'example_lang':'python','example':'from collections import deque\n\ndef shortest_path(adj, start):\n    dist = {start: 0}\n    queue = deque([start])\n    while queue:\n        node = queue.popleft()\n        for nxt in adj[node]:\n            if nxt not in dist:\n                dist[nxt] = dist[node] + 1\n                queue.append(nxt)\n    return dist','practice':['写网格最短步数 BFS','把课程依赖关系翻成图结构'],'references':[('CP-Algorithms Dijkstra','https://cp-algorithms.com/graph/dijkstra.html'),('CP-Algorithms BFS','https://cp-algorithms.com/graph/breadth-first-search.html')],'papers':[('A note on two problems in connexion with graphs','https://eudml.org/doc/131436')]},
+    {
+        "id": "db-upsert-merge-patterns",
+        "track_id": "database",
+        "track_title": "数据库主线",
+        "track_icon": "🗃️",
+        "track_summary": "把 SQL、建模、事务和数据连接整理成一条完整主线。",
+        "module_id": "db-advanced-modeling",
+        "module_title": "精选模块 · 事务、优化与 PostgreSQL",
+        "module_summary": "从会写 SQL 继续往数据变更、性能和跨环境实践推进。",
+        "path": "database/db_upsert_merge_patterns.md",
+        "title": "UPSERT 与幂等写入模式",
+        "summary": "把重复写入、补写日报和增量同步这类任务做稳。",
+        "difficulty": "精选",
+        "estimated_minutes": 30,
+        "tags": ["UPSERT", "幂等", "数据同步"],
+        "prerequisites": ["基础 CRUD", "主键与唯一键"],
+        "prerequisites_ids": ["db-crud", "db-constraints-foreign-keys"],
+        "outcomes": ["理解 insert / update / upsert 的边界", "知道幂等写入为什么重要", "会给日报和指标表设计唯一键"],
+        "why": "只要任务会重试、会补数、会重跑，UPSERT 和幂等写入就会直接决定数据会不会脏。",
+        "focus": [
+            "先给数据找唯一身份，再决定冲突时覆盖还是跳过",
+            "SQLite 常用 INSERT ... ON CONFLICT DO UPDATE",
+            "不要把去重逻辑全扔给应用层，数据库约束更可靠",
+        ],
+        "example_lang": "sql",
+        "example": "CREATE TABLE daily_kpi(day TEXT PRIMARY KEY, total INTEGER);\nINSERT INTO daily_kpi(day, total)\nVALUES ("
+        "2026-04-01"
+        ", 8)\nON CONFLICT(day) DO UPDATE SET total = excluded.total;",
+        "practice": ["给日报表补一条 upsert 语句", "设计一个按 user_id + day 唯一的指标表"],
+        "references": [
+            ("SQLite ON CONFLICT", "https://sqlite.org/lang_upsert.html"),
+            ("PostgreSQL INSERT", "https://www.postgresql.org/docs/current/sql-insert.html"),
+        ],
+        "papers": [
+            (
+                "A Relational Model of Data for Large Shared Data Banks",
+                "https://research.ibm.com/publications/a-relational-model-of-data-for-large-shared-data-banks",
+            )
+        ],
+    },
+    {
+        "id": "db-normalization-tradeoffs",
+        "track_id": "database",
+        "track_title": "数据库主线",
+        "track_icon": "🗃️",
+        "track_summary": "把 SQL、建模、事务和数据连接整理成一条完整主线。",
+        "module_id": "db-advanced-modeling",
+        "module_title": "精选模块 · 事务、优化与 PostgreSQL",
+        "module_summary": "从会写 SQL 继续往数据变更、性能和跨环境实践推进。",
+        "path": "database/db_normalization_tradeoffs.md",
+        "title": "范式与反范式的取舍",
+        "summary": "不是背 1NF/2NF/3NF，而是学会什么时候该拆、什么时候该留。",
+        "difficulty": "精选",
+        "estimated_minutes": 30,
+        "tags": ["范式", "反范式", "建模"],
+        "prerequisites": ["表、行、列与主键", "JOIN 基础"],
+        "prerequisites_ids": ["db-concepts", "db-join-patterns"],
+        "outcomes": ["知道为什么会有数据冗余和更新异常", "会识别需要拆表的典型信号", "能说清楚反范式的收益和代价"],
+        "why": "数据库设计最难的不是建第一张表，而是业务变复杂以后你敢不敢拆、敢不敢冗余、知道代价在哪里。",
+        "focus": [
+            "范式关注的是减少冗余和更新异常",
+            "反范式关注的是读性能和查询简化",
+            "先保证数据正确，再讨论是否为了读性能做冗余",
+        ],
+        "example_lang": "sql",
+        "example": "CREATE TABLE orders(id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, total_amount REAL NOT NULL);\nCREATE TABLE order_items(order_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER NOT NULL, price REAL NOT NULL);",
+        "practice": ["拿用户-订单-订单项结构分析为什么要拆表", "思考报表宽表和交易库范式表的边界"],
+        "references": [
+            ("PostgreSQL Tutorial", "https://www.postgresql.org/docs/current/tutorial.html"),
+            ("SQLite Foreign Keys", "https://sqlite.org/foreignkeys.html"),
+        ],
+        "papers": [
+            (
+                "On the Criteria To Be Used in Decomposing Systems into Modules",
+                "https://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf",
+            )
+        ],
+    },
+    {
+        "id": "db-covering-indexes",
+        "track_id": "database",
+        "track_title": "数据库主线",
+        "track_icon": "🗃️",
+        "track_summary": "把 SQL、建模、事务和数据连接整理成一条完整主线。",
+        "module_id": "db-advanced-modeling",
+        "module_title": "精选模块 · 事务、优化与 PostgreSQL",
+        "module_summary": "从会写 SQL 继续往数据变更、性能和跨环境实践推进。",
+        "path": "database/db_covering_indexes.md",
+        "title": "覆盖索引与查询命中路径",
+        "summary": "让你不只是会加索引，还知道为什么有的索引加了也不快。",
+        "difficulty": "精选",
+        "estimated_minutes": 28,
+        "tags": ["索引", "覆盖索引", "性能"],
+        "prerequisites": ["索引基础", "执行计划"],
+        "prerequisites_ids": ["db-indexes-transactions", "db-explain-query-plans"],
+        "outcomes": ["理解覆盖索引为什么能减少回表", "会给典型报表查询设计索引列顺序", "知道索引不是越多越好"],
+        "why": "数据库性能问题常常不是写不出 SQL，而是写得出来却跑不动。覆盖索引是最值得先掌握的优化手感之一。",
+        "focus": [
+            "把过滤列和排序列的顺序想清楚",
+            "覆盖索引的价值在于减少额外的数据页访问",
+            "先看真实查询，再决定是否建索引",
+        ],
+        "example_lang": "sql",
+        "example": "CREATE INDEX idx_reports_created_status\nON reports(created_at, status);",
+        "practice": ["给按 created_at + status 检索的报表表设计索引", "比较单列索引和组合索引的命中效果"],
+        "references": [
+            ("SQLite Query Planner", "https://sqlite.org/queryplanner.html"),
+            ("PostgreSQL Indexes", "https://www.postgresql.org/docs/current/indexes.html"),
+        ],
+        "papers": [
+            (
+                "Access Path Selection in a Relational Database Management System",
+                "https://stratos.seas.harvard.edu/files/stratos/files/accesspathselection.pdf",
+            )
+        ],
+    },
+    {
+        "id": "db-query-debugging-workflow",
+        "track_id": "database",
+        "track_title": "数据库主线",
+        "track_icon": "🗃️",
+        "track_summary": "把 SQL、建模、事务和数据连接整理成一条完整主线。",
+        "module_id": "db-advanced-modeling",
+        "module_title": "精选模块 · 事务、优化与 PostgreSQL",
+        "module_summary": "从会写 SQL 继续往数据变更、性能和跨环境实践推进。",
+        "path": "database/db_query_debugging_workflow.md",
+        "title": "查询调试工作流",
+        "summary": "把“SQL 跑不对”拆成可定位、可验证、可修复的步骤。",
+        "difficulty": "精选",
+        "estimated_minutes": 25,
+        "tags": ["调试", "EXPLAIN", "验证"],
+        "prerequisites": ["聚合与 JOIN", "执行计划入门"],
+        "prerequisites_ids": ["db-aggregation", "db-explain-query-plans"],
+        "outcomes": ["会从样例数据开始复现问题", "知道先验结果怎么写", "会用 explain 判断索引和扫描路径"],
+        "why": "真正让人卡住的通常不是不会写，而是写完以后不知道错在哪。学会调试工作流，你以后面对复杂报表就没那么慌。",
+        "focus": [
+            "先缩小数据集，再验证结果",
+            "把复杂 SQL 拆成子查询和中间结果",
+            "执行计划是解释“为什么慢”的证据，不是装饰品",
+        ],
+        "example_lang": "sql",
+        "example": "EXPLAIN QUERY PLAN\nSELECT user_id, COUNT(*)\nFROM orders\nWHERE created_at >= "
+        "2026-04-01"
+        "\nGROUP BY user_id;",
+        "practice": ["拿一条 join + group by SQL，先手工算出预期结果", "练习把复杂 SQL 拆成 2 到 3 个中间查询"],
+        "references": [
+            ("SQLite EXPLAIN QUERY PLAN", "https://sqlite.org/eqp.html"),
+            ("Use the Index, Luke", "https://use-the-index-luke.com/"),
+        ],
+        "papers": [
+            ("Volcano - An Extensible and Parallel Query Evaluation System", "https://www.vldb.org/conf/1990/P379.PDF")
+        ],
+    },
+    {
+        "id": "db-sql-test-data",
+        "track_id": "database",
+        "track_title": "数据库主线",
+        "track_icon": "🗃️",
+        "track_summary": "把 SQL、建模、事务和数据连接整理成一条完整主线。",
+        "module_id": "db-advanced-modeling",
+        "module_title": "精选模块 · 事务、优化与 PostgreSQL",
+        "module_summary": "从会写 SQL 继续往数据变更、性能和跨环境实践推进。",
+        "path": "database/db_sql_test_data.md",
+        "title": "用测试数据验证 SQL",
+        "summary": "把 SQL 题从“猜结果”变成“先造样例，再验证”。",
+        "difficulty": "精选",
+        "estimated_minutes": 25,
+        "tags": ["测试数据", "样例", "验证"],
+        "prerequisites": ["CRUD", "WHERE / GROUP BY"],
+        "prerequisites_ids": ["db-crud", "db-aggregation"],
+        "outcomes": ["会写最小可验证样例数据", "知道边界数据为什么重要", "能用少量数据快速卡出 SQL bug"],
+        "why": "不会造样例数据，很多 SQL 只能靠感觉。会自己造 5 到 10 行测试数据，是从初学者走向靠谱开发者的分水岭。",
+        "focus": [
+            "样例数据要覆盖正常值、空值、重复值和边界值",
+            "先构造你能手算出结果的小数据集",
+            "测试 SQL 就像测试函数，也要有预期输出",
+        ],
+        "example_lang": "sql",
+        "example": "CREATE TABLE users(id INTEGER, city TEXT);\nINSERT INTO users VALUES\n(1, "
+        "Shanghai"
+        "),\n(2, NULL),\n(3, "
+        "Shenzhen"
+        ");",
+        "practice": ["为一条 group by SQL 设计 6 行以内测试数据", "给 left join 场景补一行“右表缺失”的数据"],
+        "references": [
+            ("SQLite SQL Language", "https://sqlite.org/lang.html"),
+            ("Agile Data Database Testing", "https://www.agiledata.org/essays/databaseTesting.html"),
+        ],
+        "papers": [
+            (
+                "An Axiomatic Basis for Computer Programming",
+                "https://bitfragment.net/notes/proglang-src-hoare-axiomatic-1969/",
+            )
+        ],
+    },
+    {
+        "id": "db-orm-boundary",
+        "track_id": "database",
+        "track_title": "数据库主线",
+        "track_icon": "🗃️",
+        "track_summary": "把 SQL、建模、事务和数据连接整理成一条完整主线。",
+        "module_id": "db-advanced-modeling",
+        "module_title": "精选模块 · 事务、优化与 PostgreSQL",
+        "module_summary": "从会写 SQL 继续往数据变更、性能和跨环境实践推进。",
+        "path": "database/db_orm_boundary.md",
+        "title": "ORM 的边界与 SQL 回退时机",
+        "summary": "知道什么时候该继续用 ORM，什么时候该直接写 SQL。",
+        "difficulty": "精选",
+        "estimated_minutes": 25,
+        "tags": ["ORM", "SQLAlchemy", "边界"],
+        "prerequisites": ["Python + sqlite3", "SQLAlchemy 基础"],
+        "prerequisites_ids": ["db-sqlite-python", "db-sqlalchemy"],
+        "outcomes": ["能说清 ORM 解决的主要问题", "知道复杂报表和批量更新什么时候要回到 SQL", "会避免 N+1 查询"],
+        "why": "ORM 很好用，但把所有问题都丢给 ORM，后面你会在性能和可控性上吃亏。懂边界，项目才能稳。",
+        "focus": [
+            "ORM 擅长对象映射和简单 CRUD",
+            "复杂聚合、窗口函数、批量数据修复通常更适合直接写 SQL",
+            "先让数据层清晰，再决定封装层次",
+        ],
+        "example_lang": "python",
+        "example": "from sqlalchemy import select, func\nstmt = select(User.id, func.count(Order.id)).join(Order).group_by(User.id)",
+        "practice": ["找一条复杂报表，比较 ORM 写法和原生 SQL 写法", "识别一个典型 N+1 查询场景"],
+        "references": [
+            ("SQLAlchemy Unified Tutorial", "https://docs.sqlalchemy.org/en/20/tutorial/"),
+            ("SQLite SQL Language", "https://sqlite.org/lang.html"),
+        ],
+        "papers": [
+            (
+                "Object-relational impedance mismatch",
+                "https://en.wikipedia.org/wiki/Object%E2%80%93relational_impedance_mismatch",
+            )
+        ],
+    },
+    {
+        "id": "c-arrays-memory-layout",
+        "track_id": "c",
+        "track_title": "C 主线",
+        "track_icon": "🧠",
+        "track_summary": "从语法、指针、文件和调试一路学到更像工程代码的 C。",
+        "module_id": "c-advanced-memory",
+        "module_title": "精选模块 · 内存、库函数与工具化",
+        "module_summary": "把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。",
+        "path": "c/c_arrays_memory_layout.md",
+        "title": "数组与内存布局",
+        "summary": "把数组看成连续内存，而不是“很多个变量拼起来”。",
+        "difficulty": "精选",
+        "estimated_minutes": 28,
+        "tags": ["数组", "内存", "指针"],
+        "prerequisites": ["变量、类型与函数", "指针入门"],
+        "prerequisites_ids": ["c-functions-arrays", "c-pointers-memory"],
+        "outcomes": ["理解数组为什么是连续内存", "知道数组名和指针的联系与差别", "会根据内存布局推断下标访问"],
+        "why": "很多 C 代码问题，根上都不是语法，而是你脑子里没有“内存布局”的画面。",
+        "focus": [
+            "数组元素在内存中连续排列",
+            "下标访问本质上是基地址加偏移",
+            "数组名在很多场景会退化为指针，但不是处处等价",
+        ],
+        "example_lang": "c",
+        "example": 'int nums[4] = {10, 20, 30, 40};\nprintf("%d\\n", nums[2]);',
+        "practice": ["手算 int 数组第 3 个元素的偏移量", "比较 sizeof(nums) 和 sizeof(ptr) 的结果"],
+        "references": [
+            ("cppreference arrays", "https://en.cppreference.com/w/c/language/array"),
+            ("GNU C Manual Arrays", "https://www.gnu.org/software/c-intro-and-ref/manual/html_node/Arrays.html"),
+        ],
+        "papers": [
+            (
+                "Go To Statement Considered Harmful",
+                "https://www.cs.utexas.edu/users/EWD/transcriptions/EWD02xx/EWD215.html",
+            )
+        ],
+    },
+    {
+        "id": "c-pointer-arithmetic",
+        "track_id": "c",
+        "track_title": "C 主线",
+        "track_icon": "🧠",
+        "track_summary": "从语法、指针、文件和调试一路学到更像工程代码的 C。",
+        "module_id": "c-advanced-memory",
+        "module_title": "精选模块 · 内存、库函数与工具化",
+        "module_summary": "把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。",
+        "path": "c/c_pointer_arithmetic.md",
+        "title": "指针运算与边界意识",
+        "summary": "让指针加减不再像魔法，而是有清晰尺寸感。",
+        "difficulty": "精选",
+        "estimated_minutes": 28,
+        "tags": ["指针", "边界", "数组"],
+        "prerequisites": ["数组与内存布局", "指针基础"],
+        "prerequisites_ids": ["c-arrays-memory-layout", "c-pointers-memory"],
+        "outcomes": ["知道 p+1 为什么不是加 1 字节", "会用 begin/end 写遍历", "知道什么情况下指针比较是安全的"],
+        "why": "一旦你能把指针运算想成“按元素尺寸跳格子”，很多难看的 C 代码都会变清楚。",
+        "focus": [
+            "指针偏移按目标类型大小计算",
+            "用 begin / end 范围遍历比手写魔法数字更稳",
+            "跨数组做指针比较是未定义风险",
+        ],
+        "example_lang": "c",
+        "example": 'int nums[] = {3, 5, 8};\nint *p = nums;\nprintf("%d\\n", *(p + 1));',
+        "practice": ["用指针遍历一个整型数组", "把下标版求和函数改写成 begin/end 版"],
+        "references": [
+            ("cppreference pointer arithmetic", "https://en.cppreference.com/w/c/language/operator_arithmetic"),
+            ("GNU C Manual Pointers", "https://www.gnu.org/software/c-intro-and-ref/manual/html_node/Pointers.html"),
+        ],
+        "papers": [("Programming as an Experience", "https://worrydream.com/EarlyHistoryOfSmalltalk/")],
+    },
+    {
+        "id": "c-string-library-patterns",
+        "track_id": "c",
+        "track_title": "C 主线",
+        "track_icon": "🧠",
+        "track_summary": "从语法、指针、文件和调试一路学到更像工程代码的 C。",
+        "module_id": "c-advanced-memory",
+        "module_title": "精选模块 · 内存、库函数与工具化",
+        "module_summary": "把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。",
+        "path": "c/c_string_library_patterns.md",
+        "title": "字符串库函数的安全用法",
+        "summary": "把 strcpy/strcmp/strlen 这些常见库函数用得稳，不踩边界坑。",
+        "difficulty": "精选",
+        "estimated_minutes": 26,
+        "tags": ["字符串", "库函数", "边界"],
+        "prerequisites": ["数组与内存布局", "文件与缓冲区基础"],
+        "prerequisites_ids": ["c-arrays-memory-layout", "c-file-io-records"],
+        "outcomes": ["知道常见字符串函数的输入输出约定", "会给目标缓冲区留空间", "知道为什么 fgets 通常比 gets 稳"],
+        "why": "C 的字符串问题很少是“不会拼接”，更多是边界、结束符和缓冲区管理没想透。",
+        "focus": ["字符串以 \\0 结尾", "复制和拼接时要先算容量", "读一行文本时优先考虑带长度的 API"],
+        "example_lang": "c",
+        "example": "char dest[16];\nstrncpy(dest, source, sizeof(dest) - 1);\ndest[sizeof(dest) - 1] = \\0;",
+        "practice": ["写一个安全复制用户名的函数", "比较 strlen 和 sizeof 在字符数组上的差异"],
+        "references": [
+            ("cppreference string handling", "https://en.cppreference.com/w/c/string/byte"),
+            (
+                "CERT C String Rules",
+                "https://wiki.sei.cmu.edu/confluence/display/c/STR00-C.+Represent+characters+using+an+appropriate+type",
+            ),
+        ],
+        "papers": [("Why Johnny Cant Code", "https://www.eecs.qmul.ac.uk/~mmh/ItP/why_johnny_cant_code.pdf")],
+    },
+    {
+        "id": "c-callback-qsort-patterns",
+        "track_id": "c",
+        "track_title": "C 主线",
+        "track_icon": "🧠",
+        "track_summary": "从语法、指针、文件和调试一路学到更像工程代码的 C。",
+        "module_id": "c-advanced-memory",
+        "module_title": "精选模块 · 内存、库函数与工具化",
+        "module_summary": "把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。",
+        "path": "c/c_callback_qsort_patterns.md",
+        "title": "回调与 qsort 模式",
+        "summary": "把函数指针真正用起来，理解“传处理方式”这件事。",
+        "difficulty": "精选",
+        "estimated_minutes": 25,
+        "tags": ["回调", "qsort", "函数指针"],
+        "prerequisites": ["函数指针", "数组"],
+        "prerequisites_ids": ["c-function-pointers", "c-arrays-memory-layout"],
+        "outcomes": ["理解 qsort 比较函数签名", "会写最小回调函数", "知道为什么比较函数要稳定返回负零正"],
+        "why": "很多人学完函数指针还是觉得虚，因为没把它放进真实 API 里。qsort 就是最好的第一站。",
+        "focus": ["回调的核心是把“处理策略”当参数传入", "qsort 比较函数要能比较两个元素", "先把签名写对，再谈排序逻辑"],
+        "example_lang": "c",
+        "example": "int cmp_int(const void *a, const void *b) {\n    int lhs = *(const int *)a;\n    int rhs = *(const int *)b;\n    return (lhs > rhs) - (lhs < rhs);\n}",
+        "practice": ["写一个 int 数组升序排序的比较函数", "尝试给结构体数组按 score 排序"],
+        "references": [
+            ("cppreference qsort", "https://en.cppreference.com/w/c/algorithm/qsort"),
+            (
+                "GNU C Manual Function Pointers",
+                "https://www.gnu.org/software/c-intro-and-ref/manual/html_node/Function-Pointers.html",
+            ),
+        ],
+        "papers": [
+            (
+                "Engineering a Sort Function",
+                "https://fliphtml5.com/capw/ttvz/Engineering_a_Sort_Function_-_Florida_Institute_of_Technology/",
+            )
+        ],
+    },
+    {
+        "id": "c-binary-file-indexer",
+        "track_id": "c",
+        "track_title": "C 主线",
+        "track_icon": "🧠",
+        "track_summary": "从语法、指针、文件和调试一路学到更像工程代码的 C。",
+        "module_id": "c-advanced-memory",
+        "module_title": "精选模块 · 内存、库函数与工具化",
+        "module_summary": "把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。",
+        "path": "c/c_binary_file_indexer.md",
+        "title": "二进制文件与记录索引",
+        "summary": "从文本文件迈进二进制记录，让 C 更像真正的工具开发语言。",
+        "difficulty": "精选",
+        "estimated_minutes": 30,
+        "tags": ["二进制文件", "结构体", "记录"],
+        "prerequisites": ["文件读写", "结构体"],
+        "prerequisites_ids": ["c-file-io-records", "c-structs-files"],
+        "outcomes": ["知道 fread / fwrite 的基本模式", "会设计简单记录头", "理解文本文件和二进制文件的取舍"],
+        "why": "只会读写文本文件，C 还像“练习语言”；会做记录文件和索引，你才开始碰到更真实的工具场景。",
+        "focus": ["先设计稳定的记录结构", "读写前后都要检查返回值", "二进制格式更紧凑，但兼容性要自己负责"],
+        "example_lang": "c",
+        "example": "typedef struct {\n    int id;\n    char name[32];\n} UserRecord;\n\nfwrite(&record, sizeof(UserRecord), 1, fp);",
+        "practice": ["定义一条最小记录并写入文件", "给二进制记录文件加一个文件头版本号"],
+        "references": [
+            ("cppreference fread", "https://en.cppreference.com/w/c/io/fread"),
+            ("cppreference fwrite", "https://en.cppreference.com/w/c/io/fwrite"),
+        ],
+        "papers": [("The UNIX Time-Sharing System", "https://people.eecs.berkeley.edu/~brewer/cs262/unix.pdf")],
+    },
+    {
+        "id": "c-defensive-coding",
+        "track_id": "c",
+        "track_title": "C 主线",
+        "track_icon": "🧠",
+        "track_summary": "从语法、指针、文件和调试一路学到更像工程代码的 C。",
+        "module_id": "c-advanced-memory",
+        "module_title": "精选模块 · 内存、库函数与工具化",
+        "module_summary": "把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。",
+        "path": "c/c_defensive_coding.md",
+        "title": "防御式 C 编码习惯",
+        "summary": "让 C 代码更稳：检查返回值、显式边界、清晰错误路径。",
+        "difficulty": "精选",
+        "estimated_minutes": 24,
+        "tags": ["防御式编程", "错误处理", "边界"],
+        "prerequisites": ["动态内存", "文件与字符串基础"],
+        "prerequisites_ids": ["c-pointers-memory", "c-string-library-patterns"],
+        "outcomes": ["会主动检查空指针和返回值", "知道什么情况下该提前 return", "能把错误路径写清楚而不是堆成一团"],
+        "why": "C 没有太多保护网，所以好习惯不是锦上添花，而是你和线上 bug 之间最现实的缓冲层。",
+        "focus": ["先检查输入，再执行业务逻辑", "一条错误路径只做一件事", "写 C 时要比写脚本语言更主动地保护边界"],
+        "example_lang": "c",
+        "example": 'FILE *fp = fopen(path, "r");\nif (!fp) {\n    return -1;\n}',
+        "practice": ["把一个简单文件读取函数加上错误路径", "给命令行参数检查写出早返回版本"],
+        "references": [
+            ("CERT C Coding Standard", "https://wiki.sei.cmu.edu/confluence/display/c/SEI+CERT+C+Coding+Standard"),
+            (
+                "GNU C Manual Errors",
+                "https://www.gnu.org/software/c-intro-and-ref/manual/html_node/Error-Reporting.html",
+            ),
+        ],
+        "papers": [("No Silver Bullet", "https://worrydream.com/refs/Brooks_1986_-_No_Silver_Bullet.pdf")],
+    },
+    {
+        "id": "cs-generics-constraints",
+        "track_id": "csharp",
+        "track_title": "C# 主线",
+        "track_icon": "⚙️",
+        "track_summary": "把语法、OOP、LINQ、异步和 .NET 项目结构整理成一条完整主线。",
+        "module_id": "csharp-advanced-apps",
+        "module_title": "精选模块 · 架构、配置与 Web 起步",
+        "module_summary": "继续从会写语法推进到会组织项目、会接配置、会做服务。",
+        "path": "csharp/cs_generics_constraints.md",
+        "title": "泛型与约束：让复用更稳",
+        "summary": "不只是会写 List<T>，而是知道什么时候该让类型参数带约束。",
+        "difficulty": "精选",
+        "estimated_minutes": 26,
+        "tags": ["泛型", "约束", "复用"],
+        "prerequisites": ["类与对象", "接口基础"],
+        "prerequisites_ids": ["cs-oop-basics", "cs-interfaces-abstractions"],
+        "outcomes": ["知道泛型解决的重复代码问题", "会写 where 约束", "理解约束让 API 更安全"],
+        "why": "C# 很强的一点是可以把通用能力写得既复用又安全，泛型约束就是其中很关键的一步。",
+        "focus": [
+            "泛型让算法和数据结构对多类型复用",
+            "约束告诉编译器“这个类型至少有什么能力”",
+            "先想清楚调用方真正需要什么，再设计约束",
+        ],
+        "example_lang": "csharp",
+        "example": "public static T FirstOrDefault<T>(List<T> items)\n{\n    return items.Count > 0 ? items[0] : default!;\n}",
+        "practice": ["写一个带 where T : class 约束的方法", "思考为什么仓储接口常配合泛型使用"],
+        "references": [
+            ("Generics in C#", "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/"),
+            (
+                "Constraints on type parameters",
+                "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters",
+            ),
+        ],
+        "papers": [("Design Patterns as Language Constructs", "https://birrell.org/andrew/papers/pat4.pdf")],
+    },
+    {
+        "id": "cs-linq-projection-aggregation",
+        "track_id": "csharp",
+        "track_title": "C# 主线",
+        "track_icon": "⚙️",
+        "track_summary": "把语法、OOP、LINQ、异步和 .NET 项目结构整理成一条完整主线。",
+        "module_id": "csharp-advanced-apps",
+        "module_title": "精选模块 · 架构、配置与 Web 起步",
+        "module_summary": "继续从会写语法推进到会组织项目、会接配置、会做服务。",
+        "path": "csharp/cs_linq_projection_aggregation.md",
+        "title": "LINQ 投影、分组与聚合",
+        "summary": "把 LINQ 从筛选升级成真正能做报表和数据整理的工具。",
+        "difficulty": "精选",
+        "estimated_minutes": 28,
+        "tags": ["LINQ", "Select", "GroupBy"],
+        "prerequisites": ["集合与循环", "LINQ 基础"],
+        "prerequisites_ids": ["cs-methods-collections", "cs-linq-generics"],
+        "outcomes": ["会写 Select / GroupBy / OrderBy 组合", "知道什么时候该回到 for 循环", "能把 LINQ 结果映射成 DTO"],
+        "why": "C# 的数据处理力很大一部分来自 LINQ。只会 Where 不够，真正常用的是投影、分组和聚合。",
+        "focus": [
+            "投影是把原始对象变成更适合展示的数据形态",
+            "GroupBy 之后通常要接 Select 做聚合输出",
+            "LINQ 写法清晰比“一个链条到底”更重要",
+        ],
+        "example_lang": "csharp",
+        "example": "var result = orders\n    .GroupBy(x => x.UserId)\n    .Select(g => new { UserId = g.Key, Total = g.Sum(x => x.Amount) })\n    .OrderByDescending(x => x.Total);",
+        "practice": ["把订单列表按用户聚合总金额", "用 Select 投影成更适合 UI 的匿名对象"],
+        "references": [
+            ("Working with LINQ", "https://learn.microsoft.com/en-us/dotnet/csharp/linq/"),
+            (
+                "Projection operations",
+                "https://learn.microsoft.com/en-us/dotnet/csharp/linq/standard-query-operators/projection-operations",
+            ),
+        ],
+        "papers": [
+            (
+                "Language Integrated Query (LINQ)",
+                "https://www.microsoft.com/en-us/research/publication/language-integrated-query-linq/",
+            )
+        ],
+    },
+    {
+        "id": "cs-di-lifetimes",
+        "track_id": "csharp",
+        "track_title": "C# 主线",
+        "track_icon": "⚙️",
+        "track_summary": "把语法、OOP、LINQ、异步和 .NET 项目结构整理成一条完整主线。",
+        "module_id": "csharp-advanced-apps",
+        "module_title": "精选模块 · 架构、配置与 Web 起步",
+        "module_summary": "继续从会写语法推进到会组织项目、会接配置、会做服务。",
+        "path": "csharp/cs_di_lifetimes.md",
+        "title": "依赖注入生命周期",
+        "summary": "把 Singleton / Scoped / Transient 的使用边界想清楚。",
+        "difficulty": "精选",
+        "estimated_minutes": 28,
+        "tags": ["DI", "生命周期", "架构"],
+        "prerequisites": ["接口", "服务注册基础"],
+        "prerequisites_ids": ["cs-interfaces-abstractions", "cs-repository-pattern-intro"],
+        "outcomes": [
+            "理解三种常见生命周期的语义",
+            "知道为什么 Scoped 不能乱塞到 Singleton",
+            "会给典型服务做生命周期选择",
+        ],
+        "why": "会注册服务不难，难的是注册对。生命周期错了，后面就是线程问题、状态串味和资源泄漏。",
+        "focus": ["Singleton 适合无状态或全局共享对象", "Scoped 常见于请求级上下文", "Transient 适合轻量、一次性依赖"],
+        "example_lang": "csharp",
+        "example": "services.AddSingleton<IClock, SystemClock>();\nservices.AddScoped<IUserContext, UserContext>();\nservices.AddTransient<ReportFormatter>();",
+        "practice": [
+            "判断日志服务、用户上下文、格式化器分别适合什么生命周期",
+            "解释一个 Scoped 依赖被 Singleton 引用的问题",
+        ],
+        "references": [
+            (
+                "Dependency injection in .NET",
+                "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+            ),
+            (
+                "Service lifetimes",
+                "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection#service-lifetimes",
+            ),
+        ],
+        "papers": [
+            (
+                "Inversion of Control Containers and the Dependency Injection pattern",
+                "https://martinfowler.com/articles/injection.html",
+            )
+        ],
+    },
+    {
+        "id": "cs-options-validation",
+        "track_id": "csharp",
+        "track_title": "C# 主线",
+        "track_icon": "⚙️",
+        "track_summary": "把语法、OOP、LINQ、异步和 .NET 项目结构整理成一条完整主线。",
+        "module_id": "csharp-advanced-apps",
+        "module_title": "精选模块 · 架构、配置与 Web 起步",
+        "module_summary": "继续从会写语法推进到会组织项目、会接配置、会做服务。",
+        "path": "csharp/cs_options_validation.md",
+        "title": "配置对象与 Options 校验",
+        "summary": "把 appsettings.json 从“字符串字典”升级成类型化配置。",
+        "difficulty": "精选",
+        "estimated_minutes": 24,
+        "tags": ["配置", "Options", "校验"],
+        "prerequisites": ["类与对象", "JSON 基础"],
+        "prerequisites_ids": ["cs-oop-basics", "cs-configuration-options"],
+        "outcomes": ["会定义配置对象", "知道 Options 模式为什么更稳", "会给关键配置加简单校验"],
+        "why": "项目越往后，配置越多。越晚把配置收成类型化对象，后面越容易到处散落字符串键名。",
+        "focus": ["配置对象让依赖更清晰", "关键配置要在启动阶段就校验", "别把 API Key、连接串写死在业务代码里"],
+        "example_lang": "csharp",
+        "example": "public class ApiOptions\n{\n    public string BaseUrl { get; set; } = string.Empty;\n    public int TimeoutSeconds { get; set; } = 10;\n}",
+        "practice": ["给 API 配置写一个 Options 类", "给 timeout 增加大于 0 的校验规则"],
+        "references": [
+            ("Options pattern in .NET", "https://learn.microsoft.com/en-us/dotnet/core/extensions/options"),
+            ("Configuration in .NET", "https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration"),
+        ],
+        "papers": [("The Twelve-Factor App - Config", "https://12factor.net/config")],
+    },
+    {
+        "id": "cs-background-services-intro",
+        "track_id": "csharp",
+        "track_title": "C# 主线",
+        "track_icon": "⚙️",
+        "track_summary": "把语法、OOP、LINQ、异步和 .NET 项目结构整理成一条完整主线。",
+        "module_id": "csharp-advanced-apps",
+        "module_title": "精选模块 · 架构、配置与 Web 起步",
+        "module_summary": "继续从会写语法推进到会组织项目、会接配置、会做服务。",
+        "path": "csharp/cs_background_services_intro.md",
+        "title": "后台服务与周期任务入门",
+        "summary": "理解 Worker / BackgroundService 适合做什么，不再只会写控制台主函数。",
+        "difficulty": "精选",
+        "estimated_minutes": 24,
+        "tags": ["BackgroundService", "Worker", "任务"],
+        "prerequisites": ["async / await", "DI 基础"],
+        "prerequisites_ids": ["cs-async-task-workflow", "cs-di-lifetimes"],
+        "outcomes": ["知道后台服务的典型场景", "会写最小 ExecuteAsync 循环", "理解取消令牌为什么重要"],
+        "why": "很多桌面工具和后端服务都不是“点一下跑完就结束”，而是要长期监听、轮询、同步，这就要进入后台服务的视角。",
+        "focus": [
+            "后台服务适合轮询、同步、清理和观察任务",
+            "循环里要尊重取消信号",
+            "周期任务要控制节奏，不要死循环狂跑",
+        ],
+        "example_lang": "csharp",
+        "example": "protected override async Task ExecuteAsync(CancellationToken stoppingToken)\n{\n    while (!stoppingToken.IsCancellationRequested)\n    {\n        await Task.Delay(1000, stoppingToken);\n    }\n}",
+        "practice": ["写一个每 5 秒打印一次状态的后台服务", "思考日志清理任务适不适合用 BackgroundService"],
+        "references": [
+            (
+                "Background tasks with hosted services",
+                "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services",
+            ),
+            ("Generic Host", "https://learn.microsoft.com/en-us/dotnet/core/extensions/generic-host"),
+        ],
+        "papers": [
+            (
+                "The Datacenter as a Computer",
+                "https://static.googleusercontent.com/media/research.google.com/en//archive/gfs-sosp2003.pdf",
+            )
+        ],
+    },
+    {
+        "id": "cs-desktop-architecture-notes",
+        "track_id": "csharp",
+        "track_title": "C# 主线",
+        "track_icon": "⚙️",
+        "track_summary": "把语法、OOP、LINQ、异步和 .NET 项目结构整理成一条完整主线。",
+        "module_id": "csharp-advanced-apps",
+        "module_title": "精选模块 · 架构、配置与 Web 起步",
+        "module_summary": "继续从会写语法推进到会组织项目、会接配置、会做服务。",
+        "path": "csharp/cs_desktop_architecture_notes.md",
+        "title": "桌面应用的分层设计笔记",
+        "summary": "给 C# 桌面程序建立 UI、应用、数据层的边界感。",
+        "difficulty": "精选",
+        "estimated_minutes": 26,
+        "tags": ["桌面应用", "分层", "架构"],
+        "prerequisites": ["类与对象", "文件与 JSON", "LINQ 基础"],
+        "prerequisites_ids": ["cs-oop-basics", "cs-configuration-options", "cs-linq-generics"],
+        "outcomes": ["知道 UI 层不该承载所有逻辑", "会拆出应用服务和仓储层", "理解 ViewModel / DTO / Entity 的边界"],
+        "why": "桌面应用最容易写成“窗体代码一把梭”。早一点建立层次感，后面加功能时就不会越改越怕。",
+        "focus": [
+            "UI 负责展示和交互，应用层负责编排，数据层负责持久化",
+            "领域对象和展示对象不一定一一对应",
+            "先把依赖方向想清楚，再写代码",
+        ],
+        "example_lang": "text",
+        "example": "UI -> Application Service -> Repository -> SQLite / File\n          \\-> ViewModel / DTO",
+        "practice": ["把一个“保存笔记”功能拆成 UI、Service、Repository 三层", "比较直接写文件和走仓储接口的区别"],
+        "references": [
+            ("MVVM Toolkit", "https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/"),
+            ("WPF overview", "https://learn.microsoft.com/en-us/dotnet/desktop/wpf/"),
+        ],
+        "papers": [("Patterns of Enterprise Application Architecture", "https://martinfowler.com/books/eaa.html")],
+    },
+    {
+        "id": "algo-thinking-map",
+        "track_id": "algorithms",
+        "track_title": "算法 / 数据结构主线",
+        "track_icon": "🧩",
+        "track_summary": "把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。",
+        "insert_before": "integration",
+        "module_id": "algo-foundations",
+        "module_title": "基础模块 · 复杂度与思维框架",
+        "module_summary": "先把怎么看题、怎么拆题、怎么验答案这套思维立起来。",
+        "path": "algorithms/algo_thinking_map.md",
+        "title": "算法学习地图与拆题顺序",
+        "summary": "建立一张不容易迷路的算法学习地图。",
+        "difficulty": "基础",
+        "estimated_minutes": 22,
+        "tags": ["算法", "学习方法", "拆题"],
+        "prerequisites": ["Python 基础函数", "循环与列表"],
+        "prerequisites_ids": ["py-functions", "py-control-flow"],
+        "outcomes": [
+            "知道题目为什么要按模式学",
+            "会把题拆成输入、状态、操作、输出",
+            "知道什么时候该先画例子而不是直接写代码",
+        ],
+        "why": "刷题最容易把人带进焦虑，不是题难，而是没有地图。先把地图补上，后面的每个专题才有位置感。",
+        "focus": ["先识别题型，再选工具", "算法题先用小样例把过程走一遍", "做题不是背答案，而是积累可迁移的模式"],
+        "example_lang": "text",
+        "example": "输入 -> 约束 -> 能否排序 -> 是否需要哈希 -> 是否是区间/子数组 -> 是否需要状态转移",
+        "practice": ["拿一道数组题，用“输入-状态-操作-输出”模板拆一遍", "记录自己最常卡的 3 个题型"],
+        "references": [
+            ("CP-Algorithms", "https://cp-algorithms.com/"),
+            ("LeetCode 75", "https://leetcode.com/studyplan/leetcode-75/"),
+        ],
+        "papers": [
+            ("Structured Programming", "https://www.cs.utexas.edu/users/EWD/transcriptions/EWD02xx/EWD249/EWD249.html")
+        ],
+    },
+    {
+        "id": "algo-complexity-basics",
+        "track_id": "algorithms",
+        "track_title": "算法 / 数据结构主线",
+        "track_icon": "🧩",
+        "track_summary": "把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。",
+        "insert_before": "integration",
+        "module_id": "algo-foundations",
+        "module_title": "基础模块 · 复杂度与思维框架",
+        "module_summary": "先把怎么看题、怎么拆题、怎么验答案这套思维立起来。",
+        "path": "algorithms/algo_complexity_basics.md",
+        "title": "时间复杂度与空间复杂度入门",
+        "summary": "学会用复杂度判断方案，而不是凭感觉觉得“应该挺快”。",
+        "difficulty": "基础",
+        "estimated_minutes": 24,
+        "tags": ["复杂度", "Big-O", "分析"],
+        "prerequisites": ["循环", "函数"],
+        "prerequisites_ids": ["py-control-flow", "py-functions"],
+        "outcomes": ["会判断常见循环的复杂度", "知道哈希和排序常见复杂度", "能比较两个方案的大致成本"],
+        "why": "复杂度不是面试八股，它直接决定你能不能在题海里快速筛掉明显不合适的方案。",
+        "focus": [
+            "单层遍历常见 O(n)，双层嵌套常见 O(n^2)",
+            "哈希换时间，排序常见 O(n log n)",
+            "空间复杂度要看额外开销，不是把输入也算进去",
+        ],
+        "example_lang": "python",
+        "example": "def has_duplicate(nums):\n    seen = set()\n    for value in nums:\n        if value in seen:\n            return True\n        seen.add(value)\n    return False",
+        "practice": ["比较排序解法和哈希解法的复杂度", "给双指针模板估一遍时间和空间复杂度"],
+        "references": [
+            ("CP-Algorithms", "https://cp-algorithms.com/"),
+            ("Big-O Cheat Sheet", "https://www.bigocheatsheet.com/"),
+        ],
+        "papers": [
+            (
+                "An Axiomatic Basis for Computer Programming",
+                "https://bitfragment.net/notes/proglang-src-hoare-axiomatic-1969/",
+            )
+        ],
+    },
+    {
+        "id": "algo-arrays-hashing",
+        "track_id": "algorithms",
+        "track_title": "算法 / 数据结构主线",
+        "track_icon": "🧩",
+        "track_summary": "把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。",
+        "insert_before": "integration",
+        "module_id": "algo-foundations",
+        "module_title": "基础模块 · 复杂度与思维框架",
+        "module_summary": "先把怎么看题、怎么拆题、怎么验答案这套思维立起来。",
+        "path": "algorithms/algo_arrays_hashing.md",
+        "title": "数组与哈希表的第一批模式",
+        "summary": "把 Two Sum、去重、计数这类高频题型放到一个框架里。",
+        "difficulty": "基础",
+        "estimated_minutes": 28,
+        "tags": ["数组", "哈希", "计数"],
+        "prerequisites": ["复杂度基础", "字典 / set"],
+        "prerequisites_ids": ["algo-complexity-basics", "py-strings-collections"],
+        "outcomes": ["会识别“边扫边记”的哈希模式", "知道计数表和去重表的区别", "能把暴力双循环优化成单次遍历"],
+        "why": "很多初级算法题并不复杂，关键是敢不敢想到“用空间换时间”。数组 + 哈希是第一批最值钱的模式。",
+        "focus": [
+            "Two Sum 类问题常用 value -> index 哈希",
+            "计数题要先想 key 是谁、value 是什么",
+            "先把题目翻成查找 / 去重 / 计数这几类需求",
+        ],
+        "example_lang": "python",
+        "example": "def two_sum(nums, target):\n    seen = {}\n    for index, value in enumerate(nums):\n        need = target - value\n        if need in seen:\n            return [seen[need], index]\n        seen[value] = index\n    return []",
+        "practice": ["写一个统计每个单词出现次数的函数", "把 contains duplicate 从排序解法改成哈希解法"],
+        "references": [
+            ("LeetCode Programming Skills", "https://leetcode.com/studyplan/programming-skills/"),
+            ("CP-Algorithms data structures", "https://cp-algorithms.com/data_structures/"),
+        ],
+        "papers": [("Dynamic Hash Tables", "https://dl.acm.org/doi/10.1145/358728.358745")],
+    },
+    {
+        "id": "algo-prefix-sum-window",
+        "track_id": "algorithms",
+        "track_title": "算法 / 数据结构主线",
+        "track_icon": "🧩",
+        "track_summary": "把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。",
+        "insert_before": "integration",
+        "module_id": "algo-patterns",
+        "module_title": "精选模块 · 高频题型模式",
+        "module_summary": "把最常见的数组、栈、树、搜索模式打成专题。",
+        "path": "algorithms/algo_prefix_sum_window.md",
+        "title": "前缀和与滑动窗口",
+        "summary": "区间问题里非常高频的两把锤子。",
+        "difficulty": "精选",
+        "estimated_minutes": 28,
+        "tags": ["前缀和", "滑动窗口", "区间"],
+        "prerequisites": ["数组与哈希", "复杂度基础"],
+        "prerequisites_ids": ["algo-arrays-hashing", "algo-complexity-basics"],
+        "outcomes": ["知道什么时候用前缀和处理静态区间", "知道什么时候用窗口维护动态区间", "能识别固定窗口和可变窗口"],
+        "why": "很多题表面不同，本质都在问你：区间信息怎么快速拿到，窗口状态怎么低成本维护。",
+        "focus": [
+            "前缀和适合快速求连续区间和",
+            "固定窗口适合固定长度子数组",
+            "可变窗口常用于“满足条件的最短/最长子串”",
+        ],
+        "example_lang": "python",
+        "example": "def max_sum_k(nums, k):\n    window = sum(nums[:k])\n    best = window\n    for i in range(k, len(nums)):\n        window += nums[i] - nums[i-k]\n        best = max(best, window)\n    return best",
+        "practice": ["写固定长度窗口最大和", "写最短长度满足和至少为 target 的子数组"],
+        "references": [
+            ("CP-Algorithms", "https://cp-algorithms.com/"),
+            ("LeetCode 75", "https://leetcode.com/studyplan/leetcode-75/"),
+        ],
+        "papers": [("Programming Pearls", "https://www.cs.virginia.edu/~robins/YouAndYourResearch.html")],
+    },
+    {
+        "id": "algo-two-pointers",
+        "track_id": "algorithms",
+        "track_title": "算法 / 数据结构主线",
+        "track_icon": "🧩",
+        "track_summary": "把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。",
+        "insert_before": "integration",
+        "module_id": "algo-patterns",
+        "module_title": "精选模块 · 高频题型模式",
+        "module_summary": "把最常见的数组、栈、树、搜索模式打成专题。",
+        "path": "algorithms/algo_two_pointers.md",
+        "title": "双指针：从相向走到快慢指针",
+        "summary": "把双指针拆成几个固定模型，就没那么容易乱。",
+        "difficulty": "精选",
+        "estimated_minutes": 28,
+        "tags": ["双指针", "快慢指针", "数组"],
+        "prerequisites": ["数组", "复杂度"],
+        "prerequisites_ids": ["algo-arrays-hashing", "algo-complexity-basics"],
+        "outcomes": ["会区分左右夹逼和快慢指针", "知道排序后双指针的优势", "能识别回文、去重、环检测的双指针味道"],
+        "why": "双指针是把 O(n^2) 暴力解法拉回 O(n) 或 O(n log n) 的常见手段，学会了能立刻感觉题变简单。",
+        "focus": ["左右夹逼常用于有序数组", "快慢指针常用于链表或原地覆盖", "先写循环不变式，再决定谁移动"],
+        "example_lang": "python",
+        "example": "def is_palindrome(s):\n    left, right = 0, len(s) - 1\n    while left < right:\n        if s[left] != s[right]:\n            return False\n        left += 1\n        right -= 1\n    return True",
+        "practice": ["写一个有效回文判断", "写一个原地去重后的新长度函数"],
+        "references": [
+            ("LeetCode 75", "https://leetcode.com/studyplan/leetcode-75/"),
+            ("CP-Algorithms", "https://cp-algorithms.com/"),
+        ],
+        "papers": [("Algorithm Design Techniques and Data Structures", "https://dl.acm.org/doi/book/10.5555/644132")],
+    },
+    {
+        "id": "algo-stack-queue",
+        "track_id": "algorithms",
+        "track_title": "算法 / 数据结构主线",
+        "track_icon": "🧩",
+        "track_summary": "把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。",
+        "insert_before": "integration",
+        "module_id": "algo-patterns",
+        "module_title": "精选模块 · 高频题型模式",
+        "module_summary": "把最常见的数组、栈、树、搜索模式打成专题。",
+        "path": "algorithms/algo_stack_queue.md",
+        "title": "栈、队列与单调结构入门",
+        "summary": "把括号匹配、层序遍历、单调栈这些高频场景串起来。",
+        "difficulty": "精选",
+        "estimated_minutes": 28,
+        "tags": ["栈", "队列", "单调栈"],
+        "prerequisites": ["列表", "循环"],
+        "prerequisites_ids": ["py-strings-collections", "py-control-flow"],
+        "outcomes": ["知道后进先出和先进先出的典型应用", "会用栈做括号匹配", "对单调栈建立第一层直觉"],
+        "why": "很多题一开始看不出来要用栈或队列，但只要抓住“最近还没处理完的东西”这个感觉，很多题会突然通。",
+        "focus": ["栈适合处理嵌套、配对、回退", "队列适合层序和按到达顺序处理", "单调栈常用于“下一个更大元素”一类题"],
+        "example_lang": "python",
+        "example": "def valid_parentheses(s):\n    stack = []\n    pairs = {"
+        ")"
+        ": "
+        "("
+        ", "
+        "]"
+        ": "
+        "["
+        ", "
+        "}"
+        ": "
+        "{"
+        "}\n    for ch in s:\n        if ch in pairs.values():\n            stack.append(ch)\n        elif not stack or stack.pop() != pairs[ch]:\n            return False\n    return not stack",
+        "practice": ["写有效括号", "用队列做二叉树层序遍历"],
+        "references": [
+            ("collections.deque", "https://docs.python.org/3/library/collections.html#collections.deque"),
+            ("CP-Algorithms data structures", "https://cp-algorithms.com/data_structures/"),
+        ],
+        "papers": [("Depth-First Search and Linear Graph Algorithms", "https://epubs.siam.org/doi/10.1137/0201010")],
+    },
+    {
+        "id": "algo-binary-search-greedy",
+        "track_id": "algorithms",
+        "track_title": "算法 / 数据结构主线",
+        "track_icon": "🧩",
+        "track_summary": "把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。",
+        "insert_before": "integration",
+        "module_id": "algo-patterns",
+        "module_title": "精选模块 · 高频题型模式",
+        "module_summary": "把最常见的数组、栈、树、搜索模式打成专题。",
+        "path": "algorithms/algo_binary_search_greedy.md",
+        "title": "二分查找与贪心直觉",
+        "summary": "先把“单调性”和“局部最优”两种感觉练出来。",
+        "difficulty": "精选",
+        "estimated_minutes": 28,
+        "tags": ["二分", "贪心", "单调性"],
+        "prerequisites": ["复杂度", "数组"],
+        "prerequisites_ids": ["algo-complexity-basics", "algo-arrays-hashing"],
+        "outcomes": ["知道什么时候可以二分答案", "知道贪心为什么依赖局部决策结构", "能把一类题归到“找边界”或“做选择”"],
+        "why": "很多题你差的不是代码，而是那一步“能不能看出这里有单调性 / 这里能不能贪”。这个专题就是补这层感觉。",
+        "focus": [
+            "二分的关键不是 mid，而是区间不变式",
+            "贪心通常要先证明局部选择不会破坏全局最优",
+            "先找模式，再写模板",
+        ],
+        "example_lang": "python",
+        "example": "def binary_search(nums, target):\n    left, right = 0, len(nums) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if nums[mid] == target:\n            return mid\n        if nums[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1",
+        "practice": ["写标准二分", "找最小可行值的边界二分题"],
+        "references": [
+            ("CP-Algorithms binary search", "https://cp-algorithms.com/num_methods/binary_search.html"),
+            ("CP-Algorithms", "https://cp-algorithms.com/"),
+        ],
+        "papers": [
+            (
+                "Extra, Extra - Nearly All Binary Searches and Mergesorts are Broken",
+                "https://ai.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html",
+            )
+        ],
+    },
+    {
+        "id": "algo-tree-bfs-dfs",
+        "track_id": "algorithms",
+        "track_title": "算法 / 数据结构主线",
+        "track_icon": "🧩",
+        "track_summary": "把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。",
+        "insert_before": "integration",
+        "module_id": "algo-advanced",
+        "module_title": "精选模块 · 树、图与动态规划",
+        "module_summary": "开始接触更像中级专题的状态和图结构问题。",
+        "path": "algorithms/algo_tree_bfs_dfs.md",
+        "title": "树的 DFS / BFS 基础",
+        "summary": "把树当成递归结构和层级结构两种视角来理解。",
+        "difficulty": "精选",
+        "estimated_minutes": 30,
+        "tags": ["树", "DFS", "BFS"],
+        "prerequisites": ["栈与队列", "递归基础"],
+        "prerequisites_ids": ["algo-stack-queue", "py-recursion-patterns"],
+        "outcomes": ["知道 DFS 和 BFS 在树上的直觉差异", "会写前序 DFS", "会写层序 BFS"],
+        "why": "树题是很多人从数组题跨到“更抽象结构题”的第一道坎。先把 DFS / BFS 两套视角建立起来，后面就顺了。",
+        "focus": ["DFS 更像把一条路走到底", "BFS 更像按层推进", "树题要先想节点定义和递归返回值代表什么"],
+        "example_lang": "python",
+        "example": "def preorder(root):\n    if not root:\n        return []\n    return [root.val] + preorder(root.left) + preorder(root.right)",
+        "practice": ["写二叉树前序遍历", "写层序遍历返回每层节点值"],
+        "references": [
+            ("CP-Algorithms DFS", "https://cp-algorithms.com/graph/depth-first-search.html"),
+            ("CP-Algorithms BFS", "https://cp-algorithms.com/graph/breadth-first-search.html"),
+        ],
+        "papers": [("Depth-First Search and Linear Graph Algorithms", "https://epubs.siam.org/doi/10.1137/0201010")],
+    },
+    {
+        "id": "algo-dynamic-programming-intuition",
+        "track_id": "algorithms",
+        "track_title": "算法 / 数据结构主线",
+        "track_icon": "🧩",
+        "track_summary": "把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。",
+        "insert_before": "integration",
+        "module_id": "algo-advanced",
+        "module_title": "精选模块 · 树、图与动态规划",
+        "module_summary": "开始接触更像中级专题的状态和图结构问题。",
+        "path": "algorithms/algo_dynamic_programming_intuition.md",
+        "title": "动态规划的第一层直觉",
+        "summary": "先学会找状态、写转移，再谈高级优化。",
+        "difficulty": "精选",
+        "estimated_minutes": 30,
+        "tags": ["动态规划", "状态", "转移"],
+        "prerequisites": ["递归", "复杂度"],
+        "prerequisites_ids": ["py-recursion-patterns", "algo-complexity-basics"],
+        "outcomes": ["知道什么叫重叠子问题", "会写最小一维 DP", "知道先从递归改记忆化再改表格法"],
+        "why": "DP 往往不是难在代码，而是难在你不知道“状态到底是什么”。这节课先把那层抽象练出来。",
+        "focus": ["先定义 dp[i] 代表什么", "转移式描述“当前答案怎么由更小问题得到”", "先保证状态定义清楚，再优化空间"],
+        "example_lang": "python",
+        "example": "def climb_stairs(n):\n    if n <= 2:\n        return n\n    a, b = 1, 2\n    for _ in range(3, n + 1):\n        a, b = b, a + b\n    return b",
+        "practice": ["写爬楼梯", "写打家劫舍的一维 DP 版"],
+        "references": [
+            ("CP-Algorithms DP intro", "https://cp-algorithms.com/dynamic_programming/intro-to-dp.html"),
+            ("LeetCode DP", "https://leetcode.com/tag/dynamic-programming/"),
+        ],
+        "papers": [
+            (
+                "Bellman on the theory of dynamic programming",
+                "https://www.rand.org/content/dam/rand/pubs/papers/2008/P550.pdf",
+            )
+        ],
+    },
+    {
+        "id": "algo-graph-shortest-path",
+        "track_id": "algorithms",
+        "track_title": "算法 / 数据结构主线",
+        "track_icon": "🧩",
+        "track_summary": "把刷题从零散题目变成一条可积累、可复习、可迁移的能力主线。",
+        "insert_before": "integration",
+        "module_id": "algo-advanced",
+        "module_title": "精选模块 · 树、图与动态规划",
+        "module_summary": "开始接触更像中级专题的状态和图结构问题。",
+        "path": "algorithms/algo_graph_shortest_path.md",
+        "title": "图与最短路第一眼",
+        "summary": "先学会把题目翻成图，再看 BFS / Dijkstra 这类工具。",
+        "difficulty": "精选",
+        "estimated_minutes": 30,
+        "tags": ["图", "最短路", "BFS"],
+        "prerequisites": ["树的 BFS/DFS", "队列"],
+        "prerequisites_ids": ["algo-tree-bfs-dfs", "algo-stack-queue"],
+        "outcomes": [
+            "会把节点和边从题目里抽出来",
+            "知道无权图最短路为什么常用 BFS",
+            "知道带权图最短路和 Dijkstra 的基本前提",
+        ],
+        "why": "图题最可怕的不是代码长，而是看不出“这其实是个图”。把这层视角建立好，后面很多题会突然有路走。",
+        "focus": ["先明确节点是谁、边是谁", "无权图最短路常用 BFS", "非负权图常用 Dijkstra，先不要急着背堆优化"],
+        "example_lang": "python",
+        "example": "from collections import deque\n\ndef shortest_path(adj, start):\n    dist = {start: 0}\n    queue = deque([start])\n    while queue:\n        node = queue.popleft()\n        for nxt in adj[node]:\n            if nxt not in dist:\n                dist[nxt] = dist[node] + 1\n                queue.append(nxt)\n    return dist",
+        "practice": ["写网格最短步数 BFS", "把课程依赖关系翻成图结构"],
+        "references": [
+            ("CP-Algorithms Dijkstra", "https://cp-algorithms.com/graph/dijkstra.html"),
+            ("CP-Algorithms BFS", "https://cp-algorithms.com/graph/breadth-first-search.html"),
+        ],
+        "papers": [("A note on two problems in connexion with graphs", "https://eudml.org/doc/131436")],
+    },
 ]
 
 EXERCISES = [
-    sql_exercise('db-insert-daily-report','插入日报记录','基础','写一条 INSERT 语句，把 2026-04-01 这天的 total=8 插入 reports 表。','db-sql-test-data',['先看表结构里有哪两列。','插入一条完整记录即可。'],['insert','into','values'],"INSERT INTO reports(day, total)\nVALUES ('2026-04-01', 8);\n"),
-    sql_exercise('db-update-null-phone','把空手机号补成 unknown','基础','写一条 UPDATE，把 users 表中 phone 为 NULL 的记录改成 ''unknown''。','db-sql-test-data',['先锁定 phone IS NULL 的记录。','别把原本有手机号的记录也改掉。'],['update','set','where'],"UPDATE users\nSET phone = 'unknown'\nWHERE phone IS NULL;\n"),
-    sql_exercise('db-delete-cancelled-orders','删除已取消订单','基础','写一条 DELETE，把 orders 表里 status=''cancelled'' 的记录删掉。','db-sql-test-data',['先确定删除条件。','DELETE 通常和 WHERE 一起出现。'],['delete','from','where'],"DELETE FROM orders\nWHERE status = 'cancelled';\n"),
-    sql_exercise('db-window-running-total','做销售额累计和','精选','写一条 SQL，返回 day、amount 和按日期累加的 running_total。','db-window-functions',['这题是窗口函数题。','running_total 常见写法是 sum(amount) over (...)。'],['sum','over','order by'],"SELECT day, amount,\n       SUM(amount) OVER (ORDER BY day) AS running_total\nFROM sales;\n"),
-    sql_exercise('db-exists-high-value-users','找出有高金额订单的用户','精选','写一条 SQL，返回至少存在一笔 amount>100 订单的用户名。','db-subqueries-exists',['这题适合 EXISTS。','把 users 放在外层。'],['select','exists'],"SELECT name\nFROM users u\nWHERE EXISTS (\n    SELECT 1\n    FROM orders o\n    WHERE o.user_id = u.id AND o.amount > 100\n);\n"),
-    sql_exercise('db-upsert-daily-kpi','用 UPSERT 更新日报 KPI','精选','写一条 SQL，把 day=''2026-04-01'' 的 total 更新成 8；如果不存在就插入。','db-upsert-merge-patterns',['这题核心是主键冲突时更新。','SQLite 用 ON CONFLICT。'],['insert','on conflict','do update'],"INSERT INTO kpi(day, total)\nVALUES ('2026-04-01', 8)\nON CONFLICT(day) DO UPDATE SET total = excluded.total;\n"),
-    sql_exercise('db-cte-top-users','用 CTE 统计高价值用户总额','精选','写一条 SQL，先用 CTE 聚合每个 user_id 的总金额，再返回 user_id 和 total。','db-cte-patterns',['先写 WITH 子句。','再在主查询里 select 聚合结果。'],['with','sum','group by'],"WITH user_totals AS (\n    SELECT user_id, SUM(amount) AS total\n    FROM orders\n    GROUP BY user_id\n)\nSELECT user_id, total\nFROM user_totals;\n"),
-    sql_exercise('db-row-number-latest-log','取每个用户最新一条日志','精选','写一条 SQL，返回每个 user_id 最新一条日志的时间和分数。','db-window-functions',['这题适合 row_number() over(partition by ... order by ... desc)。','最后只取 rn=1。'],['row_number','over','partition by'],"WITH ranked AS (\n    SELECT user_id, ts, score,\n           ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY ts DESC) AS rn\n    FROM logs\n)\nSELECT user_id, ts, score\nFROM ranked\nWHERE rn = 1;\n"),
-    sql_exercise('db-join-course-enrollment-count','统计课程报名人数','精选','写一条 SQL，返回课程标题和报名人数，没报名的课程也要显示为 0。','db-join-patterns',['左连接课程和报名表。','计数时注意空值。'],['left join','count','group by'],"SELECT c.title, COUNT(e.student_id) AS enrolled_count\nFROM courses c\nLEFT JOIN enrollments e ON e.course_id = c.id\nGROUP BY c.id, c.title;\n"),
-    sql_exercise('db-subquery-above-course-average','找出高于课程平均分的学生','精选','写一条 SQL，返回成绩高于本课程平均分的学生姓名。','db-subqueries-exists',['这题是相关子查询。','按 course 比较平均分。'],['select','avg'],"SELECT student\nFROM scores s\nWHERE score > (\n    SELECT AVG(score)\n    FROM scores\n    WHERE course = s.course\n);\n"),
-    sql_exercise('db-group-having-order','筛出订单数至少 2 的用户','精选','写一条 SQL，返回订单数至少为 2 的 user_id 和数量，并按 user_id 排序。','db-aggregation',['这题关键是 group by + having。','最后 order by user_id。'],['group by','having','order by'],"SELECT user_id, COUNT(*) AS order_count\nFROM orders\nGROUP BY user_id\nHAVING COUNT(*) >= 2\nORDER BY user_id;\n"),
-    sql_exercise('db-create-covering-index-report','给报表表加组合索引','精选','写一条 CREATE INDEX 语句，给 reports(created_at, status) 建组合索引。','db-covering-indexes',['索引名可以自定。','列顺序要先 created_at，再 status。'],['create index','reports','created_at','status'],"CREATE INDEX idx_reports_created_status\nON reports(created_at, status);\n"),
-    sql_exercise('db-add-status-column-users','给用户表补 status 列','基础','写一条 ALTER TABLE 语句，给 users 表新增 status 文本列。','db-migrations-basics',['SQLite 里常见写法是 add column。','列类型可用 TEXT。'],['alter table','add column','status'],"ALTER TABLE users\nADD COLUMN status TEXT;\n"),
-    sql_exercise('db-create-enrollment-foreign-key','创建带外键的选课表','精选','写一段建表脚本，创建 enrollments 表，并让 student_id / course_id 分别引用 students / courses。','db-constraints-foreign-keys',['先想清楚两列名。','SQLite foreign key 写在列后或表级约束都行。'],['create table','foreign key','student_id','course_id'],"CREATE TABLE enrollments(\n    student_id INTEGER NOT NULL,\n    course_id INTEGER NOT NULL,\n    FOREIGN KEY(student_id) REFERENCES students(id),\n    FOREIGN KEY(course_id) REFERENCES courses(id)\n);\n"),
-    sql_exercise('db-left-join-course-report','课程报名报表（左连接）','精选','写一条 SQL，返回每门课程标题和报名人数，包含没人报名的课程。','db-join-patterns',['这题更强调 left join 报表心智。','统计时别把空课程漏掉。'],['left join','count','group by'],"SELECT c.title, COUNT(e.student_id) AS enrolled_count\nFROM courses c\nLEFT JOIN enrollments e ON e.course_id = c.id\nGROUP BY c.title;\n"),
-    sql_exercise('db-coalesce-city-label','给空城市打标签','基础','写一条 SQL，返回用户姓名和城市；如果 city 为 NULL，则显示“未知城市”。','db-data-cleaning-sql',['这题适合 COALESCE。','别忘了把 name 也查出来。'],['select','coalesce'],"SELECT name, COALESCE(city, '未知城市') AS city_label\nFROM users\nORDER BY name;\n"),
-    keyword_exercise('c-declare-score-array','声明成绩数组','c','基础','声明一个包含 5 个整数的 scores 数组。','c-arrays-memory-layout',['最小答案就是一个整型数组声明。','可以顺手给初始值。'],['int','scores','[5]'],"int scores[5] = {0};\n"),
-    keyword_exercise('c-sum-array-loop','循环累加数组','c','基础','写一段代码，遍历 nums 数组并把总和累加到 sum。','c-arrays-memory-layout',['要有 for 循环。','sum += nums[i] 很常见。'],['for','sum','nums'],"int sum = 0;\nfor (int i = 0; i < count; ++i) {\n    sum += nums[i];\n}\n"),
-    keyword_exercise('c-swap-pointer-signature','写出 swap 指针签名','c','基础','声明一个 swap 函数，接收两个 int 指针并交换内容。','c-pointer-arithmetic',['参数是 int*。','函数名叫 swap。'],['void','swap','int *'],"void swap(int *a, int *b)\n{\n}\n"),
-    keyword_exercise('c-copy-string-safe','安全复制字符串','c','基础','写一段代码，把 source 安全复制到 dest，并保证结尾有空字符。','c-string-library-patterns',['可以用 strncpy。','记得手动补 \\0。'],['strncpy','dest','\\0'],"strncpy(dest, source, size - 1);\ndest[size - 1] = '\\0';\n"),
-    keyword_exercise('c-open-file-read','打开文件读取','c','基础','写一段代码，用 fopen 打开 path，并判断是否打开成功。','c-binary-file-indexer',['先声明 FILE*。','判断空指针。'],['fopen','FILE','if'],"FILE *fp = fopen(path, \"r\");\nif (!fp) {\n    return -1;\n}\n"),
-    keyword_exercise('c-fgets-check-null','用 fgets 读一行并判空','c','基础','写一段代码，用 fgets 读取一行，并在失败时直接返回。','c-string-library-patterns',['fgets 返回值可以直接判空。','失败时尽早 return。'],['fgets','if','return'],"if (!fgets(buffer, sizeof(buffer), fp)) {\n    return -1;\n}\n"),
-    keyword_exercise('c-define-book-struct','定义图书结构体','c','基础','定义一个 Book 结构体，至少包含 id 和 title 两个字段。','c-binary-file-indexer',['用 typedef struct。','title 可以给一个固定长度字符数组。'],['typedef struct','Book','title'],"typedef struct {\n    int id;\n    char title[64];\n} Book;\n"),
-    keyword_exercise('c-allocate-single-node','申请一个链表节点','c','进阶','写一段代码，用 malloc 申请一个 Node 节点，并判空。','c-defensive-coding',['malloc 后先判空。','可以顺手初始化 next。'],['malloc','Node','if'],"Node *node = malloc(sizeof(Node));\nif (!node) {\n    return NULL;\n}\n"),
-    keyword_exercise('c-free-and-null-pointer','释放后置空指针','c','进阶','写一段代码，释放 ptr 后把它设为 NULL。','c-defensive-coding',['free 后主动置空。','避免悬空指针。'],['free','NULL'],"free(ptr);\nptr = NULL;\n"),
-    keyword_exercise('c-argc-usage-guard','命令行参数数量检查','c','基础','写一段代码，如果 argc 小于 2 就打印用法并返回。','c-defensive-coding',['先判断 argc。','可以打印 Usage。'],['argc','if','printf'],"if (argc < 2) {\n    printf(\"Usage: app <file>\\n\");\n    return 1;\n}\n"),
-    keyword_exercise('c-enum-state-switch','用 enum 做状态分支','c','进阶','定义一个 State 枚举，并用 switch 处理至少两个状态。','c-defensive-coding',['先 enum，再 switch。','至少写两个 case。'],['enum','switch','case'],"typedef enum {\n    STATE_IDLE,\n    STATE_RUNNING\n} State;\n\nswitch (state) {\n    case STATE_IDLE:\n        break;\n    case STATE_RUNNING:\n        break;\n}\n"),
-    keyword_exercise('c-callback-typedef','给回调函数起别名','c','进阶','写一个 typedef，把接收 int 并返回 int 的函数指针命名为 TransformFn。','c-callback-qsort-patterns',['typedef 目标是函数指针。','别名叫 TransformFn。'],['typedef','TransformFn','(*'],"typedef int (*TransformFn)(int);\n"),
-    keyword_exercise('c-qsort-call-site','调用 qsort 排序','c','进阶','写一行 qsort 调用，对 nums 数组按 int 比较函数 cmp_int 排序。','c-callback-qsort-patterns',['参数里要有元素个数和 sizeof(int)。','比较函数传 cmp_int。'],['qsort','sizeof','cmp_int'],"qsort(nums, count, sizeof(int), cmp_int);\n"),
-    keyword_exercise('c-write-binary-header','写入二进制文件头','c','进阶','写一段代码，用 fwrite 把 header 结构体写入 fp。','c-binary-file-indexer',['fwrite 的 size 常写 sizeof(Header)。','count 通常是 1。'],['fwrite','sizeof','header'],"fwrite(&header, sizeof(Header), 1, fp);\n"),
-    keyword_exercise('c-header-include-guard','写头文件保护宏','c','基础','写出一个名为 USER_REPO_H 的 include guard。','c-defensive-coding',['ifndef / define / endif 三件套。','宏名保持统一。'],['#ifndef','#define','#endif'],"#ifndef USER_REPO_H\n#define USER_REPO_H\n\n#endif\n"),
-    keyword_exercise('cs-define-product-class','定义 Product 类','csharp','基础','定义一个 Product 类，至少包含 Id 和 Name 两个属性。','cs-generics-constraints',['C# 属性常用 get; set;。','类名就叫 Product。'],['class Product','Id','Name'],"public class Product\n{\n    public int Id { get; set; }\n    public string Name { get; set; } = string.Empty;\n}\n"),
-    keyword_exercise('cs-tryparse-port','解析端口号','csharp','基础','写一段代码，用 int.TryParse 解析 text，并在成功时把结果保存到 port。','cs-options-validation',['关键是 int.TryParse。','通常会有 if 判断。'],['int.TryParse','if','port'],"if (int.TryParse(text, out int port))\n{\n    Console.WriteLine(port);\n}\n"),
-    keyword_exercise('cs-dictionary-count-word','统计词频','csharp','基础','写一段代码，用 Dictionary<string,int> 统计 words 里的词频。','cs-linq-projection-aggregation',['先判断 key 是否存在。','不存在就从 0 开始。'],['Dictionary','ContainsKey','++'],"var counts = new Dictionary<string, int>();\nforeach (var word in words)\n{\n    if (!counts.ContainsKey(word)) counts[word] = 0;\n    counts[word]++;\n}\n"),
-    keyword_exercise('cs-record-order','定义订单 record','csharp','基础','定义一个 Order record，包含 Id 和 Total。','cs-generics-constraints',['record 是轻量不可变建模常用工具。','字段可以用主构造。'],['record Order','Id','Total'],"public record Order(int Id, decimal Total);\n"),
-    keyword_exercise('cs-interface-notifier','声明通知接口','csharp','基础','定义一个 INotifier 接口，包含 Send(string message) 方法。','cs-di-lifetimes',['接口名以 I 开头。','方法返回 void 即可。'],['interface INotifier','Send'],"public interface INotifier\n{\n    void Send(string message);\n}\n"),
-    keyword_exercise('cs-event-raise-saved','触发 Saved 事件','csharp','进阶','定义一个 Saved 事件，并在 Save() 方法里触发它。','cs-background-services-intro',['event EventHandler 很常见。','触发时可用 ?.Invoke。'],['event','EventHandler','Invoke'],"public event EventHandler? Saved;\n\npublic void Save()\n{\n    Saved?.Invoke(this, EventArgs.Empty);\n}\n"),
-    keyword_exercise('cs-linq-where-select','用 LINQ 过滤并投影','csharp','进阶','写一段 LINQ，筛出 active 用户并投影出 Name。','cs-linq-projection-aggregation',['Where 后面通常接 Select。','别忘了属性名。'],['Where','Select'],"var names = users\n    .Where(x => x.IsActive)\n    .Select(x => x.Name)\n    .ToList();\n"),
-    keyword_exercise('cs-linq-groupby-count','按城市分组计数','csharp','进阶','写一段 LINQ，按 City 分组，并统计每组人数。','cs-linq-projection-aggregation',['GroupBy 后通常接 Select。','Select 里可以 new 一个匿名对象。'],['GroupBy','Count','Select'],"var result = users\n    .GroupBy(x => x.City)\n    .Select(g => new { City = g.Key, Count = g.Count() })\n    .ToList();\n"),
-    keyword_exercise('cs-await-task-delay','等待异步延迟','csharp','基础','写一个 async 方法，await Task.Delay(500) 后返回 "ok"。','cs-background-services-intro',['返回类型一般是 Task<string>。','方法体里要有 await。'],['async','Task','await'],"public static async Task<string> BuildAsync()\n{\n    await Task.Delay(500);\n    return \"ok\";\n}\n"),
-    keyword_exercise('cs-httpclient-get-json','发起最小 GET 请求','csharp','进阶','写一段代码，用 HttpClient.GetStringAsync 拉取 url 内容。','cs-background-services-intro',['HttpClient 常配合 await。','结果保存到 string。'],['HttpClient','GetStringAsync','await'],"using var client = new HttpClient();\nstring text = await client.GetStringAsync(url);\n"),
-    keyword_exercise('cs-read-config-value','读取配置值','csharp','进阶','写一段代码，从 IConfiguration 读取 Api:BaseUrl。','cs-options-validation',['索引器写法很常见。','也可以用 GetSection。'],['IConfiguration','Api:BaseUrl'],"string? baseUrl = configuration[\"Api:BaseUrl\"];\n"),
-    keyword_exercise('cs-minimalapi-user-route','定义最小 API 路由','csharp','进阶','写一条 MapGet 路由，返回 /users/{id} 的匿名对象。','cs-background-services-intro',['MapGet 的第一个参数是路由模板。','lambda 里可以直接返回对象。'],['MapGet','/users/{id}'],"app.MapGet(\"/users/{id}\", (int id) => new { Id = id });\n"),
-    keyword_exercise('cs-register-scoped-service','注册 Scoped 服务','csharp','进阶','写一行代码，把 IUserRepo 映射到 UserRepo，生命周期为 Scoped。','cs-di-lifetimes',['services.AddScoped 很常见。','接口和实现都要写出来。'],['AddScoped','IUserRepo','UserRepo'],"services.AddScoped<IUserRepo, UserRepo>();\n"),
-    keyword_exercise('cs-xunit-assert-total','写一条 xUnit 断言','csharp','基础','写一条 Assert.Equal，断言 result.Total 等于 3。','cs-options-validation',['xUnit 常见写法是 Assert.Equal(expected, actual)。','别把顺序写反。'],['Assert.Equal','result.Total'],"Assert.Equal(3, result.Total);\n"),
-    keyword_exercise('cs-save-json-options','保存 JSON 配置','csharp','进阶','写一段代码，用 JsonSerializer.Serialize 把 options 写成 JSON 字符串。','cs-options-validation',['System.Text.Json 里常用 JsonSerializer.Serialize。','结果保存到 string。'],['JsonSerializer.Serialize','options'],"string json = JsonSerializer.Serialize(options);\n"),
-    python_exercise('algo-running-sum','数组前缀和（running sum）','基础','实现 running_sum(nums)，返回每个位置到当前为止的累计和列表。','algo-prefix-sum-window',['可以边遍历边累计。','结果列表长度和输入相同。'],"def running_sum(nums):\n    pass\n",['running_sum'],[{'expression':'running_sum([1,2,3,4])','expected':[1,3,6,10]},{'expression':'running_sum([5,-2,7])','expected':[5,3,10]}]),
-    python_exercise('algo-two-sum-hash','Two Sum 哈希版','基础','实现 two_sum(nums, target)，返回一组满足和为 target 的两个下标。','algo-arrays-hashing',['先想“当前值还缺谁”。','边扫边记最早出现的位置。'],"def two_sum(nums, target):\n    pass\n",['two_sum'],[{'expression':'two_sum([2,7,11,15], 9)','expected':[0,1]},{'expression':'two_sum([3,2,4], 6)','expected':[1,2]}]),
-    python_exercise('algo-valid-anagram','判断有效字母异位词','基础','实现 is_anagram(a, b)，如果两个字符串互为字母异位词则返回 True。','algo-arrays-hashing',['可以比较计数字典，也可以排序后比较。','长度不同直接 False。'],"def is_anagram(a, b):\n    pass\n",['is_anagram'],[{'expression':'is_anagram("anagram", "nagaram")','expected':True},{'expression':'is_anagram("rat", "car")','expected':False}]),
-    python_exercise('algo-two-pointer-palindrome','双指针回文判断','基础','实现 is_palindrome(text)，判断 text 是否是回文字符串。','algo-two-pointers',['左右指针往中间走。','遇到不同字符就返回 False。'],"def is_palindrome(text):\n    pass\n",['is_palindrome'],[{'expression':'is_palindrome("level")','expected':True},{'expression':'is_palindrome("hello")','expected':False}]),
-    python_exercise('algo-binary-search-index','标准二分查找','基础','实现 binary_search(nums, target)，找到则返回下标，否则返回 -1。','algo-binary-search-greedy',['先写 left、right、mid。','注意循环条件和边界更新。'],"def binary_search(nums, target):\n    pass\n",['binary_search'],[{'expression':'binary_search([1,3,5,7,9], 7)','expected':3},{'expression':'binary_search([1,3,5,7,9], 2)','expected':-1}]),
-    python_exercise('algo-max-subarray-sum','最大子数组和','精选','实现 max_subarray(nums)，返回连续子数组的最大和。','algo-prefix-sum-window',['这是经典 DP / 贪心题。','思考“以当前位置结尾的最优值”。'],"def max_subarray(nums):\n    pass\n",['max_subarray'],[{'expression':'max_subarray([-2,1,-3,4,-1,2,1,-5,4])','expected':6},{'expression':'max_subarray([1])','expected':1}]),
-    python_exercise('algo-climb-stairs','爬楼梯','基础','实现 climb_stairs(n)，每次可以走 1 或 2 步，返回走到第 n 阶的方法数。','algo-dynamic-programming-intuition',['先写 n<=2 的边界。','再想状态转移。'],"def climb_stairs(n):\n    pass\n",['climb_stairs'],[{'expression':'climb_stairs(2)','expected':2},{'expression':'climb_stairs(5)','expected':8}]),
-    python_exercise('algo-valid-parentheses','有效括号','基础','实现 valid_parentheses(text)，判断括号是否匹配。','algo-stack-queue',['栈里存左括号。','遇到右括号时做匹配。'],"def valid_parentheses(text):\n    pass\n",['valid_parentheses'],[{'expression':'valid_parentheses("()[]{}")','expected':True},{'expression':'valid_parentheses("(]")','expected':False}]),
-    python_exercise('algo-count-islands','岛屿数量','精选','实现 count_islands(grid)，返回二维网格中的岛屿数量。网格里 ''1'' 表示陆地，''0'' 表示水。','algo-graph-shortest-path',['遇到新岛屿就做一次 DFS/BFS。','访问过的位置要标记。'],"def count_islands(grid):\n    pass\n",['count_islands'],[{'expression':'count_islands([["1","1","0"],["0","1","0"],["1","0","1"]])','expected':3},{'expression':'count_islands([["0","0"],["0","0"]])','expected':0}]),
-    python_exercise('algo-top-k-frequency','前 K 个高频元素','精选','实现 top_k_frequent(nums, k)，返回出现频率最高的 k 个元素。','algo-arrays-hashing',['先统计频率。','结果顺序不要求固定时也要保证元素集合正确。'],"def top_k_frequent(nums, k):\n    pass\n",['top_k_frequent'],[{'expression':'sorted(top_k_frequent([1,1,1,2,2,3], 2))','expected':[1,2]},{'expression':'sorted(top_k_frequent([4,4,5,5,5,6], 1))','expected':[5]}]),
-    python_exercise('algo-merge-intervals','合并区间','精选','实现 merge_intervals(intervals)，合并所有重叠区间并返回结果。','algo-binary-search-greedy',['先按起点排序。','再维护当前合并区间。'],"def merge_intervals(intervals):\n    pass\n",['merge_intervals'],[{'expression':'merge_intervals([[1,3],[2,6],[8,10],[15,18]])','expected':[[1,6],[8,10],[15,18]]},{'expression':'merge_intervals([[1,4],[4,5]])','expected':[[1,5]]}]),
-    python_exercise('algo-min-coins','零钱兑换最少硬币数','精选','实现 min_coins(coins, amount)，返回凑成 amount 所需最少硬币数，无法凑成则返回 -1。','algo-dynamic-programming-intuition',['这是典型完全背包 / DP 题。','先设一个“不可能”的大值。'],"def min_coins(coins, amount):\n    pass\n",['min_coins'],[{'expression':'min_coins([1,2,5], 11)','expected':3},{'expression':'min_coins([2], 3)','expected':-1}]),
-    python_exercise('algo-product-except-self','除自身以外数组的乘积','精选','实现 product_except_self(nums)，返回每个位置除自身外其他元素的乘积。','algo-prefix-sum-window',['常见思路是前缀积和后缀积。','不要直接用总乘积除自己。'],"def product_except_self(nums):\n    pass\n",['product_except_self'],[{'expression':'product_except_self([1,2,3,4])','expected':[24,12,8,6]},{'expression':'product_except_self([2,3,4,5])','expected':[60,40,30,24]}]),
-    python_exercise('algo-search-rotated-array','搜索旋转有序数组','精选','实现 search_rotated(nums, target)，在旋转有序数组中查找 target。','algo-binary-search-greedy',['关键是判断哪一侧仍然有序。','二分里每次只保留一个可能区间。'],"def search_rotated(nums, target):\n    pass\n",['search_rotated'],[{'expression':'search_rotated([4,5,6,7,0,1,2], 0)','expected':4},{'expression':'search_rotated([4,5,6,7,0,1,2], 3)','expected':-1}]),
-    python_exercise('algo-min-window-len','最短满足条件子数组','精选','实现 min_window_len(target, nums)，返回和至少为 target 的最短连续子数组长度，不存在则返回 0。','algo-prefix-sum-window',['这题适合可变滑动窗口。','窗口和达标后尝试收缩左边界。'],"def min_window_len(target, nums):\n    pass\n",['min_window_len'],[{'expression':'min_window_len(7, [2,3,1,2,4,3])','expected':2},{'expression':'min_window_len(15, [1,2,3,4])','expected':0}]),
-    python_exercise('algo-level-order-values','二叉树层序遍历结果','精选','实现 level_order_values(root)，返回二叉树层序遍历的每层节点值。root 节点有 val、left、right 属性。','algo-tree-bfs-dfs',['用队列按层推进。','结果通常是二维列表。'],"from collections import deque\n\ndef level_order_values(root):\n    pass\n",['level_order_values'],[{'expression':'level_order_values(type(\"N\", (), {\"val\":1,\"left\":type(\"N\", (), {\"val\":2,\"left\":None,\"right\":None})(),\"right\":type(\"N\", (), {\"val\":3,\"left\":None,\"right\":None})()})())','expected':[[1],[2,3]]},{'expression':'level_order_values(None)','expected':[]}]),
-    python_exercise('algo-shortest-path-grid','网格最短路径步数','精选','实现 shortest_path_grid(grid)，返回从左上角到右下角的最短步数，只能走上下左右，1 表示可走，0 表示障碍。无法到达返回 -1。','algo-graph-shortest-path',['这题适合 BFS。','队列里可以存坐标和当前步数。'],"def shortest_path_grid(grid):\n    pass\n",['shortest_path_grid'],[{'expression':'shortest_path_grid([[1,1,1],[0,1,0],[1,1,1]])','expected':4},{'expression':'shortest_path_grid([[1,0],[0,1]])','expected':-1}]),
+    sql_exercise(
+        "db-insert-daily-report",
+        "插入日报记录",
+        "基础",
+        "写一条 INSERT 语句，把 2026-04-01 这天的 total=8 插入 reports 表。",
+        "db-sql-test-data",
+        ["先看表结构里有哪两列。", "插入一条完整记录即可。"],
+        ["insert", "into", "values"],
+        "INSERT INTO reports(day, total)\nVALUES ('2026-04-01', 8);\n",
+    ),
+    sql_exercise(
+        "db-update-null-phone",
+        "把空手机号补成 unknown",
+        "基础",
+        "写一条 UPDATE，把 users 表中 phone 为 NULL 的记录改成 unknown。",
+        "db-sql-test-data",
+        ["先锁定 phone IS NULL 的记录。", "别把原本有手机号的记录也改掉。"],
+        ["update", "set", "where"],
+        "UPDATE users\nSET phone = 'unknown'\nWHERE phone IS NULL;\n",
+    ),
+    sql_exercise(
+        "db-delete-cancelled-orders",
+        "删除已取消订单",
+        "基础",
+        "写一条 DELETE，把 orders 表里 status=cancelled 的记录删掉。",
+        "db-sql-test-data",
+        ["先确定删除条件。", "DELETE 通常和 WHERE 一起出现。"],
+        ["delete", "from", "where"],
+        "DELETE FROM orders\nWHERE status = 'cancelled';\n",
+    ),
+    sql_exercise(
+        "db-window-running-total",
+        "做销售额累计和",
+        "精选",
+        "写一条 SQL，返回 day、amount 和按日期累加的 running_total。",
+        "db-window-functions",
+        ["这题是窗口函数题。", "running_total 常见写法是 sum(amount) over (...)。"],
+        ["sum", "over", "order by"],
+        "SELECT day, amount,\n       SUM(amount) OVER (ORDER BY day) AS running_total\nFROM sales;\n",
+    ),
+    sql_exercise(
+        "db-exists-high-value-users",
+        "找出有高金额订单的用户",
+        "精选",
+        "写一条 SQL，返回至少存在一笔 amount>100 订单的用户名。",
+        "db-subqueries-exists",
+        ["这题适合 EXISTS。", "把 users 放在外层。"],
+        ["select", "exists"],
+        "SELECT name\nFROM users u\nWHERE EXISTS (\n    SELECT 1\n    FROM orders o\n    WHERE o.user_id = u.id AND o.amount > 100\n);\n",
+    ),
+    sql_exercise(
+        "db-upsert-daily-kpi",
+        "用 UPSERT 更新日报 KPI",
+        "精选",
+        "写一条 SQL，把 day=2026-04-01 的 total 更新成 8；如果不存在就插入。",
+        "db-upsert-merge-patterns",
+        ["这题核心是主键冲突时更新。", "SQLite 用 ON CONFLICT。"],
+        ["insert", "on conflict", "do update"],
+        "INSERT INTO kpi(day, total)\nVALUES ('2026-04-01', 8)\nON CONFLICT(day) DO UPDATE SET total = excluded.total;\n",
+    ),
+    sql_exercise(
+        "db-cte-top-users",
+        "用 CTE 统计高价值用户总额",
+        "精选",
+        "写一条 SQL，先用 CTE 聚合每个 user_id 的总金额，再返回 user_id 和 total。",
+        "db-cte-patterns",
+        ["先写 WITH 子句。", "再在主查询里 select 聚合结果。"],
+        ["with", "sum", "group by"],
+        "WITH user_totals AS (\n    SELECT user_id, SUM(amount) AS total\n    FROM orders\n    GROUP BY user_id\n)\nSELECT user_id, total\nFROM user_totals;\n",
+    ),
+    sql_exercise(
+        "db-row-number-latest-log",
+        "取每个用户最新一条日志",
+        "精选",
+        "写一条 SQL，返回每个 user_id 最新一条日志的时间和分数。",
+        "db-window-functions",
+        ["这题适合 row_number() over(partition by ... order by ... desc)。", "最后只取 rn=1。"],
+        ["row_number", "over", "partition by"],
+        "WITH ranked AS (\n    SELECT user_id, ts, score,\n           ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY ts DESC) AS rn\n    FROM logs\n)\nSELECT user_id, ts, score\nFROM ranked\nWHERE rn = 1;\n",
+    ),
+    sql_exercise(
+        "db-join-course-enrollment-count",
+        "统计课程报名人数",
+        "精选",
+        "写一条 SQL，返回课程标题和报名人数，没报名的课程也要显示为 0。",
+        "db-join-patterns",
+        ["左连接课程和报名表。", "计数时注意空值。"],
+        ["left join", "count", "group by"],
+        "SELECT c.title, COUNT(e.student_id) AS enrolled_count\nFROM courses c\nLEFT JOIN enrollments e ON e.course_id = c.id\nGROUP BY c.id, c.title;\n",
+    ),
+    sql_exercise(
+        "db-subquery-above-course-average",
+        "找出高于课程平均分的学生",
+        "精选",
+        "写一条 SQL，返回成绩高于本课程平均分的学生姓名。",
+        "db-subqueries-exists",
+        ["这题是相关子查询。", "按 course 比较平均分。"],
+        ["select", "avg"],
+        "SELECT student\nFROM scores s\nWHERE score > (\n    SELECT AVG(score)\n    FROM scores\n    WHERE course = s.course\n);\n",
+    ),
+    sql_exercise(
+        "db-group-having-order",
+        "筛出订单数至少 2 的用户",
+        "精选",
+        "写一条 SQL，返回订单数至少为 2 的 user_id 和数量，并按 user_id 排序。",
+        "db-aggregation",
+        ["这题关键是 group by + having。", "最后 order by user_id。"],
+        ["group by", "having", "order by"],
+        "SELECT user_id, COUNT(*) AS order_count\nFROM orders\nGROUP BY user_id\nHAVING COUNT(*) >= 2\nORDER BY user_id;\n",
+    ),
+    sql_exercise(
+        "db-create-covering-index-report",
+        "给报表表加组合索引",
+        "精选",
+        "写一条 CREATE INDEX 语句，给 reports(created_at, status) 建组合索引。",
+        "db-covering-indexes",
+        ["索引名可以自定。", "列顺序要先 created_at，再 status。"],
+        ["create index", "reports", "created_at", "status"],
+        "CREATE INDEX idx_reports_created_status\nON reports(created_at, status);\n",
+    ),
+    sql_exercise(
+        "db-add-status-column-users",
+        "给用户表补 status 列",
+        "基础",
+        "写一条 ALTER TABLE 语句，给 users 表新增 status 文本列。",
+        "db-migrations-basics",
+        ["SQLite 里常见写法是 add column。", "列类型可用 TEXT。"],
+        ["alter table", "add column", "status"],
+        "ALTER TABLE users\nADD COLUMN status TEXT;\n",
+    ),
+    sql_exercise(
+        "db-create-enrollment-foreign-key",
+        "创建带外键的选课表",
+        "精选",
+        "写一段建表脚本，创建 enrollments 表，并让 student_id / course_id 分别引用 students / courses。",
+        "db-constraints-foreign-keys",
+        ["先想清楚两列名。", "SQLite foreign key 写在列后或表级约束都行。"],
+        ["create table", "foreign key", "student_id", "course_id"],
+        "CREATE TABLE enrollments(\n    student_id INTEGER NOT NULL,\n    course_id INTEGER NOT NULL,\n    FOREIGN KEY(student_id) REFERENCES students(id),\n    FOREIGN KEY(course_id) REFERENCES courses(id)\n);\n",
+    ),
+    sql_exercise(
+        "db-left-join-course-report",
+        "课程报名报表（左连接）",
+        "精选",
+        "写一条 SQL，返回每门课程标题和报名人数，包含没人报名的课程。",
+        "db-join-patterns",
+        ["这题更强调 left join 报表心智。", "统计时别把空课程漏掉。"],
+        ["left join", "count", "group by"],
+        "SELECT c.title, COUNT(e.student_id) AS enrolled_count\nFROM courses c\nLEFT JOIN enrollments e ON e.course_id = c.id\nGROUP BY c.title;\n",
+    ),
+    sql_exercise(
+        "db-coalesce-city-label",
+        "给空城市打标签",
+        "基础",
+        "写一条 SQL，返回用户姓名和城市；如果 city 为 NULL，则显示“未知城市”。",
+        "db-data-cleaning-sql",
+        ["这题适合 COALESCE。", "别忘了把 name 也查出来。"],
+        ["select", "coalesce"],
+        "SELECT name, COALESCE(city, '未知城市') AS city_label\nFROM users\nORDER BY name;\n",
+    ),
+    keyword_exercise(
+        "c-declare-score-array",
+        "声明成绩数组",
+        "c",
+        "基础",
+        "声明一个包含 5 个整数的 scores 数组。",
+        "c-arrays-memory-layout",
+        ["最小答案就是一个整型数组声明。", "可以顺手给初始值。"],
+        ["int", "scores", "[5]"],
+        "int scores[5] = {0};\n",
+    ),
+    keyword_exercise(
+        "c-sum-array-loop",
+        "循环累加数组",
+        "c",
+        "基础",
+        "写一段代码，遍历 nums 数组并把总和累加到 sum。",
+        "c-arrays-memory-layout",
+        ["要有 for 循环。", "sum += nums[i] 很常见。"],
+        ["for", "sum", "nums"],
+        "int sum = 0;\nfor (int i = 0; i < count; ++i) {\n    sum += nums[i];\n}\n",
+    ),
+    keyword_exercise(
+        "c-swap-pointer-signature",
+        "写出 swap 指针签名",
+        "c",
+        "基础",
+        "声明一个 swap 函数，接收两个 int 指针并交换内容。",
+        "c-pointer-arithmetic",
+        ["参数是 int*。", "函数名叫 swap。"],
+        ["void", "swap", "int *"],
+        "void swap(int *a, int *b)\n{\n}\n",
+    ),
+    keyword_exercise(
+        "c-copy-string-safe",
+        "安全复制字符串",
+        "c",
+        "基础",
+        "写一段代码，把 source 安全复制到 dest，并保证结尾有空字符。",
+        "c-string-library-patterns",
+        ["可以用 strncpy。", "记得手动补 \\0。"],
+        ["strncpy", "dest", "\\0"],
+        "strncpy(dest, source, size - 1);\ndest[size - 1] = '\\0';\n",
+    ),
+    keyword_exercise(
+        "c-open-file-read",
+        "打开文件读取",
+        "c",
+        "基础",
+        "写一段代码，用 fopen 打开 path，并判断是否打开成功。",
+        "c-binary-file-indexer",
+        ["先声明 FILE*。", "判断空指针。"],
+        ["fopen", "FILE", "if"],
+        'FILE *fp = fopen(path, "r");\nif (!fp) {\n    return -1;\n}\n',
+    ),
+    keyword_exercise(
+        "c-fgets-check-null",
+        "用 fgets 读一行并判空",
+        "c",
+        "基础",
+        "写一段代码，用 fgets 读取一行，并在失败时直接返回。",
+        "c-string-library-patterns",
+        ["fgets 返回值可以直接判空。", "失败时尽早 return。"],
+        ["fgets", "if", "return"],
+        "if (!fgets(buffer, sizeof(buffer), fp)) {\n    return -1;\n}\n",
+    ),
+    keyword_exercise(
+        "c-define-book-struct",
+        "定义图书结构体",
+        "c",
+        "基础",
+        "定义一个 Book 结构体，至少包含 id 和 title 两个字段。",
+        "c-binary-file-indexer",
+        ["用 typedef struct。", "title 可以给一个固定长度字符数组。"],
+        ["typedef struct", "Book", "title"],
+        "typedef struct {\n    int id;\n    char title[64];\n} Book;\n",
+    ),
+    keyword_exercise(
+        "c-allocate-single-node",
+        "申请一个链表节点",
+        "c",
+        "进阶",
+        "写一段代码，用 malloc 申请一个 Node 节点，并判空。",
+        "c-defensive-coding",
+        ["malloc 后先判空。", "可以顺手初始化 next。"],
+        ["malloc", "Node", "if"],
+        "Node *node = malloc(sizeof(Node));\nif (!node) {\n    return NULL;\n}\n",
+    ),
+    keyword_exercise(
+        "c-free-and-null-pointer",
+        "释放后置空指针",
+        "c",
+        "进阶",
+        "写一段代码，释放 ptr 后把它设为 NULL。",
+        "c-defensive-coding",
+        ["free 后主动置空。", "避免悬空指针。"],
+        ["free", "NULL"],
+        "free(ptr);\nptr = NULL;\n",
+    ),
+    keyword_exercise(
+        "c-argc-usage-guard",
+        "命令行参数数量检查",
+        "c",
+        "基础",
+        "写一段代码，如果 argc 小于 2 就打印用法并返回。",
+        "c-defensive-coding",
+        ["先判断 argc。", "可以打印 Usage。"],
+        ["argc", "if", "printf"],
+        'if (argc < 2) {\n    printf("Usage: app <file>\\n");\n    return 1;\n}\n',
+    ),
+    keyword_exercise(
+        "c-enum-state-switch",
+        "用 enum 做状态分支",
+        "c",
+        "进阶",
+        "定义一个 State 枚举，并用 switch 处理至少两个状态。",
+        "c-defensive-coding",
+        ["先 enum，再 switch。", "至少写两个 case。"],
+        ["enum", "switch", "case"],
+        "typedef enum {\n    STATE_IDLE,\n    STATE_RUNNING\n} State;\n\nswitch (state) {\n    case STATE_IDLE:\n        break;\n    case STATE_RUNNING:\n        break;\n}\n",
+    ),
+    keyword_exercise(
+        "c-callback-typedef",
+        "给回调函数起别名",
+        "c",
+        "进阶",
+        "写一个 typedef，把接收 int 并返回 int 的函数指针命名为 TransformFn。",
+        "c-callback-qsort-patterns",
+        ["typedef 目标是函数指针。", "别名叫 TransformFn。"],
+        ["typedef", "TransformFn", "(*"],
+        "typedef int (*TransformFn)(int);\n",
+    ),
+    keyword_exercise(
+        "c-qsort-call-site",
+        "调用 qsort 排序",
+        "c",
+        "进阶",
+        "写一行 qsort 调用，对 nums 数组按 int 比较函数 cmp_int 排序。",
+        "c-callback-qsort-patterns",
+        ["参数里要有元素个数和 sizeof(int)。", "比较函数传 cmp_int。"],
+        ["qsort", "sizeof", "cmp_int"],
+        "qsort(nums, count, sizeof(int), cmp_int);\n",
+    ),
+    keyword_exercise(
+        "c-write-binary-header",
+        "写入二进制文件头",
+        "c",
+        "进阶",
+        "写一段代码，用 fwrite 把 header 结构体写入 fp。",
+        "c-binary-file-indexer",
+        ["fwrite 的 size 常写 sizeof(Header)。", "count 通常是 1。"],
+        ["fwrite", "sizeof", "header"],
+        "fwrite(&header, sizeof(Header), 1, fp);\n",
+    ),
+    keyword_exercise(
+        "c-header-include-guard",
+        "写头文件保护宏",
+        "c",
+        "基础",
+        "写出一个名为 USER_REPO_H 的 include guard。",
+        "c-defensive-coding",
+        ["ifndef / define / endif 三件套。", "宏名保持统一。"],
+        ["#ifndef", "#define", "#endif"],
+        "#ifndef USER_REPO_H\n#define USER_REPO_H\n\n#endif\n",
+    ),
+    keyword_exercise(
+        "cs-define-product-class",
+        "定义 Product 类",
+        "csharp",
+        "基础",
+        "定义一个 Product 类，至少包含 Id 和 Name 两个属性。",
+        "cs-generics-constraints",
+        ["C# 属性常用 get; set;。", "类名就叫 Product。"],
+        ["class Product", "Id", "Name"],
+        "public class Product\n{\n    public int Id { get; set; }\n    public string Name { get; set; } = string.Empty;\n}\n",
+    ),
+    keyword_exercise(
+        "cs-tryparse-port",
+        "解析端口号",
+        "csharp",
+        "基础",
+        "写一段代码，用 int.TryParse 解析 text，并在成功时把结果保存到 port。",
+        "cs-options-validation",
+        ["关键是 int.TryParse。", "通常会有 if 判断。"],
+        ["int.TryParse", "if", "port"],
+        "if (int.TryParse(text, out int port))\n{\n    Console.WriteLine(port);\n}\n",
+    ),
+    keyword_exercise(
+        "cs-dictionary-count-word",
+        "统计词频",
+        "csharp",
+        "基础",
+        "写一段代码，用 Dictionary<string,int> 统计 words 里的词频。",
+        "cs-linq-projection-aggregation",
+        ["先判断 key 是否存在。", "不存在就从 0 开始。"],
+        ["Dictionary", "ContainsKey", "++"],
+        "var counts = new Dictionary<string, int>();\nforeach (var word in words)\n{\n    if (!counts.ContainsKey(word)) counts[word] = 0;\n    counts[word]++;\n}\n",
+    ),
+    keyword_exercise(
+        "cs-record-order",
+        "定义订单 record",
+        "csharp",
+        "基础",
+        "定义一个 Order record，包含 Id 和 Total。",
+        "cs-generics-constraints",
+        ["record 是轻量不可变建模常用工具。", "字段可以用主构造。"],
+        ["record Order", "Id", "Total"],
+        "public record Order(int Id, decimal Total);\n",
+    ),
+    keyword_exercise(
+        "cs-interface-notifier",
+        "声明通知接口",
+        "csharp",
+        "基础",
+        "定义一个 INotifier 接口，包含 Send(string message) 方法。",
+        "cs-di-lifetimes",
+        ["接口名以 I 开头。", "方法返回 void 即可。"],
+        ["interface INotifier", "Send"],
+        "public interface INotifier\n{\n    void Send(string message);\n}\n",
+    ),
+    keyword_exercise(
+        "cs-event-raise-saved",
+        "触发 Saved 事件",
+        "csharp",
+        "进阶",
+        "定义一个 Saved 事件，并在 Save() 方法里触发它。",
+        "cs-background-services-intro",
+        ["event EventHandler 很常见。", "触发时可用 ?.Invoke。"],
+        ["event", "EventHandler", "Invoke"],
+        "public event EventHandler? Saved;\n\npublic void Save()\n{\n    Saved?.Invoke(this, EventArgs.Empty);\n}\n",
+    ),
+    keyword_exercise(
+        "cs-linq-where-select",
+        "用 LINQ 过滤并投影",
+        "csharp",
+        "进阶",
+        "写一段 LINQ，筛出 active 用户并投影出 Name。",
+        "cs-linq-projection-aggregation",
+        ["Where 后面通常接 Select。", "别忘了属性名。"],
+        ["Where", "Select"],
+        "var names = users\n    .Where(x => x.IsActive)\n    .Select(x => x.Name)\n    .ToList();\n",
+    ),
+    keyword_exercise(
+        "cs-linq-groupby-count",
+        "按城市分组计数",
+        "csharp",
+        "进阶",
+        "写一段 LINQ，按 City 分组，并统计每组人数。",
+        "cs-linq-projection-aggregation",
+        ["GroupBy 后通常接 Select。", "Select 里可以 new 一个匿名对象。"],
+        ["GroupBy", "Count", "Select"],
+        "var result = users\n    .GroupBy(x => x.City)\n    .Select(g => new { City = g.Key, Count = g.Count() })\n    .ToList();\n",
+    ),
+    keyword_exercise(
+        "cs-await-task-delay",
+        "等待异步延迟",
+        "csharp",
+        "基础",
+        '写一个 async 方法，await Task.Delay(500) 后返回 "ok"。',
+        "cs-background-services-intro",
+        ["返回类型一般是 Task<string>。", "方法体里要有 await。"],
+        ["async", "Task", "await"],
+        'public static async Task<string> BuildAsync()\n{\n    await Task.Delay(500);\n    return "ok";\n}\n',
+    ),
+    keyword_exercise(
+        "cs-httpclient-get-json",
+        "发起最小 GET 请求",
+        "csharp",
+        "进阶",
+        "写一段代码，用 HttpClient.GetStringAsync 拉取 url 内容。",
+        "cs-background-services-intro",
+        ["HttpClient 常配合 await。", "结果保存到 string。"],
+        ["HttpClient", "GetStringAsync", "await"],
+        "using var client = new HttpClient();\nstring text = await client.GetStringAsync(url);\n",
+    ),
+    keyword_exercise(
+        "cs-read-config-value",
+        "读取配置值",
+        "csharp",
+        "进阶",
+        "写一段代码，从 IConfiguration 读取 Api:BaseUrl。",
+        "cs-options-validation",
+        ["索引器写法很常见。", "也可以用 GetSection。"],
+        ["IConfiguration", "Api:BaseUrl"],
+        'string? baseUrl = configuration["Api:BaseUrl"];\n',
+    ),
+    keyword_exercise(
+        "cs-minimalapi-user-route",
+        "定义最小 API 路由",
+        "csharp",
+        "进阶",
+        "写一条 MapGet 路由，返回 /users/{id} 的匿名对象。",
+        "cs-background-services-intro",
+        ["MapGet 的第一个参数是路由模板。", "lambda 里可以直接返回对象。"],
+        ["MapGet", "/users/{id}"],
+        'app.MapGet("/users/{id}", (int id) => new { Id = id });\n',
+    ),
+    keyword_exercise(
+        "cs-register-scoped-service",
+        "注册 Scoped 服务",
+        "csharp",
+        "进阶",
+        "写一行代码，把 IUserRepo 映射到 UserRepo，生命周期为 Scoped。",
+        "cs-di-lifetimes",
+        ["services.AddScoped 很常见。", "接口和实现都要写出来。"],
+        ["AddScoped", "IUserRepo", "UserRepo"],
+        "services.AddScoped<IUserRepo, UserRepo>();\n",
+    ),
+    keyword_exercise(
+        "cs-xunit-assert-total",
+        "写一条 xUnit 断言",
+        "csharp",
+        "基础",
+        "写一条 Assert.Equal，断言 result.Total 等于 3。",
+        "cs-options-validation",
+        ["xUnit 常见写法是 Assert.Equal(expected, actual)。", "别把顺序写反。"],
+        ["Assert.Equal", "result.Total"],
+        "Assert.Equal(3, result.Total);\n",
+    ),
+    keyword_exercise(
+        "cs-save-json-options",
+        "保存 JSON 配置",
+        "csharp",
+        "进阶",
+        "写一段代码，用 JsonSerializer.Serialize 把 options 写成 JSON 字符串。",
+        "cs-options-validation",
+        ["System.Text.Json 里常用 JsonSerializer.Serialize。", "结果保存到 string。"],
+        ["JsonSerializer.Serialize", "options"],
+        "string json = JsonSerializer.Serialize(options);\n",
+    ),
+    python_exercise(
+        "algo-running-sum",
+        "数组前缀和（running sum）",
+        "基础",
+        "实现 running_sum(nums)，返回每个位置到当前为止的累计和列表。",
+        "algo-prefix-sum-window",
+        ["可以边遍历边累计。", "结果列表长度和输入相同。"],
+        "def running_sum(nums):\n    pass\n",
+        ["running_sum"],
+        [
+            {"expression": "running_sum([1,2,3,4])", "expected": [1, 3, 6, 10]},
+            {"expression": "running_sum([5,-2,7])", "expected": [5, 3, 10]},
+        ],
+    ),
+    python_exercise(
+        "algo-two-sum-hash",
+        "Two Sum 哈希版",
+        "基础",
+        "实现 two_sum(nums, target)，返回一组满足和为 target 的两个下标。",
+        "algo-arrays-hashing",
+        ["先想“当前值还缺谁”。", "边扫边记最早出现的位置。"],
+        "def two_sum(nums, target):\n    pass\n",
+        ["two_sum"],
+        [
+            {"expression": "two_sum([2,7,11,15], 9)", "expected": [0, 1]},
+            {"expression": "two_sum([3,2,4], 6)", "expected": [1, 2]},
+        ],
+    ),
+    python_exercise(
+        "algo-valid-anagram",
+        "判断有效字母异位词",
+        "基础",
+        "实现 is_anagram(a, b)，如果两个字符串互为字母异位词则返回 True。",
+        "algo-arrays-hashing",
+        ["可以比较计数字典，也可以排序后比较。", "长度不同直接 False。"],
+        "def is_anagram(a, b):\n    pass\n",
+        ["is_anagram"],
+        [
+            {"expression": 'is_anagram("anagram", "nagaram")', "expected": True},
+            {"expression": 'is_anagram("rat", "car")', "expected": False},
+        ],
+    ),
+    python_exercise(
+        "algo-two-pointer-palindrome",
+        "双指针回文判断",
+        "基础",
+        "实现 is_palindrome(text)，判断 text 是否是回文字符串。",
+        "algo-two-pointers",
+        ["左右指针往中间走。", "遇到不同字符就返回 False。"],
+        "def is_palindrome(text):\n    pass\n",
+        ["is_palindrome"],
+        [
+            {"expression": 'is_palindrome("level")', "expected": True},
+            {"expression": 'is_palindrome("hello")', "expected": False},
+        ],
+    ),
+    python_exercise(
+        "algo-binary-search-index",
+        "标准二分查找",
+        "基础",
+        "实现 binary_search(nums, target)，找到则返回下标，否则返回 -1。",
+        "algo-binary-search-greedy",
+        ["先写 left、right、mid。", "注意循环条件和边界更新。"],
+        "def binary_search(nums, target):\n    pass\n",
+        ["binary_search"],
+        [
+            {"expression": "binary_search([1,3,5,7,9], 7)", "expected": 3},
+            {"expression": "binary_search([1,3,5,7,9], 2)", "expected": -1},
+        ],
+    ),
+    python_exercise(
+        "algo-max-subarray-sum",
+        "最大子数组和",
+        "精选",
+        "实现 max_subarray(nums)，返回连续子数组的最大和。",
+        "algo-prefix-sum-window",
+        ["这是经典 DP / 贪心题。", "思考“以当前位置结尾的最优值”。"],
+        "def max_subarray(nums):\n    pass\n",
+        ["max_subarray"],
+        [
+            {"expression": "max_subarray([-2,1,-3,4,-1,2,1,-5,4])", "expected": 6},
+            {"expression": "max_subarray([1])", "expected": 1},
+        ],
+    ),
+    python_exercise(
+        "algo-climb-stairs",
+        "爬楼梯",
+        "基础",
+        "实现 climb_stairs(n)，每次可以走 1 或 2 步，返回走到第 n 阶的方法数。",
+        "algo-dynamic-programming-intuition",
+        ["先写 n<=2 的边界。", "再想状态转移。"],
+        "def climb_stairs(n):\n    pass\n",
+        ["climb_stairs"],
+        [{"expression": "climb_stairs(2)", "expected": 2}, {"expression": "climb_stairs(5)", "expected": 8}],
+    ),
+    python_exercise(
+        "algo-valid-parentheses",
+        "有效括号",
+        "基础",
+        "实现 valid_parentheses(text)，判断括号是否匹配。",
+        "algo-stack-queue",
+        ["栈里存左括号。", "遇到右括号时做匹配。"],
+        "def valid_parentheses(text):\n    pass\n",
+        ["valid_parentheses"],
+        [
+            {"expression": 'valid_parentheses("()[]{}")', "expected": True},
+            {"expression": 'valid_parentheses("(]")', "expected": False},
+        ],
+    ),
+    python_exercise(
+        "algo-count-islands",
+        "岛屿数量",
+        "精选",
+        "实现 count_islands(grid)，返回二维网格中的岛屿数量。网格里 1 表示陆地，0 表示水。",
+        "algo-graph-shortest-path",
+        ["遇到新岛屿就做一次 DFS/BFS。", "访问过的位置要标记。"],
+        "def count_islands(grid):\n    pass\n",
+        ["count_islands"],
+        [
+            {"expression": 'count_islands([["1","1","0"],["0","1","0"],["1","0","1"]])', "expected": 3},
+            {"expression": 'count_islands([["0","0"],["0","0"]])', "expected": 0},
+        ],
+    ),
+    python_exercise(
+        "algo-top-k-frequency",
+        "前 K 个高频元素",
+        "精选",
+        "实现 top_k_frequent(nums, k)，返回出现频率最高的 k 个元素。",
+        "algo-arrays-hashing",
+        ["先统计频率。", "结果顺序不要求固定时也要保证元素集合正确。"],
+        "def top_k_frequent(nums, k):\n    pass\n",
+        ["top_k_frequent"],
+        [
+            {"expression": "sorted(top_k_frequent([1,1,1,2,2,3], 2))", "expected": [1, 2]},
+            {"expression": "sorted(top_k_frequent([4,4,5,5,5,6], 1))", "expected": [5]},
+        ],
+    ),
+    python_exercise(
+        "algo-merge-intervals",
+        "合并区间",
+        "精选",
+        "实现 merge_intervals(intervals)，合并所有重叠区间并返回结果。",
+        "algo-binary-search-greedy",
+        ["先按起点排序。", "再维护当前合并区间。"],
+        "def merge_intervals(intervals):\n    pass\n",
+        ["merge_intervals"],
+        [
+            {"expression": "merge_intervals([[1,3],[2,6],[8,10],[15,18]])", "expected": [[1, 6], [8, 10], [15, 18]]},
+            {"expression": "merge_intervals([[1,4],[4,5]])", "expected": [[1, 5]]},
+        ],
+    ),
+    python_exercise(
+        "algo-min-coins",
+        "零钱兑换最少硬币数",
+        "精选",
+        "实现 min_coins(coins, amount)，返回凑成 amount 所需最少硬币数，无法凑成则返回 -1。",
+        "algo-dynamic-programming-intuition",
+        ["这是典型完全背包 / DP 题。", "先设一个“不可能”的大值。"],
+        "def min_coins(coins, amount):\n    pass\n",
+        ["min_coins"],
+        [{"expression": "min_coins([1,2,5], 11)", "expected": 3}, {"expression": "min_coins([2], 3)", "expected": -1}],
+    ),
+    python_exercise(
+        "algo-product-except-self",
+        "除自身以外数组的乘积",
+        "精选",
+        "实现 product_except_self(nums)，返回每个位置除自身外其他元素的乘积。",
+        "algo-prefix-sum-window",
+        ["常见思路是前缀积和后缀积。", "不要直接用总乘积除自己。"],
+        "def product_except_self(nums):\n    pass\n",
+        ["product_except_self"],
+        [
+            {"expression": "product_except_self([1,2,3,4])", "expected": [24, 12, 8, 6]},
+            {"expression": "product_except_self([2,3,4,5])", "expected": [60, 40, 30, 24]},
+        ],
+    ),
+    python_exercise(
+        "algo-search-rotated-array",
+        "搜索旋转有序数组",
+        "精选",
+        "实现 search_rotated(nums, target)，在旋转有序数组中查找 target。",
+        "algo-binary-search-greedy",
+        ["关键是判断哪一侧仍然有序。", "二分里每次只保留一个可能区间。"],
+        "def search_rotated(nums, target):\n    pass\n",
+        ["search_rotated"],
+        [
+            {"expression": "search_rotated([4,5,6,7,0,1,2], 0)", "expected": 4},
+            {"expression": "search_rotated([4,5,6,7,0,1,2], 3)", "expected": -1},
+        ],
+    ),
+    python_exercise(
+        "algo-min-window-len",
+        "最短满足条件子数组",
+        "精选",
+        "实现 min_window_len(target, nums)，返回和至少为 target 的最短连续子数组长度，不存在则返回 0。",
+        "algo-prefix-sum-window",
+        ["这题适合可变滑动窗口。", "窗口和达标后尝试收缩左边界。"],
+        "def min_window_len(target, nums):\n    pass\n",
+        ["min_window_len"],
+        [
+            {"expression": "min_window_len(7, [2,3,1,2,4,3])", "expected": 2},
+            {"expression": "min_window_len(15, [1,2,3,4])", "expected": 0},
+        ],
+    ),
+    python_exercise(
+        "algo-level-order-values",
+        "二叉树层序遍历结果",
+        "精选",
+        "实现 level_order_values(root)，返回二叉树层序遍历的每层节点值。root 节点有 val、left、right 属性。",
+        "algo-tree-bfs-dfs",
+        ["用队列按层推进。", "结果通常是二维列表。"],
+        "from collections import deque\n\ndef level_order_values(root):\n    pass\n",
+        ["level_order_values"],
+        [
+            {
+                "expression": 'level_order_values(type("N", (), {"val":1,"left":type("N", (), {"val":2,"left":None,"right":None})(),"right":type("N", (), {"val":3,"left":None,"right":None})()})())',
+                "expected": [[1], [2, 3]],
+            },
+            {"expression": "level_order_values(None)", "expected": []},
+        ],
+    ),
+    python_exercise(
+        "algo-shortest-path-grid",
+        "网格最短路径步数",
+        "精选",
+        "实现 shortest_path_grid(grid)，返回从左上角到右下角的最短步数，只能走上下左右，1 表示可走，0 表示障碍。无法到达返回 -1。",
+        "algo-graph-shortest-path",
+        ["这题适合 BFS。", "队列里可以存坐标和当前步数。"],
+        "def shortest_path_grid(grid):\n    pass\n",
+        ["shortest_path_grid"],
+        [
+            {"expression": "shortest_path_grid([[1,1,1],[0,1,0],[1,1,1]])", "expected": 4},
+            {"expression": "shortest_path_grid([[1,0],[0,1]])", "expected": -1},
+        ],
+    ),
 ]
 
 
 def main() -> None:
-    course_map = json.loads(COURSE_MAP_PATH.read_text(encoding='utf-8'))
-    exercises_raw = json.loads(EXERCISES_PATH.read_text(encoding='utf-8'))
-    exercises = exercises_raw['exercises']
+    course_map = json.loads(COURSE_MAP_PATH.read_text(encoding="utf-8"))
+    exercises_raw = json.loads(EXERCISES_PATH.read_text(encoding="utf-8"))
+    exercises = exercises_raw["exercises"]
     module_updates = {
-        ('python', 'python-advanced-practice'): ('精选模块 · 表达式、测试与并发', '把 Python 从会写语法推进到会组织、会验证、会调试。'),
-        ('c', 'c-advanced-memory'): ('精选模块 · 内存、库函数与工具化', '把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。'),
-        ('csharp', 'csharp-advanced-apps'): ('精选模块 · 架构、配置与 Web 起步', '继续从会写语法推进到会组织项目、会接配置、会做服务。'),
-        ('database', 'db-advanced-modeling'): ('精选模块 · 事务、优化与 PostgreSQL', '从会写 SQL 继续往数据变更、性能和跨环境实践推进。'),
-        ('integration', 'integration-expansion-projects'): ('兴趣模块 · 报表、看板与跨语言作品', '把日志、报表、CLI、桌面应用和 API 作品串成更像交付物的项目线。'),
+        ("python", "python-advanced-practice"): (
+            "精选模块 · 表达式、测试与并发",
+            "把 Python 从会写语法推进到会组织、会验证、会调试。",
+        ),
+        ("c", "c-advanced-memory"): (
+            "精选模块 · 内存、库函数与工具化",
+            "把 C 真正难的那部分练熟：内存、字符串、回调和边界处理。",
+        ),
+        ("csharp", "csharp-advanced-apps"): (
+            "精选模块 · 架构、配置与 Web 起步",
+            "继续从会写语法推进到会组织项目、会接配置、会做服务。",
+        ),
+        ("database", "db-advanced-modeling"): (
+            "精选模块 · 事务、优化与 PostgreSQL",
+            "从会写 SQL 继续往数据变更、性能和跨环境实践推进。",
+        ),
+        ("integration", "integration-expansion-projects"): (
+            "兴趣模块 · 报表、看板与跨语言作品",
+            "把日志、报表、CLI、桌面应用和 API 作品串成更像交付物的项目线。",
+        ),
     }
-    for track in course_map['tracks']:
-        for module in track['modules']:
-            update = module_updates.get((track['id'], module['id']))
+    for track in course_map["tracks"]:
+        for module in track["modules"]:
+            update = module_updates.get((track["id"], module["id"]))
             if update:
-                module['title'], module['summary'] = update
+                module["title"], module["summary"] = update
     for lesson in LESSONS:
         upsert_lesson(course_map, lesson)
     for exercise in EXERCISES:
         upsert_exercise(exercises, exercise)
-    COURSE_MAP_PATH.write_text(json.dumps(course_map, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    EXERCISES_PATH.write_text(json.dumps({'exercises': exercises}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    total_lessons = sum(len(module['lessons']) for track in course_map['tracks'] for module in track['modules'])
-    print(f'tracks={len(course_map["tracks"])}')
-    print(f'lessons={total_lessons}')
-    print(f'exercises={len(exercises)}')
+    COURSE_MAP_PATH.write_text(json.dumps(course_map, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    EXERCISES_PATH.write_text(
+        json.dumps({"exercises": exercises}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    total_lessons = sum(len(module["lessons"]) for track in course_map["tracks"] for module in track["modules"])
+    print(f"tracks={len(course_map['tracks'])}")
+    print(f"lessons={total_lessons}")
+    print(f"exercises={len(exercises)}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

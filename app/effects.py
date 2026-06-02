@@ -30,4 +30,4 @@ def fade_in(widget: QWidget, duration: int = 300) -> None:
     animation.setEasingCurve(QEasingCurve.InOutQuad)
     animation.start()
     widget._fade_animation = animation
-    animation.finished.connect(lambda: setattr(widget, '_fade_animation', None))
+    animation.finished.connect(lambda: setattr(widget, "_fade_animation", None))

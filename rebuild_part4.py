@@ -1,22 +1,18 @@
-# -*- coding: utf-8 -*-
 """Rebuild Database, Algorithms, Integration tracks."""
 
-import json, os
+import json
+import os
 
 BASE = r"D:\codelearnhleper\content"
 
 
 def load():
-    with open(
-        os.path.join(BASE, "metadata", "course_map.json"), "r", encoding="utf-8"
-    ) as f:
+    with open(os.path.join(BASE, "metadata", "course_map.json"), encoding="utf-8") as f:
         return json.load(f)
 
 
 def save(data):
-    with open(
-        os.path.join(BASE, "metadata", "course_map.json"), "w", encoding="utf-8"
-    ) as f:
+    with open(os.path.join(BASE, "metadata", "course_map.json"), "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 

@@ -179,9 +179,7 @@ class ProjectsWidget(QWidget):
             """
         )
 
-    def _make_project_card(
-        self, module_title: str, title: str, summary: str, minutes: int
-    ) -> QFrame:
+    def _make_project_card(self, module_title: str, title: str, summary: str, minutes: int) -> QFrame:
         stripe, category = self._project_category_theme(module_title)
         card = QFrame()
         self._apply_project_card_style(card, False, stripe)
@@ -221,9 +219,7 @@ class ProjectsWidget(QWidget):
         layout.addWidget(summary_label)
         return card
 
-    def _add_project_item(
-        self, module_title: str, lesson_id: str, title: str, summary: str, minutes: int
-    ) -> None:
+    def _add_project_item(self, module_title: str, lesson_id: str, title: str, summary: str, minutes: int) -> None:
         item = QListWidgetItem()
         item.setData(Qt.UserRole, lesson_id)
         stripe, _category = self._project_category_theme(module_title)

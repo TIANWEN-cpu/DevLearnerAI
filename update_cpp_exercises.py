@@ -1,7 +1,7 @@
 import json
 
 path = r"D:\codelearnhleper\content\metadata\exercises.json"
-with open(path, "r", encoding="utf-8") as f:
+with open(path, encoding="utf-8") as f:
     data = json.load(f)
 
 # Remove old C++ exercises

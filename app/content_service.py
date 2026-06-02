@@ -2,7 +2,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from app.config import CONTENT_DIR, METADATA_DIR
 
@@ -23,7 +23,7 @@ def _clean_text(value: str, fallback: str) -> str:
     return fallback if _looks_corrupt(text) else text
 
 
-def _clean_list(values: List[str], fallback: Optional[List[str]] = None) -> List[str]:
+def _clean_list(values: list[str], fallback: Optional[list[str]] = None) -> list[str]:
     fallback = fallback or []
     if not isinstance(values, list):
         return fallback
@@ -40,9 +40,9 @@ class Lesson:
     path: str
     difficulty: str
     estimated_minutes: int
-    tags: List[str] = field(default_factory=list)
-    prerequisites: List[str] = field(default_factory=list)
-    outcomes: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
+    prerequisites: list[str] = field(default_factory=list)
+    outcomes: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -50,7 +50,7 @@ class Module:
     id: str
     title: str
     summary: str
-    lessons: List[Lesson] = field(default_factory=list)
+    lessons: list[Lesson] = field(default_factory=list)
 
     @property
     def key(self) -> str:
@@ -63,10 +63,10 @@ class Track:
     title: str
     icon: str
     summary: str
-    modules: List[Module] = field(default_factory=list)
+    modules: list[Module] = field(default_factory=list)
 
     @property
-    def lessons(self) -> List[Lesson]:
+    def lessons(self) -> list[Lesson]:
         return [lesson for module in self.modules for lesson in module.lessons]
 
 
@@ -76,7 +76,7 @@ class ContentService:
         self._cache: dict[str, Track] = {}
         self._tracks_index = self._discover_tracks()
 
-    def _discover_tracks(self) -> List[dict]:
+    def _discover_tracks(self) -> list[dict]:
         """Discover available tracks without loading lesson content."""
         try:
             raw = json.loads(self.metadata_path.read_text(encoding="utf-8"))
@@ -89,9 +89,9 @@ class ContentService:
         return raw.get("tracks", [])
 
     def _build_track(self, track_data: dict) -> Track:
-        modules: List[Module] = []
+        modules: list[Module] = []
         for module_data in track_data.get("modules", []):
-            lessons: List[Lesson] = []
+            lessons: list[Lesson] = []
             for lesson_data in module_data.get("lessons", []):
                 lesson_id = lesson_data.get("id", "lesson")
                 lessons.append(
@@ -145,7 +145,7 @@ class ContentService:
         return self._cache[track_id]
 
     @property
-    def tracks(self) -> List[Track]:
+    def tracks(self) -> list[Track]:
         return [self._load_track(td) for td in self._tracks_index]
 
     def track_by_id(self, track_id: str) -> Optional[Track]:
@@ -154,7 +154,7 @@ class ContentService:
                 return self._load_track(td)
         return None
 
-    def lesson_by_id(self, lesson_id: str) -> Optional[Tuple[Track, Module, Lesson]]:
+    def lesson_by_id(self, lesson_id: str) -> Optional[tuple[Track, Module, Lesson]]:
         for track in self.tracks:
             for module in track.modules:
                 for lesson in module.lessons:
@@ -173,8 +173,8 @@ class ContentService:
             logger.error("读取课程 Markdown 失败: %s - %s", path, exc)
             return f"# {lesson.title}\n\n加载文档时出现错误：{exc}"
 
-    def all_lessons(self) -> List[Tuple[Track, Module, Lesson]]:
-        rows: List[Tuple[Track, Module, Lesson]] = []
+    def all_lessons(self) -> list[tuple[Track, Module, Lesson]]:
+        rows: list[tuple[Track, Module, Lesson]] = []
         for track in self.tracks:
             for module in track.modules:
                 for lesson in module.lessons:

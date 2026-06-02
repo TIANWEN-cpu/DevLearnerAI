@@ -9,13 +9,13 @@ from ctypes import wintypes
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
-    QApplication,
     QAbstractItemView,
+    QApplication,
     QFrame,
     QHBoxLayout,
     QInputDialog,
@@ -28,7 +28,6 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
 
 APP_TITLE = "Codex 一键切号器"
 FONT_FAMILY = "Microsoft YaHei UI"
@@ -188,7 +187,7 @@ def now_text() -> str:
     return datetime.now().strftime(DATE_FORMAT)
 
 
-def decode_jwt_payload(token: str) -> Dict[str, str]:
+def decode_jwt_payload(token: str) -> dict[str, str]:
     parts = token.split(".")
     if len(parts) < 2:
         return {}
@@ -223,7 +222,7 @@ class ProfileStore:
         if not self.store_path.exists():
             self.save({"version": 1, "profiles": []})
 
-    def load(self) -> Dict[str, object]:
+    def load(self) -> dict[str, object]:
         try:
             with self.store_path.open("r", encoding="utf-8") as handle:
                 data = json.load(handle)
@@ -233,14 +232,14 @@ class ProfileStore:
             data["profiles"] = []
         return data
 
-    def save(self, data: Dict[str, object]) -> None:
+    def save(self, data: dict[str, object]) -> None:
         with self.store_path.open("w", encoding="utf-8") as handle:
             json.dump(data, handle, ensure_ascii=False, indent=2)
 
-    def profiles(self) -> List[Dict[str, object]]:
+    def profiles(self) -> list[dict[str, object]]:
         return self.load()["profiles"]
 
-    def upsert(self, profile: Dict[str, object]) -> None:
+    def upsert(self, profile: dict[str, object]) -> None:
         data = self.load()
         profiles = data["profiles"]
         for index, existing in enumerate(profiles):
@@ -254,12 +253,10 @@ class ProfileStore:
 
     def delete(self, profile_id: str) -> None:
         data = self.load()
-        data["profiles"] = [
-            profile for profile in data["profiles"] if profile.get("id") != profile_id
-        ]
+        data["profiles"] = [profile for profile in data["profiles"] if profile.get("id") != profile_id]
         self.save(data)
 
-    def find_by_account(self, account_id: str) -> Optional[Dict[str, object]]:
+    def find_by_account(self, account_id: str) -> Optional[dict[str, object]]:
         if not account_id:
             return None
         for profile in self.profiles():
@@ -267,7 +264,7 @@ class ProfileStore:
                 return profile
         return None
 
-    def by_id(self, profile_id: str) -> Optional[Dict[str, object]]:
+    def by_id(self, profile_id: str) -> Optional[dict[str, object]]:
         for profile in self.profiles():
             if profile.get("id") == profile_id:
                 return profile
@@ -294,7 +291,7 @@ class CodexAccountService:
             cap_sid_text=cap_sid_text,
         )
 
-    def build_profile_payload(self, alias: str, active: ActiveAccount) -> Dict[str, object]:
+    def build_profile_payload(self, alias: str, active: ActiveAccount) -> dict[str, object]:
         existing = self.store.find_by_account(active.account_id)
         profile_id = existing["id"] if existing else str(uuid.uuid4())
         created_at = existing.get("created_at", now_text()) if existing else now_text()
@@ -310,7 +307,7 @@ class CodexAccountService:
             "cap_sid_blob": protect_text(active.cap_sid_text),
         }
 
-    def save_current_as_profile(self, alias: str) -> Dict[str, object]:
+    def save_current_as_profile(self, alias: str) -> dict[str, object]:
         active = self.get_active_account()
         if not active:
             raise RuntimeError("没有检测到当前 Codex 登录信息，请先登录一个账号。")
@@ -331,7 +328,7 @@ class CodexAccountService:
         profile = self.build_profile_payload(alias, active)
         self.store.upsert(profile)
 
-    def restore_profile(self, profile_id: str) -> Dict[str, object]:
+    def restore_profile(self, profile_id: str) -> dict[str, object]:
         profile = self.store.by_id(profile_id)
         if not profile:
             raise RuntimeError("找不到选中的账号档案。")
@@ -342,7 +339,7 @@ class CodexAccountService:
         CAP_SID_PATH.write_text(cap_sid_text, encoding="utf-8")
         return profile
 
-    def list_profiles(self) -> List[Dict[str, object]]:
+    def list_profiles(self) -> list[dict[str, object]]:
         return self.store.profiles()
 
     def delete_profile(self, profile_id: str) -> None:
@@ -358,10 +355,7 @@ class CodexAccountService:
             )
 
     def locate_codex_app_id(self) -> Optional[str]:
-        script = (
-            "Get-StartApps | Where-Object { $_.Name -eq 'Codex' } | "
-            "Select-Object -First 1 -ExpandProperty AppID"
-        )
+        script = "Get-StartApps | Where-Object { $_.Name -eq 'Codex' } | Select-Object -First 1 -ExpandProperty AppID"
         result = subprocess.run(
             ["powershell", "-NoProfile", "-Command", script],
             capture_output=True,
@@ -388,9 +382,7 @@ class CodexAccountService:
 
         fallback_paths = [
             Path(os.getenv("LOCALAPPDATA", "")) / "Programs" / "Codex" / "Codex.exe",
-            Path(
-                r"C:\Program Files\WindowsApps\OpenAI.Codex_26.325.3894.0_x64__2p2nqsd0c76g0\app\Codex.exe"
-            ),
+            Path(r"C:\Program Files\WindowsApps\OpenAI.Codex_26.325.3894.0_x64__2p2nqsd0c76g0\app\Codex.exe"),
         ]
         for candidate in fallback_paths:
             if candidate.exists():
@@ -403,7 +395,7 @@ class CodexAccountService:
 
 
 class ProfileListItem(QListWidgetItem):
-    def __init__(self, profile: Dict[str, object]):
+    def __init__(self, profile: dict[str, object]):
         alias = str(profile.get("alias", "未命名账号"))
         email = str(profile.get("email", ""))
         updated_at = str(profile.get("updated_at", ""))
@@ -506,8 +498,7 @@ class CodexSwitcherWindow(QMainWindow):
         tip_box.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         tip_box.setWordWrap(True)
         tip_box.setStyleSheet(
-            "background:#f7fbff;border:1px solid rgba(32,86,151,0.10);"
-            "border-radius:16px;padding:16px;color:#4d6580;"
+            "background:#f7fbff;border:1px solid rgba(32,86,151,0.10);border-radius:16px;padding:16px;color:#4d6580;"
         )
         layout.addWidget(tip_box)
 
@@ -573,7 +564,7 @@ class CodexSwitcherWindow(QMainWindow):
             return None
         return item.data(Qt.UserRole)
 
-    def selected_profile(self) -> Optional[Dict[str, object]]:
+    def selected_profile(self) -> Optional[dict[str, object]]:
         profile_id = self.selected_profile_id()
         if not profile_id:
             return None

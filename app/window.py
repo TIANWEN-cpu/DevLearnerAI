@@ -88,18 +88,14 @@ class DevLearnerWindow(QMainWindow):
 
         self.ai_dock = AIMentorDock(self.db, self.content_service, self)
         self.ai_dock.setMinimumWidth(420)
-        self.ai_dock.setFeatures(
-            AIMentorDock.DockWidgetClosable | AIMentorDock.DockWidgetMovable
-        )
+        self.ai_dock.setFeatures(AIMentorDock.DockWidgetClosable | AIMentorDock.DockWidgetMovable)
         self.addDockWidget(Qt.RightDockWidgetArea, self.ai_dock)
         self.ai_dock.hide()
         self.ai_dock.panel.request_open_page.connect(self.open_ai_workspace)
 
         self.status = QStatusBar()
         self.setStatusBar(self.status)
-        self.status.showMessage(
-            "v7.0 正在把原型收成正式产品：Ctrl+Enter 标记课程完成 | Ctrl+Shift+A 唤起 AI 提问"
-        )
+        self.status.showMessage("v7.0 正在把原型收成正式产品：Ctrl+Enter 标记课程完成 | Ctrl+Shift+A 唤起 AI 提问")
 
         ask_action = QAction("向 AI 提问", self)
         ask_action.setShortcut(QKeySequence("Ctrl+Shift+A"))
@@ -140,9 +136,7 @@ class DevLearnerWindow(QMainWindow):
         top_row = QHBoxLayout()
         top_row.setSpacing(8)
         self.sidebar_title = QLabel("LEARNING OS")
-        self.sidebar_title.setStyleSheet(
-            "color: #2563eb; font-size: 18px; font-weight: 700; letter-spacing: 1px;"
-        )
+        self.sidebar_title.setStyleSheet("color: #2563eb; font-size: 18px; font-weight: 700; letter-spacing: 1px;")
         top_row.addWidget(self.sidebar_title)
         top_row.addStretch()
         self.sidebar_toggle_btn = QPushButton("◀")
@@ -177,9 +171,7 @@ class DevLearnerWindow(QMainWindow):
         layout.addWidget(self.brand_card)
 
         self.section = QLabel("导航")
-        self.section.setStyleSheet(
-            "color: #8b98ab; font-size: 18px; font-weight: 600; padding: 6px 10px;"
-        )
+        self.section.setStyleSheet("color: #8b98ab; font-size: 18px; font-weight: 600; padding: 6px 10px;")
         layout.addWidget(self.section)
 
         nav_icons = ["首", "路", "练", "项", "算"]
@@ -300,9 +292,7 @@ class DevLearnerWindow(QMainWindow):
 
     def _apply_sidebar_state(self) -> None:
         expanded = self.sidebar_expanded
-        self.sidebar.setFixedWidth(
-            self.SIDEBAR_EXPANDED_WIDTH if expanded else self.SIDEBAR_COLLAPSED_WIDTH
-        )
+        self.sidebar.setFixedWidth(self.SIDEBAR_EXPANDED_WIDTH if expanded else self.SIDEBAR_COLLAPSED_WIDTH)
         self.sidebar_title.setVisible(expanded)
         self.brand_card.setVisible(expanded)
         self.brand_sub.setVisible(expanded)

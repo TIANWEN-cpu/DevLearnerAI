@@ -40,8 +40,6 @@ from app.localized_inputs import (
     LocalizedTextEdit,
 )
 from app.styles import (
-    ACCENT,
-    ACCENT_SOFT,
     BG_CARD,
     BG_CARD_SOFT,
     BORDER,
@@ -56,21 +54,40 @@ except Exception:  # pragma: no cover
 
 
 def _card_style(radius: int = 20) -> str:
-    return (
-        "QFrame {"
-        f"background: {BG_CARD};"
-        f"border: 1px solid {BORDER};"
-        f"border-radius: {radius}px;"
-        "}"
-    )
+    return f"QFrame {{background: {BG_CARD};border: 1px solid {BORDER};border-radius: {radius}px;}}"
 
 
-_ALLOWED_TAGS = frozenset({
-    "p", "br", "h1", "h2", "h3", "h4", "h5", "h6",
-    "ul", "ol", "li", "code", "pre", "strong", "em", "b", "i",
-    "a", "blockquote", "table", "tr", "td", "th", "thead", "tbody",
-    "hr", "span",
-})
+_ALLOWED_TAGS = frozenset(
+    {
+        "p",
+        "br",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "ul",
+        "ol",
+        "li",
+        "code",
+        "pre",
+        "strong",
+        "em",
+        "b",
+        "i",
+        "a",
+        "blockquote",
+        "table",
+        "tr",
+        "td",
+        "th",
+        "thead",
+        "tbody",
+        "hr",
+        "span",
+    }
+)
 
 _STRIP_TAGS = frozenset({"script", "style", "iframe", "object", "embed"})
 
@@ -279,9 +296,7 @@ class AIMentorPanel(QWidget):
         self.settings_btn.clicked.connect(self._open_settings_dialog)
         top_bar.addWidget(self.settings_btn)
 
-        self.mode_btn = QPushButton(
-            "打开侧边助手" if self.mode == "page" else "展开为独立页面"
-        )
+        self.mode_btn = QPushButton("打开侧边助手" if self.mode == "page" else "展开为独立页面")
         self.mode_btn.setProperty("variant", "secondary")
         self.mode_btn.clicked.connect(self._toggle_mode)
         top_bar.addWidget(self.mode_btn)
@@ -670,9 +685,7 @@ class AIMentorPanel(QWidget):
     def _clean_legacy_message(content: str) -> str:
         text = (content or "").strip()
         compact = "".join(ch for ch in text if not ch.isspace())
-        if compact.count("?") >= max(4, int(len(compact) * 0.3)) and not any(
-            "\u4e00" <= ch <= "\u9fff" for ch in text
-        ):
+        if compact.count("?") >= max(4, int(len(compact) * 0.3)) and not any("\u4e00" <= ch <= "\u9fff" for ch in text):
             return "这条旧消息因早期编码问题已自动清理。你可以重新描述一次，我会继续帮你。"
         return text
 
@@ -712,9 +725,7 @@ class AIMentorPanel(QWidget):
                 preview = snapshot["preview"]
                 item = QListWidgetItem(f"{name}\n{preview}")
                 item.setData(Qt.UserRole, session_id)
-                item.setToolTip(
-                    f"{preview}\n消息数：{snapshot['message_count']} · 最近更新：{updated_at}"
-                )
+                item.setToolTip(f"{preview}\n消息数：{snapshot['message_count']} · 最近更新：{updated_at}")
                 item.setSizeHint(QSize(0, 74))
                 self.session_list.addItem(item)
                 if session_id == active_id:
@@ -859,9 +870,7 @@ class AIMentorPanel(QWidget):
     def _require_https(host: str) -> None:
         """Raise ValueError if the host does not use HTTPS."""
         if not host.lower().startswith("https://"):
-            raise ValueError(
-                "出于安全考虑，仅允许 HTTPS 连接。请将 API Host 改为 https:// 开头的地址。"
-            )
+            raise ValueError("出于安全考虑，仅允许 HTTPS 连接。请将 API Host 改为 https:// 开头的地址。")
 
     @staticmethod
     def _create_ssl_context() -> ssl.SSLContext:
@@ -880,7 +889,7 @@ class AIMentorPanel(QWidget):
                 message = f"连接成功，状态码 {response.status}。"
         except ValueError as exc:
             message = str(exc)
-        except Exception as exc:
+        except Exception:
             message = "连接失败，请检查 Host 地址和网络连接。"
         self.status_ready.emit(message)
 
@@ -1057,9 +1066,7 @@ class AIMentorPanel(QWidget):
         if recent_attempts:
             lines.append("- 最近练习记录：")
             for title, score, passed, submitted_at in recent_attempts[:5]:
-                lines.append(
-                    f"  - {title}: 分数 {score}，{'通过' if passed else '未通过'}，时间 {submitted_at}"
-                )
+                lines.append(f"  - {title}: 分数 {score}，{'通过' if passed else '未通过'}，时间 {submitted_at}")
 
         progress_rows = self.db.fetchall(
             """

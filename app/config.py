@@ -2,7 +2,6 @@ import os
 import sys
 from pathlib import Path
 
-
 APP_NAME = "DevLearnerAI"
 APP_VERSION = "7.0"
 BASE_DIR = Path(__file__).resolve().parent.parent

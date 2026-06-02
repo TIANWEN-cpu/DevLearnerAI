@@ -9,19 +9,21 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QListWidget,
     QListWidgetItem,
+    QMessageBox,
     QPushButton,
     QSplitter,
     QVBoxLayout,
     QWidget,
-    QLineEdit,
-    QMessageBox,
 )
 
 from app.content_service import ContentService
 from app.database import AppDatabase
 from app.effects import optimize_scroll_widget
+from app.highlighter import CLikeHighlighter, PythonHighlighter, SqlHighlighter
+from app.localized_inputs import LocalizedCodeEditor, LocalizedTextEdit
 from app.practice_service import PracticeService
 from app.python_runner import run_python_code
 from app.styles import (
@@ -39,8 +41,6 @@ from app.styles import (
     TEXT_MUTED,
     TEXT_SUB,
 )
-from app.localized_inputs import LocalizedCodeEditor, LocalizedTextEdit
-from app.highlighter import CLikeHighlighter, PythonHighlighter, SqlHighlighter
 
 
 class PracticeWidget(QWidget):
@@ -204,9 +204,7 @@ class PracticeWidget(QWidget):
         filter_layout.addLayout(row)
 
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText(
-            "\u641c\u7d22\u9898\u76ee\u540d\u79f0\u6216\u63cf\u8ff0..."
-        )
+        self.search_input.setPlaceholderText("\u641c\u7d22\u9898\u76ee\u540d\u79f0\u6216\u63cf\u8ff0...")
         self.search_input.setStyleSheet(
             f"QLineEdit {{ background: {BG_CARD}; border: 1px solid {BORDER}; border-radius: 12px; padding: 8px 14px; color: {TEXT_MAIN}; font-size: 13px; }}"
         )
@@ -296,9 +294,7 @@ class PracticeWidget(QWidget):
         self.run_btn.setProperty("variant", "secondary")
         self.reset_btn = QPushButton("\u91cd\u7f6e\u4ee3\u7801")
         self.reset_btn.setProperty("variant", "secondary")
-        self.reset_btn.setToolTip(
-            "\u6062\u590d\u5230\u9898\u76ee\u521d\u59cb\u4ee3\u7801"
-        )
+        self.reset_btn.setToolTip("\u6062\u590d\u5230\u9898\u76ee\u521d\u59cb\u4ee3\u7801")
         self.reset_btn.clicked.connect(self._reset_code)
         self.check_btn = QPushButton("\u63d0\u4ea4\u5e76\u5224\u9898")
         self.check_btn.setMinimumWidth(180)
@@ -358,26 +354,17 @@ class PracticeWidget(QWidget):
     def refresh_exercises(self) -> None:
         track_id = self.track_combo.currentData()
         difficulty = self.diff_combo.currentData()
-        search_text = (
-            self.search_input.text().strip().lower()
-            if hasattr(self, "search_input")
-            else ""
-        )
+        search_text = self.search_input.text().strip().lower() if hasattr(self, "search_input") else ""
         self._refresh_topic_combo(track_id)
         topic_id = self.topic_combo.currentData()
         exercises = self.practice_service.filtered(track_id, difficulty)
         if topic_id and topic_id != "all":
-            exercises = [
-                exercise
-                for exercise in exercises
-                if self._exercise_topic_key(exercise) == topic_id
-            ]
+            exercises = [exercise for exercise in exercises if self._exercise_topic_key(exercise) == topic_id]
         if search_text:
             exercises = [
                 exercise
                 for exercise in exercises
-                if search_text in exercise.title.lower()
-                or search_text in exercise.prompt.lower()
+                if search_text in exercise.title.lower() or search_text in exercise.prompt.lower()
             ]
         self.exercise_count.setText(f"当前筛选下共有 {len(exercises)} 道练习。")
         self.exercise_list.clear()
@@ -449,9 +436,7 @@ class PracticeWidget(QWidget):
             "algorithms": ("#84cc16", "#f7f9fc", "#f1f5f9", "rgba(15,23,42,0.08)"),
             "integration": ("#fb7185", "#f7f9fc", "#f1f5f9", "rgba(15,23,42,0.08)"),
         }
-        return themes.get(
-            track_id, ("#94a3b8", "#f7f9fc", "#f1f5f9", "rgba(15,23,42,0.08)")
-        )
+        return themes.get(track_id, ("#94a3b8", "#f7f9fc", "#f1f5f9", "rgba(15,23,42,0.08)"))
 
     def _make_exercise_card(self, exercise) -> QFrame:
         topic_title = self._exercise_topic_title(exercise)
@@ -568,9 +553,7 @@ class PracticeWidget(QWidget):
             bg = item.data(Qt.UserRole + 11) or "#f7f9fc"
             selected_bg = item.data(Qt.UserRole + 12) or "#eef2f6"
             border = item.data(Qt.UserRole + 13) or "rgba(15,23,42,0.08)"
-            self._apply_exercise_card_style(
-                card, item is current_item, stripe, bg, border, selected_bg
-            )
+            self._apply_exercise_card_style(card, item is current_item, stripe, bg, border, selected_bg)
 
     def load_exercise(self, _row: int) -> None:
         item = self.exercise_list.currentItem()
@@ -595,8 +578,7 @@ class PracticeWidget(QWidget):
         lesson_title = lesson_info[2].title if lesson_info else "未绑定课程"
         self.lesson_link.setText(f"关联课程：{lesson_title}")
         self.guide_label.setText(
-            f"路线：{exercise.track_id}  |  难度：{exercise.difficulty}\n"
-            "建议先自己完整做一遍，再查看提示和反馈。"
+            f"路线：{exercise.track_id}  |  难度：{exercise.difficulty}\n建议先自己完整做一遍，再查看提示和反馈。"
         )
         if draft and draft[1]:
             self.draft_status.setText("已恢复上次草稿，继续写就行。")
@@ -633,19 +615,13 @@ class PracticeWidget(QWidget):
         if reply != QMessageBox.Yes:
             return
         self.editor.setPlainText(self.current_exercise.starter_code)
-        self.draft_status.setText(
-            "\u4ee3\u7801\u5df2\u91cd\u7f6e\u4e3a\u521d\u59cb\u72b6\u6001\u3002"
-        )
+        self.draft_status.setText("\u4ee3\u7801\u5df2\u91cd\u7f6e\u4e3a\u521d\u59cb\u72b6\u6001\u3002")
 
     def show_hint(self) -> None:
         if not self.current_exercise:
             return
-        hints = self.current_exercise.hints or [
-            "这道题没有额外提示，先把输入输出和边界情况想清楚。"
-        ]
-        self.feedback_box.setPlainText(
-            "提示：\n" + "\n".join(f"- {item}" for item in hints)
-        )
+        hints = self.current_exercise.hints or ["这道题没有额外提示，先把输入输出和边界情况想清楚。"]
+        self.feedback_box.setPlainText("提示：\n" + "\n".join(f"- {item}" for item in hints))
 
     def _schedule_draft_save(self) -> None:
         if self._loading_exercise or not self.current_exercise:
@@ -670,17 +646,13 @@ class PracticeWidget(QWidget):
         self.run_btn.setEnabled(not busy)
         self.check_btn.setEnabled(not busy)
         self.run_btn.setText("运行中..." if busy and mode == "run" else "运行代码")
-        self.check_btn.setText(
-            "判题中..." if busy and mode == "evaluate" else "提交并判题"
-        )
+        self.check_btn.setText("判题中..." if busy and mode == "evaluate" else "提交并判题")
 
     def run_code(self) -> None:
         if not self.current_exercise:
             return
         if self.current_exercise.track_id in {"database", "c", "csharp"}:
-            self.output_box.setPlainText(
-                "这类题当前不在应用内直接运行，先提交判题即可。"
-            )
+            self.output_box.setPlainText("这类题当前不在应用内直接运行，先提交判题即可。")
             return
 
         self._save_current_draft()
@@ -689,9 +661,7 @@ class PracticeWidget(QWidget):
         self.output_box.setPlainText(
             "\u6b63\u5728\u9694\u79bb\u73af\u5883\u4e2d\u8fd0\u884c\u4ee3\u7801\uff0c\u8bf7\u7b49\u5019..."
         )
-        self._run_thread = threading.Thread(
-            target=self._run_code_worker, args=(code,), daemon=True
-        )
+        self._run_thread = threading.Thread(target=self._run_code_worker, args=(code,), daemon=True)
         self._run_thread.start()
         self._run_timeout_timer = QTimer(self)
         self._run_timeout_timer.setSingleShot(True)
@@ -755,9 +725,7 @@ class PracticeWidget(QWidget):
     def _evaluate_worker(self, exercise, code: str, started_at: float) -> None:
         result = self.practice_service.evaluate(exercise, code)
         elapsed = int(time.time() - started_at)
-        self.evaluation_ready.emit(
-            (exercise.id, exercise.title, exercise.track_id, code, result, elapsed)
-        )
+        self.evaluation_ready.emit((exercise.id, exercise.title, exercise.track_id, code, result, elapsed))
 
     def _handle_evaluation_ready(self, payload) -> None:
         exercise_id, exercise_title, track_id, code_snapshot, result, elapsed = payload

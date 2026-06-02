@@ -10,7 +10,6 @@ import time
 from contextlib import redirect_stdout
 from pathlib import Path
 
-
 ALLOWED_IMPORTS = {
     "argparse",
     "collections",
@@ -28,43 +27,137 @@ ALLOWED_IMPORTS = {
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
-_DANGEROUS_ATTRS = frozenset({
-    "__class__", "__bases__", "__subclasses__", "__mro__",
-    "__builtins__", "__globals__", "__code__", "__import__",
-    "__loader__", "__spec__", "__file__", "__name__",
-    "__self__", "__func__", "__qualname__", "__module__",
-    "__init_subclass__", "__set_name__", "__new__", "__init__",
-    "__del__", "__repr__", "__str__", "__bytes__",
-    "__format__", "__lt__", "__le__", "__eq__", "__ne__",
-    "__gt__", "__ge__", "__hash__", "__bool__",
-    "__getattr__", "__setattr__", "__delattr__", "__dir__",
-    "__get__", "__set__", "__delete__", "__init_subclass__",
-    "__class_getitem__", "__instancecheck__", "__subclasscheck__",
-    "__call__", "__len__", "__getitem__", "__setitem__",
-    "__delitem__", "__iter__", "__next__", "__contains__",
-    "__abs__", "__neg__", "__pos__", "__invert__",
-    "__add__", "__sub__", "__mul__", "__truediv__",
-    "__floordiv__", "__mod__", "__pow__", "__lshift__",
-    "__rshift__", "__and__", "__or__", "__xor__",
-    "__radd__", "__rsub__", "__rmul__", "__rtruediv__",
-    "__rfloordiv__", "__rmod__", "__rpow__", "__rlshift__",
-    "__rrshift__", "__rand__", "__ror__", "__rxor__",
-    "__iadd__", "__isub__", "__imul__", "__itruediv__",
-    "__ifloordiv__", "__imod__", "__ipow__", "__ilshift__",
-    "__irshift__", "__iand__", "__ior__", "__ixor__",
-    "__int__", "__float__", "__complex__", "__round__",
-    "__trunc__", "__floor__", "__ceil__",
-    "__enter__", "__exit__", "__await__", "__aiter__",
-    "__anext__", "__aenter__", "__aexit__",
-})
+_DANGEROUS_ATTRS = frozenset(
+    {
+        "__class__",
+        "__bases__",
+        "__subclasses__",
+        "__mro__",
+        "__builtins__",
+        "__globals__",
+        "__code__",
+        "__import__",
+        "__loader__",
+        "__spec__",
+        "__file__",
+        "__name__",
+        "__self__",
+        "__func__",
+        "__qualname__",
+        "__module__",
+        "__init_subclass__",
+        "__set_name__",
+        "__new__",
+        "__init__",
+        "__del__",
+        "__repr__",
+        "__str__",
+        "__bytes__",
+        "__format__",
+        "__lt__",
+        "__le__",
+        "__eq__",
+        "__ne__",
+        "__gt__",
+        "__ge__",
+        "__hash__",
+        "__bool__",
+        "__getattr__",
+        "__setattr__",
+        "__delattr__",
+        "__dir__",
+        "__get__",
+        "__set__",
+        "__delete__",
+        "__class_getitem__",
+        "__instancecheck__",
+        "__subclasscheck__",
+        "__call__",
+        "__len__",
+        "__getitem__",
+        "__setitem__",
+        "__delitem__",
+        "__iter__",
+        "__next__",
+        "__contains__",
+        "__abs__",
+        "__neg__",
+        "__pos__",
+        "__invert__",
+        "__add__",
+        "__sub__",
+        "__mul__",
+        "__truediv__",
+        "__floordiv__",
+        "__mod__",
+        "__pow__",
+        "__lshift__",
+        "__rshift__",
+        "__and__",
+        "__or__",
+        "__xor__",
+        "__radd__",
+        "__rsub__",
+        "__rmul__",
+        "__rtruediv__",
+        "__rfloordiv__",
+        "__rmod__",
+        "__rpow__",
+        "__rlshift__",
+        "__rrshift__",
+        "__rand__",
+        "__ror__",
+        "__rxor__",
+        "__iadd__",
+        "__isub__",
+        "__imul__",
+        "__itruediv__",
+        "__ifloordiv__",
+        "__imod__",
+        "__ipow__",
+        "__ilshift__",
+        "__irshift__",
+        "__iand__",
+        "__ior__",
+        "__ixor__",
+        "__int__",
+        "__float__",
+        "__complex__",
+        "__round__",
+        "__trunc__",
+        "__floor__",
+        "__ceil__",
+        "__enter__",
+        "__exit__",
+        "__await__",
+        "__aiter__",
+        "__anext__",
+        "__aenter__",
+        "__aexit__",
+    }
+)
 
-_DANGEROUS_BUILTINS_CALLS = frozenset({
-    "eval", "exec", "compile", "breakpoint",
-    "getattr", "hasattr", "delattr", "setattr",
-    "type", "object", "super",
-    "dir", "vars", "globals", "locals",
-    "memoryview", "bytearray",
-})
+_DANGEROUS_BUILTINS_CALLS = frozenset(
+    {
+        "eval",
+        "exec",
+        "compile",
+        "breakpoint",
+        "getattr",
+        "hasattr",
+        "delattr",
+        "setattr",
+        "type",
+        "object",
+        "super",
+        "dir",
+        "vars",
+        "globals",
+        "locals",
+        "memoryview",
+        "bytearray",
+    }
+)
 
 
 def _validate_code_safety(code_str: str):
@@ -73,30 +166,26 @@ def _validate_code_safety(code_str: str):
     for node in ast.walk(tree):
         # Block access to dangerous dunder attributes
         if isinstance(node, ast.Attribute) and node.attr in _DANGEROUS_ATTRS:
-            raise SyntaxError(
-                f"安全限制: 不允许访问属性 {node.attr}（第 {node.lineno} 行）"
-            )
+            raise SyntaxError(f"安全限制: 不允许访问属性 {node.attr}（第 {node.lineno} 行）")
         # Block import statements
         if isinstance(node, (ast.Import, ast.ImportFrom)):
-            raise SyntaxError(
-                f"安全限制: 不允许使用 import 语句（第 {node.lineno} 行），请使用内置函数。"
-            )
+            raise SyntaxError(f"安全限制: 不允许使用 import 语句（第 {node.lineno} 行），请使用内置函数。")
         # Block dangerous function calls
         if isinstance(node, ast.Call):
             func = node.func
             # Direct calls: eval(), exec(), type(), getattr(), etc.
             if isinstance(func, ast.Name) and func.id in _DANGEROUS_BUILTINS_CALLS:
-                raise SyntaxError(
-                    f"安全限制: 不允许调用 {func.id}()（第 {node.lineno} 行）。"
-                )
+                raise SyntaxError(f"安全限制: 不允许调用 {func.id}()（第 {node.lineno} 行）。")
             # Method calls on dangerous dunder attributes
             if isinstance(func, ast.Attribute) and func.attr in (
-                "__subclasses__", "__bases__", "__mro__",
-                "__globals__", "__code__", "__class__",
+                "__subclasses__",
+                "__bases__",
+                "__mro__",
+                "__globals__",
+                "__code__",
+                "__class__",
             ):
-                raise SyntaxError(
-                    f"安全限制: 不允许调用 {func.attr}()（第 {node.lineno} 行）。"
-                )
+                raise SyntaxError(f"安全限制: 不允许调用 {func.attr}()（第 {node.lineno} 行）。")
             # Block getattr/hasattr with dangerous dunder string args
             if isinstance(func, ast.Name) and func.id in ("getattr", "hasattr"):
                 if len(node.args) >= 2:
@@ -111,10 +200,7 @@ def _validate_code_safety(code_str: str):
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
             val = node.value
             if "__builtins__" in val or "__import__" in val:
-                raise SyntaxError(
-                    f"安全限制: 不允许使用包含敏感双下划线属性的字符串"
-                    f"（第 {node.lineno} 行）。"
-                )
+                raise SyntaxError(f"安全限制: 不允许使用包含敏感双下划线属性的字符串（第 {node.lineno} 行）。")
 
 
 SAFE_BUILTINS = {
@@ -305,18 +391,13 @@ def _evaluate_code_impl(code: str, expected_nodes, required_names, tests):
             test_passed += 1
             feedback.append(f"测试通过: {test['expression']} == {expected!r}")
         else:
-            feedback.append(
-                f"测试未通过: {test['expression']} 得到 {actual!r}，预期 {expected!r}"
-            )
+            feedback.append(f"测试未通过: {test['expression']} 得到 {actual!r}，预期 {expected!r}")
 
     if tests:
         score += int(40 * test_passed / len(tests))
 
     return {
-        "passed": score >= 70
-        and test_passed == len(tests)
-        and not missing_nodes
-        and not missing_names,
+        "passed": score >= 70 and test_passed == len(tests) and not missing_nodes and not missing_names,
         "score": min(score, 100),
         "feedback_lines": feedback,
         "stdout": stdout,
@@ -346,9 +427,7 @@ def _run_via_subprocess(mode: str, args, timeout_sec: int):
     payload = {"mode": mode, "args": args}
     with tempfile.TemporaryDirectory(prefix="devlearner-runner-") as temp_dir:
         payload_path = Path(temp_dir) / "payload.json"
-        payload_path.write_text(
-            json.dumps(payload, ensure_ascii=False), encoding="utf-8"
-        )
+        payload_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 
         is_frozen = getattr(sys, "frozen", False)
         if is_frozen:
@@ -425,9 +504,7 @@ def run_python_code(code: str, timeout_sec: int = 3):
     return _run_with_timeout(_run_exec_worker, "run", (code,), timeout_sec)
 
 
-def evaluate_python_code(
-    code: str, expected_nodes, required_names, tests, timeout_sec: int = 4
-):
+def evaluate_python_code(code: str, expected_nodes, required_names, tests, timeout_sec: int = 4):
     return _run_with_timeout(
         _evaluate_worker,
         "evaluate",

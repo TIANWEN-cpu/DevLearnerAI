@@ -9,7 +9,6 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-
 _ACTION_TEXT_MAP = {
     "undo": "撤销",
     "redo": "重做",

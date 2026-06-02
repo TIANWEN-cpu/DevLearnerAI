@@ -112,9 +112,7 @@ class DashboardWidget(QWidget):
                 """
             )
             btn.setCursor(Qt.PointingHandCursor)
-            btn.clicked.connect(
-                lambda checked=False, tid=track.id: self.track_requested.emit(tid)
-            )
+            btn.clicked.connect(lambda checked=False, tid=track.id: self.track_requested.emit(tid))
             layout.addWidget(btn)
             self.track_buttons.append(btn)
 
@@ -140,9 +138,7 @@ class DashboardWidget(QWidget):
         for label, page_index in actions:
             btn = QPushButton(label)
             btn.setCursor(Qt.PointingHandCursor)
-            btn.clicked.connect(
-                lambda checked=False, i=page_index: self.navigate_requested.emit(i)
-            )
+            btn.clicked.connect(lambda checked=False, i=page_index: self.navigate_requested.emit(i))
             layout.addWidget(btn)
 
         return card
@@ -201,11 +197,8 @@ class DashboardWidget(QWidget):
         self._update_stat(self.stat_streak, streak)
 
         if completed == 0:
-            self.welcome_sub.setText(
-                "还没有开始学习，选一条路线开始吧！"
-            )
+            self.welcome_sub.setText("还没有开始学习，选一条路线开始吧！")
         else:
             self.welcome_sub.setText(
-                f"你已完成 {completed}/{total} 节课程，平均分 {avg_score}，"
-                f"连续学习 {streak} 天。继续加油！"
+                f"你已完成 {completed}/{total} 节课程，平均分 {avg_score}，连续学习 {streak} 天。继续加油！"
             )

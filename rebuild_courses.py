@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Rebuild all course content based on the comprehensive learning roadmap document.
 Covers Python, C, C++, C#, Database, Algorithms, and Integration tracks.
@@ -12,16 +11,12 @@ BASE = str(Path(__file__).resolve().parent / "content")
 
 
 def load_map():
-    with open(
-        os.path.join(BASE, "metadata", "course_map.json"), "r", encoding="utf-8"
-    ) as f:
+    with open(os.path.join(BASE, "metadata", "course_map.json"), encoding="utf-8") as f:
         return json.load(f)
 
 
 def save_map(data):
-    with open(
-        os.path.join(BASE, "metadata", "course_map.json"), "w", encoding="utf-8"
-    ) as f:
+    with open(os.path.join(BASE, "metadata", "course_map.json"), "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 

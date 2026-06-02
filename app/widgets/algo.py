@@ -11,7 +11,6 @@ from PyQt5.QtWidgets import (
     QLabel,
     QPushButton,
     QSpinBox,
-    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
@@ -61,9 +60,7 @@ class AlgoVisualizerWidget(QWidget):
         hero_layout = QVBoxLayout(hero)
         title = QLabel("算法动画")
         title.setFont(QFont(FONT, F_TITLE - 2, QFont.Bold))
-        subtitle = QLabel(
-            "把排序、查找这些基础算法拆成可视化步骤，先看懂过程，再回去写代码。"
-        )
+        subtitle = QLabel("把排序、查找这些基础算法拆成可视化步骤，先看懂过程，再回去写代码。")
         subtitle.setStyleSheet(f"color: {TEXT_SUB};")
         hero_layout.addWidget(title)
         hero_layout.addWidget(subtitle)
@@ -111,16 +108,12 @@ class AlgoVisualizerWidget(QWidget):
         layout.addLayout(controls)
 
         card = QFrame()
-        card.setStyleSheet(
-            f"QFrame {{ background: {BG_CARD}; border: 1px solid {BORDER}; border-radius: 24px; }}"
-        )
+        card.setStyleSheet(f"QFrame {{ background: {BG_CARD}; border: 1px solid {BORDER}; border-radius: 24px; }}")
         apply_shadow(card, blur=18, offset_y=4)
         card_layout = QVBoxLayout(card)
         self.view = QGraphicsView(self.scene)
         self.view.setMinimumHeight(420)
-        self.view.setStyleSheet(
-            f"background: {BG_CARD_SOFT}; border: 1px solid {BORDER}; border-radius: 18px;"
-        )
+        self.view.setStyleSheet(f"background: {BG_CARD_SOFT}; border: 1px solid {BORDER}; border-radius: 18px;")
         self.desc = LocalizedTextEdit()
         self.desc.setReadOnly(True)
         self.desc.setFixedHeight(120)
@@ -155,9 +148,7 @@ class AlgoVisualizerWidget(QWidget):
             color = QColor(ACCENT)
             if highlights and index in highlights:
                 color = QColor("#14b8a6")
-            self.scene.addRect(
-                index * (width + 6), 320 - height, width, height, brush=color
-            )
+            self.scene.addRect(index * (width + 6), 320 - height, width, height, brush=color)
             text = self.scene.addText(str(value))
             text.setDefaultTextColor(QColor(TEXT_MAIN))
             text.setPos(index * (width + 6), 326)

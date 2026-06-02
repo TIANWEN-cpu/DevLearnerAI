@@ -7,6 +7,7 @@ secure backend.  Otherwise, a fallback stores the secret as base64 in a
 plain file at ~/.devlearnerai/api_key.txt -- this is NOT encrypted and
 should only be used when keyring is unavailable.
 """
+
 import base64
 import ctypes
 import logging
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import keyring as _keyring
+
     _HAS_KEYRING = True
 except ImportError:
     _HAS_KEYRING = False
@@ -99,9 +101,7 @@ def save_secret(target: str, secret: str, username: str = "DevLearnerAI") -> Non
         )
         fallback_path = Path.home() / ".devlearnerai" / "api_key.txt"
         fallback_path.parent.mkdir(parents=True, exist_ok=True)
-        fallback_path.write_text(
-            base64.b64encode(secret.encode("utf-8")).decode("ascii"), encoding="utf-8"
-        )
+        fallback_path.write_text(base64.b64encode(secret.encode("utf-8")).decode("ascii"), encoding="utf-8")
         return
 
     blob = secret.encode("utf-16-le")
@@ -142,9 +142,7 @@ def load_secret(target: str) -> Optional[str]:
         raise OSError(error, f"Failed to read secret for {target}")
 
     try:
-        blob = ctypes.string_at(
-            credential.contents.CredentialBlob, credential.contents.CredentialBlobSize
-        )
+        blob = ctypes.string_at(credential.contents.CredentialBlob, credential.contents.CredentialBlobSize)
         return blob.decode("utf-16-le")
     finally:
         CredFree(credential)
