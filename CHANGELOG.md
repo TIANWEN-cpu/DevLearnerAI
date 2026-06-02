@@ -4,15 +4,19 @@
 
 ---
 
-## [Unreleased] -- Sprint 11+ 后续迭代
+## [Unreleased] -- Sprint 11~15 后续迭代
 
-v1.1.0 发布后的持续改进，聚焦 UX 改善、数据层安全、AI 功能增强和发布准备。
+v1.1.0 发布后的持续改进，聚焦 AI 功能增强、数据分析、测试质量提升和代码清理。
 
 ### 新功能
 
 - **Onboarding Store** -- 新用户引导状态管理，记录引导完成状态 (Sprint 11)
 - **代码执行安全沙箱** -- 隔离执行环境，防止代码逃逸 (Sprint 11)
 - **性能监控** -- 慢操作追踪、IPC 通信跟踪、启动耗时插桩 (Sprint 5)
+- **AI 代码分析** -- chat_handler 新增代码分析方法，练习组件集成"分析代码"按钮，学习组件集成"解释"按钮 (Sprint 13)
+- **知识引擎** -- 知识图谱可视化 (KnowledgeGraph)、自动标签 (AutoTagger)、RAG 上下文服务 (Sprint 13)
+- **分析仪表板** -- 分析数据收集器 (AnalyticsCollector)、分析视图组件、数据库分析表 (Sprint 12/13)
+- **图表组件包** -- 折线图、柱状图、雷达图、热力图等可复用图表 widget (Sprint 13)
 
 ### 改进
 
@@ -21,6 +25,20 @@ v1.1.0 发布后的持续改进，聚焦 UX 改善、数据层安全、AI 功能
 - **问题 Store 测试** -- problemStore.ts 单元测试编写 (进行中)
 - **SnippetManager** -- 代码片段 CRUD 组件完善 (进行中)
 - **demo 数据与 README 润色** -- 改善首次体验 (进行中)
+- **仪表板增强** -- 新增交互式图表、目标设定、数据导出功能 (Sprint 13)
+- **代码质量统一** -- 全量 Ruff format 统一代码格式，Ruff check --fix 修复 lint 问题 (Sprint 12)
+
+### Bug 修复
+
+- 修复 P0 质量问题：删除重复的 styles/highlighter.py 和 styles/ 目录 (Sprint 12)
+- 删除死代码：events.py、middleware.py、plugins.py、container.py、services/ (Sprint 12)
+- 修复 66 个缺少断言的测试用例 (Sprint 12)
+- 修复 AnalyticsCollector 缺失的数据库方法 (Sprint 12)
+- 修复 SQL 评测器未捕获 sqlite3.Warning 异常的问题 (Sprint 15)
+- 修复 AnalyticsCollector.get_skill_distribution 中的死 try/except (Sprint 15)
+- 移除不必要的 UTF-8 编码声明，添加 UP009 到 ruff 忽略规则 (Sprint 15)
+- 修复测试文件中缺失的导入 (sys, pytest) (Sprint 15)
+- 修复多进程 spawn 编码问题、重构仪表板分析、修复不稳定测试 (Sprint 15)
 
 ### 测试
 
@@ -28,6 +46,7 @@ v1.1.0 发布后的持续改进，聚焦 UX 改善、数据层安全、AI 功能
 - 新增 DB 测试: electron/db/index.ts
 - 新增集成测试: problemFlow / chatFlow / editorFlow / settingsFlow (4 个)
 - 新增性能监控测试
+- 修复 Sprint 15 测试质量：多进程 spawn 编码、仪表板分析重构、不稳定测试修复
 
 ### 工程改进
 
@@ -36,6 +55,7 @@ v1.1.0 发布后的持续改进，聚焦 UX 改善、数据层安全、AI 功能
 - Electron Fuses 安全熔丝
 - Vite 构建配置优化
 - scripts/version-bump.js 版本管理
+- Windows 多进程兼容：UP009 加入 ruff 忽略规则 (Sprint 15)
 
 ### 已知问题
 
