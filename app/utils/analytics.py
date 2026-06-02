@@ -202,16 +202,9 @@ class AnalyticsCollector:
         基于各 track 的完成率和练习得分计算技能水平。
         """
         try:
-            pass
-        except Exception:
-            return {}
-
-        # 从数据库直接获取各 track 的完成数据
-        try:
             track_stats = self._db.get_analytics_track_stats()
         except Exception:
             return {}
-
         return track_stats
 
     def get_streak_data(self, days: int = 90) -> list[dict[str, Any]]:
