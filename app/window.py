@@ -1,6 +1,5 @@
 import logging
 import sys
-import time as _time
 
 from PyQt5.QtCore import QDate, Qt, QTimer
 
@@ -66,15 +65,17 @@ class DevLearnerWindow(QMainWindow):
         self._font_size = "medium"
 
         # Core services (lightweight, always needed)
-        _t0 = _time.monotonic()
+        from app.utils.logger import startup_breakdown
+
+        startup_breakdown.begin("core_services")
         self.db = AppDatabase()
         self.db.init_db()
         self.content_service = ContentService()
         self.practice_service = PracticeService()
-        _t1 = _time.monotonic()
-        logging.getLogger(__name__).info("核心服务初始化耗时 %.1f ms", (_t1 - _t0) * 1000)
+        startup_breakdown.end("core_services")
 
         # Critical widgets (visible at startup)
+        startup_breakdown.begin("critical_widgets")
         self.dashboard = DashboardWidget(self.content_service, self.db)
         self.learn = LearnWidget(self.content_service, self.db)
         self.practice = PracticeWidget(
@@ -82,6 +83,7 @@ class DevLearnerWindow(QMainWindow):
             self.practice_service,
             self.db,
         )
+        startup_breakdown.end("critical_widgets")
 
         # Deferred widgets - created with deferred_init for staggered loading
         self._projects_ready = False
@@ -747,8 +749,18 @@ def run():
     window.show()
     splash.finish(window)
 
+    # Log startup breakdown and metrics summary
+    from app.utils.logger import startup_breakdown
+
+    startup_breakdown.begin("window_show")
+    startup_breakdown.end("window_show")
+    startup_breakdown.report()
+
     exit_code = app.exec()
     try:
+        from app.utils.metrics import get_metrics
+
+        get_metrics().log_summary()
         close_connection()
     except Exception:
         logger.debug("关闭数据库连接时出错", exc_info=True)
