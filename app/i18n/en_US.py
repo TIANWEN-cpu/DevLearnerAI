@@ -101,6 +101,8 @@ TRANSLATIONS: dict[str, str] = {
     "dashboard.streak_unit": "day streak",
     "dashboard.chart_data_label": "Values: {values}",
     "dashboard.weekday_labels": "Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+    # ── Welcome Wizard ────────────────────────────────────────────────────
+    "window.wizard_completed": "Welcome wizard completed! Start your learning journey.",
     # ── Learn Widget ──────────────────────────────────────────────────────
     "learn.title": "Learning Path",
     "learn.subtitle": "Follow the main track into modules, then progress through lessons.",

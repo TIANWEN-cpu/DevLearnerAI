@@ -267,7 +267,10 @@ def evaluate_sql(exercise: Exercise, code: str) -> EvaluationResult:
     feedback: list[str] = []
     score = 0
 
-    feedback.append("当前为 SQL 结构训练题，本轮先检查查询结构，暂不执行真实数据库结果比对。")
+    feedback.append(
+        "[结构检查模式] 当前为 SQL 结构训练题，仅检查查询结构，暂不执行真实数据库结果比对。"
+        "评测结果仅供参考。"
+    )
 
     if normalized:
         score += 20
@@ -298,17 +301,26 @@ def evaluate_sql(exercise: Exercise, code: str) -> EvaluationResult:
         score=min(score, 100),
         feedback_lines=feedback,
         duration_sec=int(time.time() - start),
+        evaluation_mode="structural",
     )
 
 
 def evaluate_keyword_code(exercise: Exercise, code: str) -> EvaluationResult:
-    """Evaluate C/C# code by checking for required keywords/structures."""
+    """Evaluate C/C# code by checking for required keywords/structures.
+
+    Note: This is a structural check only -- it does NOT compile or run the code.
+    The evaluation_mode is set to "structural" so the UI can clearly communicate
+    this limitation to the user.
+    """
     start = time.time()
     normalized = " ".join(code.lower().split())
     feedback: list[str] = []
     score = 0
 
-    feedback.append("当前为结构训练题，本轮先检查关键结构，暂不执行真实编译运行。")
+    feedback.append(
+        "[结构检查模式] 当前语言仅验证代码结构（关键字、语法模式），无法实际编译和运行。"
+        "评测结果仅供参考，不代表代码的正确性。推荐使用 Python 练习体验完整的运行评测。"
+    )
 
     if normalized:
         score += 20
@@ -339,6 +351,7 @@ def evaluate_keyword_code(exercise: Exercise, code: str) -> EvaluationResult:
         score=min(score, 100),
         feedback_lines=feedback,
         duration_sec=int(time.time() - start),
+        evaluation_mode="structural",
     )
 
 

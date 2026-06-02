@@ -1,11 +1,13 @@
 import logging
 import os
+import platform
 import sys
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 APP_NAME = "DevLearnerAI"
+PLATFORM = platform.system()  # "Windows", "Darwin", "Linux"
 
 
 def _read_package_version() -> str:
@@ -46,6 +48,19 @@ METADATA_DIR = CONTENT_DIR / "metadata"
 
 
 def _user_data_root() -> Path:
+    """Return the per-user application data directory.
+
+    * Windows  : ``%APPDATA%/DevLearnerAI`` (or ``%LOCALAPPDATA%``)
+    * macOS    : ``~/Library/Application Support/DevLearnerAI``
+    * Linux    : ``$XDG_CONFIG_HOME/devlearner-ai`` or ``~/.config/devlearner-ai``
+    """
+    if PLATFORM == "Darwin":
+        return Path.home() / "Library" / "Application Support" / APP_NAME
+    if PLATFORM == "Linux":
+        xdg = os.getenv("XDG_CONFIG_HOME")
+        base = Path(xdg) if xdg else Path.home() / ".config"
+        return base / APP_NAME.lower()
+    # Windows (default)
     appdata = os.getenv("APPDATA") or os.getenv("LOCALAPPDATA")
     if appdata:
         return Path(appdata) / APP_NAME

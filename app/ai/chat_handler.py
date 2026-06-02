@@ -73,6 +73,7 @@ class AIMentorPanel(QWidget):
     models_ready = pyqtSignal(list)
     status_ready = pyqtSignal(str)
     stream_chunk_ready = pyqtSignal(str)  # streaming text chunk
+    code_analysis_ready = pyqtSignal(str, dict)  # (analysis_type, result_dict)
 
     def __init__(
         self,
@@ -94,6 +95,7 @@ class AIMentorPanel(QWidget):
         self.models_ready.connect(self._populate_models)
         self.status_ready.connect(self._set_settings_status)
         self.stream_chunk_ready.connect(self._handle_stream_chunk)
+        self.code_analysis_ready.connect(self._handle_code_analysis_result)
 
         self._build_ui()
         self._build_settings_widgets()
@@ -286,6 +288,25 @@ class AIMentorPanel(QWidget):
             button.clicked.connect(lambda _checked=False, p=prompt: self._seed_prompt(p))
             quick_row.addWidget(button)
         self.chat_layout.addLayout(quick_row)
+
+        # Code analysis quick row
+        code_row = QHBoxLayout()
+        code_row.setSpacing(8)
+        code_row_label = QLabel("代码分析：")
+        code_row_label.setStyleSheet(f"color: {TEXT_SUB}; font-size: 13px; font-weight: 600;")
+        code_row.addWidget(code_row_label)
+        for label, atype in [
+            ("解释代码", "explanation"),
+            ("代码审查", "review"),
+            ("Bug 检测", "bug_detection"),
+        ]:
+            button = QPushButton(label)
+            button.setProperty("variant", "secondary")
+            button.setToolTip(f"对剪贴板或最近提交的代码进行{label}")
+            button.clicked.connect(lambda _checked=False, t=atype: self._quick_code_analysis(t))
+            code_row.addWidget(button)
+        code_row.addStretch()
+        self.chat_layout.addLayout(code_row)
 
         self.thinking_hint = QLabel("")
         self.thinking_hint.setWordWrap(True)
@@ -942,6 +963,11 @@ class AIMentorPanel(QWidget):
         parts = [
             "你是 DevLearner 的学习型 AI 助手。回答时请优先结合当前课程体系、学习进度和做题表现，给出清晰、分步骤、有同理心的中文建议。",
             "如果用户在问编程问题，请先解释思路、常见错误和下一步练习建议，而不是只给结论。",
+            "你还具备以下代码分析能力：",
+            "- 代码解释：逐步拆解代码逻辑，标注对初学者有难度的地方",
+            "- 代码审查：从风格、性能、最佳实践角度审查代码质量",
+            "- Bug 检测：检查边界条件、运行时错误、逻辑漏洞",
+            "当用户发送代码时，主动识别意图并提供对应的分析。",
         ]
         if self.base_cb.isChecked():
             parts.append(self._base_knowledge_text())
@@ -958,6 +984,61 @@ class AIMentorPanel(QWidget):
         self.input.setText(prompt)
         self.input.setFocus()
         self.input.selectAll()
+
+    def _quick_code_analysis(self, analysis_type: str) -> None:
+        """Quick code analysis triggered from the chat panel buttons."""
+        from PyQt5.QtWidgets import QApplication
+
+        clipboard = QApplication.clipboard()
+        code = clipboard.text().strip() if clipboard else ""
+
+        if not code:
+            self._seed_prompt("请粘贴你想分析的代码，我会帮你做详细的代码分析。")
+            return
+
+        # Detect language heuristically
+        language = "python"
+        if any(kw in code for kw in ["#include", "int main", "printf", "void "]):
+            language = "c"
+        elif any(kw in code for kw in ["using namespace", "std::", "cout", "cin"]):
+            language = "cpp"
+        elif any(kw in code for kw in ["Console.Write", "namespace ", "public class"]):
+            language = "csharp"
+        elif any(kw.upper() in code.upper() for kw in ["SELECT ", "INSERT ", "UPDATE ", "DELETE ", "CREATE TABLE"]):
+            language = "sql"
+
+        type_labels = {
+            "explanation": "代码解释",
+            "review": "代码审查",
+            "bug_detection": "Bug 检测",
+        }
+        label = type_labels.get(analysis_type, "代码分析")
+        self.thinking_hint.setVisible(True)
+        self.thinking_hint.setText(f"正在对剪贴板代码进行{label}...")
+
+        if analysis_type == "explanation":
+            self.analyze_code_explanation(code, language)
+        elif analysis_type == "review":
+            self.analyze_code_review(code, language)
+        elif analysis_type == "bug_detection":
+            self.analyze_code_bugs(code, language)
+
+    def retry_last_message(self) -> None:
+        """Retry the last user message."""
+        if not self.current_session_id:
+            return
+        messages = self.db.load_mentor_messages(self.current_session_id)
+        if not messages:
+            return
+        # Find the last user message
+        last_user_msg = None
+        for role, content, _created_at in reversed(messages):
+            if role == "user":
+                last_user_msg = content
+                break
+        if last_user_msg:
+            self.input.setText(last_user_msg)
+            self.send_message()
 
     def send_message(self) -> None:
         if self._request_in_flight:
@@ -1049,6 +1130,167 @@ class AIMentorPanel(QWidget):
                     self.response_ready.emit(session_id)
                 except RuntimeError:
                     pass  # underlying C++ object already destroyed
+
+    # ── Code Analysis Methods ─────────────────────────────────────────────────
+
+    def analyze_code_explanation(self, code: str, language: str = "python") -> None:
+        """Send a code explanation request to the AI.
+
+        Asks the AI to break down the code step by step, explaining
+        what each section does and the overall logic flow.
+        """
+        if not code.strip():
+            return
+        prompt = (
+            f"请对以下 {language} 代码进行逐步解释：\n"
+            f"1. 先给出整体功能概述\n"
+            f"2. 然后逐行或逐段解释关键逻辑\n"
+            f"3. 标注可能对初学者有难度的地方\n"
+            f"4. 总结这段代码的核心知识点\n\n"
+            f"```{language}\n{code}\n```"
+        )
+        self._send_code_analysis_request("explanation", prompt, code, language)
+
+    def analyze_code_review(self, code: str, language: str = "python") -> None:
+        """Send a code review request to the AI.
+
+        Asks the AI to review the code for quality, style,
+        and best practices compliance.
+        """
+        if not code.strip():
+            return
+        prompt = (
+            f"请对以下 {language} 代码进行专业代码审查：\n"
+            f"1. 代码风格和命名规范\n"
+            f"2. 可读性和可维护性\n"
+            f"3. 性能方面有没有可优化之处\n"
+            f"4. 是否符合 {language} 最佳实践\n"
+            f"5. 改进建议（附代码示例）\n\n"
+            f"```{language}\n{code}\n```"
+        )
+        self._send_code_analysis_request("review", prompt, code, language)
+
+    def analyze_code_bugs(self, code: str, language: str = "python") -> None:
+        """Send a bug detection request to the AI.
+
+        Asks the AI to analyze the code for potential bugs,
+        edge cases, and error-prone patterns.
+        """
+        if not code.strip():
+            return
+        prompt = (
+            f"请对以下 {language} 代码进行 Bug 检测分析：\n"
+            f"1. 逐行检查可能存在的 Bug\n"
+            f"2. 边界条件和异常输入处理\n"
+            f"3. 潜在的运行时错误（如空指针、越界、类型错误等）\n"
+            f"4. 逻辑漏洞或竞态条件\n"
+            f"5. 对每个发现的问题给出修复建议\n\n"
+            f"```{language}\n{code}\n```"
+        )
+        self._send_code_analysis_request("bug_detection", prompt, code, language)
+
+    def _send_code_analysis_request(
+        self, analysis_type: str, prompt: str, code: str, language: str
+    ) -> None:
+        """Internal method to send code analysis requests to the AI backend."""
+        host = self.host_input.text().strip()
+        api_key = self.key_input.text().strip()
+        model = self.model_combo.currentText().strip()
+
+        if not host or not api_key or not model:
+            self.code_analysis_ready.emit(analysis_type, {
+                "success": False,
+                "error": "请先在 AI 设置中配置 Host、Key 和模型。",
+                "code": code,
+                "language": language,
+            })
+            return
+
+        system_context = (
+            "你是一位专业的编程导师和代码分析专家。"
+            "你的任务是帮助学生理解代码、发现潜在问题并提供改进建议。"
+            "请用清晰的中文回答，必要时使用代码示例。"
+            "对于初学者容易犯的错误要特别标注和解释。"
+        )
+
+        threading.Thread(
+            target=self._code_analysis_worker,
+            args=(analysis_type, host, api_key, model, system_context, prompt, code, language),
+            daemon=True,
+        ).start()
+
+    def _code_analysis_worker(
+        self,
+        analysis_type: str,
+        host: str,
+        api_key: str,
+        model: str,
+        system_context: str,
+        prompt: str,
+        code: str,
+        language: str,
+    ) -> None:
+        """Background worker for code analysis requests."""
+        try:
+            api_messages = [
+                {"role": "system", "content": system_context},
+                {"role": "user", "content": prompt},
+            ]
+            try:
+                reply = api_send_chat_stream(host, api_key, model, api_messages)
+            except Exception:
+                logger.info("代码分析流式传输失败，回退到普通请求")
+                reply = api_send_chat(host, api_key, model, api_messages)
+
+            self.code_analysis_ready.emit(analysis_type, {
+                "success": True,
+                "reply": reply,
+                "code": code,
+                "language": language,
+            })
+        except urllib.error.HTTPError as exc:
+            logger.error("代码分析 HTTP 错误: %s", exc.code, exc_info=True)
+            error_msg = f"AI 服务请求失败（HTTP {exc.code}），请检查设置。"
+            if exc.code == 401:
+                error_msg = "AI 密钥无效或已过期，请更新密钥。"
+            elif exc.code == 429:
+                error_msg = "请求过于频繁，请稍后重试。"
+            self.code_analysis_ready.emit(analysis_type, {
+                "success": False,
+                "error": error_msg,
+                "code": code,
+                "language": language,
+            })
+        except Exception as exc:
+            logger.error("代码分析异常: %s", exc, exc_info=True)
+            self.code_analysis_ready.emit(analysis_type, {
+                "success": False,
+                "error": f"代码分析失败：{exc}",
+                "code": code,
+                "language": language,
+            })
+
+    def _handle_code_analysis_result(self, analysis_type: str, result: dict) -> None:
+        """Handle completed code analysis results by saving to session history."""
+        if not self.current_session_id:
+            return
+        if not result.get("success"):
+            return
+
+        type_labels = {
+            "explanation": "代码解释",
+            "review": "代码审查",
+            "bug_detection": "Bug 检测",
+        }
+        label = type_labels.get(analysis_type, "代码分析")
+        language = result.get("language", "python")
+        code_preview = result.get("code", "")[:200]
+        reply = result.get("reply", "")
+
+        user_msg = f"[{label}] 分析以下 {language} 代码：\n```\n{code_preview}...\n```"
+        self.db.append_mentor_message(self.current_session_id, "user", user_msg)
+        self.db.append_mentor_message(self.current_session_id, "assistant", reply)
+        self._reload_sessions()
 
 
 class AIMentorDock(QDockWidget):

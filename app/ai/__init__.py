@@ -14,6 +14,7 @@ from app.ai.api_client import (
     fetch_models,
     require_https,
     send_chat,
+    send_chat_stream,
     test_connection,
 )
 from app.ai.chat_handler import AIMentorDock, AIMentorPanel
@@ -53,6 +54,7 @@ __all__ = [
     "test_connection",
     "fetch_models",
     "send_chat",
+    "send_chat_stream",
     # chat_handler
     "AIMentorPanel",
     "AIMentorDock",

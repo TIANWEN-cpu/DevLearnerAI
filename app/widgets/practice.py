@@ -45,9 +45,11 @@ from app.styles import (
     TEXT_MAIN,
     TEXT_MUTED,
     TEXT_SUB,
+    WARNING,
     score_color,
     score_label,
 )
+from app.widgets.code_analyzer import CodeAnalyzerPanel
 
 
 class PracticeWidget(QWidget):
@@ -304,6 +306,11 @@ class PracticeWidget(QWidget):
         self.hint_btn.setToolTip(
             "\u9010\u6b65\u663e\u793a\u63d0\u793a\uff0c\u6bcf\u6b21\u70b9\u51fb\u5c55\u5f00\u4e00\u6761 (Ctrl+H)"
         )
+        self.analyze_btn = QPushButton("\u5206\u6790\u4ee3\u7801")
+        self.analyze_btn.setProperty("variant", "secondary")
+        self.analyze_btn.setToolTip("\u4f7f\u7528 AI \u5206\u6790\u5f53\u524d\u4ee3\u7801\uff0c\u83b7\u53d6\u89e3\u91ca\u3001\u5ba1\u67e5\u548c Bug \u68c0\u6d4b")
+        self.analyze_btn.setAccessibleName("\u5206\u6790\u4ee3\u7801")
+        self.analyze_btn.clicked.connect(self._open_code_analyzer)
         self.run_btn = QPushButton("\u8fd0\u884c\u4ee3\u7801")
         self.run_btn.setProperty("variant", "secondary")
         self.run_btn.setToolTip("\u5728\u9694\u79bb\u6c99\u7bb1\u4e2d\u8fd0\u884c\u4ee3\u7801\u67e5\u770b\u8f93\u51fa")
@@ -316,6 +323,7 @@ class PracticeWidget(QWidget):
         self.check_btn.setToolTip("\u63d0\u4ea4\u4ee3\u7801\u8fdb\u884c\u81ea\u52a8\u8bc4\u6d4b (Ctrl+Enter)")
         btn_row.addWidget(self.hint_btn)
         btn_row.addWidget(self.reset_btn)
+        btn_row.addWidget(self.analyze_btn)
         btn_row.addWidget(self.run_btn)
         btn_row.addStretch()
         btn_row.addWidget(self.check_btn)
@@ -654,39 +662,6 @@ class PracticeWidget(QWidget):
             border = item.data(Qt.UserRole + 13) or "rgba(15,23,42,0.08)"
             self._apply_exercise_card_style(card, item is current_item, stripe, bg, border, selected_bg)
 
-    def load_exercise(self, _row: int) -> None:
-        item = self.exercise_list.currentItem()
-        if not item:
-            return
-        self._refresh_exercise_card_selection()
-        exercise = self.practice_service.exercise_by_id(item.data(Qt.UserRole))
-        if not exercise:
-            return
-
-        self.current_exercise = exercise
-        self._hint_index = 0  # Reset progressive hint index
-        self._apply_editor_mode(exercise.track_id)
-        self.start_time = time.time()
-        self._loading_exercise = True
-        self.prompt_box.setPlainText(exercise.prompt)
-        draft = self.db.load_exercise_draft(exercise.id)
-        code_text = draft[1] if draft and draft[1] else exercise.starter_code
-        self.editor.setPlainText(code_text)
-        self._loading_exercise = False
-
-        lesson_info = self.content_service.lesson_by_id(exercise.lesson_id)
-        lesson_title = lesson_info[2].title if lesson_info else "未绑定课程"
-        self.lesson_link.setText(f"关联课程：{lesson_title}")
-        self.guide_label.setText(
-            f"路线：{exercise.track_id}  |  难度：{exercise.difficulty}\n建议先自己完整做一遍，再查看提示和反馈。"
-        )
-        if draft and draft[1]:
-            self.draft_status.setText("已恢复上次草稿，继续写就行。")
-        else:
-            self.draft_status.setText("当前还没有本地草稿。")
-        self.output_box.setPlainText("还没有运行输出。")
-        self.feedback_box.setPlainText("还没有判题反馈。")
-
     def _apply_editor_mode(self, track_id: str) -> None:
         if hasattr(self, "highlighter") and self.highlighter:
             self.highlighter.setDocument(None)
@@ -754,6 +729,7 @@ class PracticeWidget(QWidget):
     def _set_action_state(self, busy: bool, mode: str = "") -> None:
         self.busy_mode = mode if busy else None
         self.hint_btn.setEnabled(not busy)
+        self.analyze_btn.setEnabled(not busy)
         self.run_btn.setEnabled(not busy)
         self.check_btn.setEnabled(not busy)
         self.run_btn.setText("运行中..." if busy and mode == "run" else "运行代码")
@@ -948,6 +924,84 @@ class PracticeWidget(QWidget):
             unlocked.extend(streak_unlocked)
         if unlocked:
             self._notify_achievements(unlocked)
+
+    # ── Code Analyzer ─────────────────────────────────────────────────────────
+
+    def _open_code_analyzer(self) -> None:
+        """Open code analyzer dialog for the current editor code."""
+        code = self.editor.toPlainText()
+        if not code.strip():
+            self.feedback_box.setPlainText("请先写一些代码，再使用分析功能。")
+            return
+        track_id = self.current_exercise.track_id if self.current_exercise else "python"
+        language_map = {
+            "python": "python",
+            "c": "c",
+            "cplusplus": "cpp",
+            "csharp": "csharp",
+            "database": "sql",
+        }
+        language = language_map.get(track_id, "python")
+
+        from PyQt5.QtWidgets import QDialog, QVBoxLayout
+
+        from app.widgets.code_analyzer import CodeAnalyzerPanel
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("AI 代码分析")
+        dialog.setMinimumSize(820, 660)
+        dlg_layout = QVBoxLayout(dialog)
+        dlg_layout.setContentsMargins(0, 0, 0, 0)
+
+        panel = CodeAnalyzerPanel(dialog)
+        panel.set_code(code, language)
+        dlg_layout.addWidget(panel)
+
+        # Wire analysis requests to the AI mentor panel if available
+        mentor_panel = self._find_mentor_panel()
+        if mentor_panel:
+            panel.analysis_requested.connect(
+                lambda _atype, c, lang: self._dispatch_analysis(mentor_panel, panel, c, lang)
+            )
+        else:
+            panel.set_analysis_error("未找到 AI 助手面板，请确保 AI 助手已打开并在设置中配置好 API。")
+
+        dialog.exec_()
+
+    def _find_mentor_panel(self):
+        """Walk up the widget tree to find an AIMentorPanel instance."""
+        from app.ai.chat_handler import AIMentorPanel
+
+        widget = self.parent()
+        while widget:
+            if isinstance(widget, AIMentorPanel):
+                return widget
+            # Also check children for dock-based panels
+            for child in widget.findChildren(AIMentorPanel):
+                return child
+            widget = widget.parent()
+        return None
+
+    def _dispatch_analysis(self, mentor_panel, analyzer_panel, code, language):
+        """Dispatch code analysis via the mentor panel's AI backend."""
+        from app.ai.chat_handler import AIMentorPanel
+
+        def _on_result(analysis_type, result):
+            try:
+                mentor_panel.code_analysis_ready.disconnect(_on_result)
+            except (RuntimeError, TypeError):
+                pass
+            if result.get("success"):
+                reply = result.get("reply", "")
+                analyzer_panel.display_explanation(reply)
+                analyzer_panel.display_review(reply)
+                analyzer_panel.display_bugs(reply)
+                analyzer_panel.set_analysis_complete()
+            else:
+                analyzer_panel.set_analysis_error(result.get("error", "分析失败"))
+
+        mentor_panel.code_analysis_ready.connect(_on_result)
+        mentor_panel.analyze_code_explanation(code, language)
 
     # ── Bookmark methods ──────────────────────────────────────────────────────
 

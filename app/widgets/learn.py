@@ -62,6 +62,9 @@ class LearnWidget(QWidget):
         self.next_btn.clicked.connect(lambda: self._jump_relative(1))
         self.save_note_btn.clicked.connect(self._save_note)
         self.reader_btn.clicked.connect(self._open_reader)
+        self.bookmark_btn.clicked.connect(self._toggle_lesson_bookmark)
+        self.search_notes_btn.clicked.connect(self._show_notes_search)
+        self.learning_path_btn.clicked.connect(self._show_learning_path)
 
         if self.content_service.tracks:
             self._change_track(0)
@@ -203,7 +206,23 @@ class LearnWidget(QWidget):
         self.next_btn = QPushButton("下一课")
         self.next_btn.setProperty("variant", "secondary")
         self.next_btn.setToolTip("切换到下一节课程")
+        self.bookmark_btn = QPushButton("收藏课程")
+        self.bookmark_btn.setProperty("variant", "secondary")
+        self.bookmark_btn.setToolTip("收藏当前课程以便快速访问")
+        self.bookmark_btn.setAccessibleName("收藏课程")
+        self.learning_path_btn = QPushButton("学习路径")
+        self.learning_path_btn.setProperty("variant", "secondary")
+        self.learning_path_btn.setToolTip("查看当前技术栈的学习路径可视化")
+        self.learning_path_btn.setAccessibleName("学习路径可视化")
+        self.explain_btn = QPushButton("解释代码")
+        self.explain_btn.setProperty("variant", "secondary")
+        self.explain_btn.setToolTip("使用 AI 解释当前课程中的代码片段")
+        self.explain_btn.setAccessibleName("解释代码")
+        self.explain_btn.clicked.connect(self._explain_code)
         action_row.addWidget(self.reader_btn)
+        action_row.addWidget(self.learning_path_btn)
+        action_row.addWidget(self.explain_btn)
+        action_row.addWidget(self.bookmark_btn)
         action_row.addWidget(self.prev_btn)
         action_row.addWidget(self.complete_btn)
         action_row.addWidget(self.next_btn)
@@ -219,20 +238,52 @@ class LearnWidget(QWidget):
         self.note_hint = QLabel("")
         self.note_hint.setStyleSheet("color: #64748b; font-size: 16px;")
         self.note_hint.setWordWrap(True)
+
+        # Tags row
+        tags_row = QHBoxLayout()
+        tags_row.setSpacing(8)
+        tags_label = QLabel("标签:")
+        tags_label.setStyleSheet("color: #64748b; font-size: 16px; font-weight: 600;")
+        self.tags_input = LocalizedLineEdit()
+        self.tags_input.setPlaceholderText("用逗号分隔，如：函数,递归,重要")
+        self.tags_input.setToolTip("为笔记添加标签，方便分类和搜索")
+        self.tags_input.setAccessibleName("笔记标签")
+        tags_row.addWidget(tags_label)
+        tags_row.addWidget(self.tags_input)
+        note_layout.addWidget(note_title)
+        note_layout.addWidget(self.note_hint)
+        note_layout.addLayout(tags_row)
+
         self.note_edit = LocalizedTextEdit()
-        self.note_edit.setMinimumHeight(180)
+        self.note_edit.setMinimumHeight(140)
         self.note_edit.setPlaceholderText("把关键结论、自己的理解和易错点记在这里。")
         self.note_edit.setAccessibleName("学习笔记")
         self.note_edit.setAccessibleDescription("记录当前课程的学习笔记和心得体会")
+        note_layout.addWidget(self.note_edit)
+
+        # Code snippets section
+        code_label = QLabel("代码片段（可选）:")
+        code_label.setStyleSheet("color: #64748b; font-size: 16px; font-weight: 600;")
+        self.code_snippet_edit = LocalizedTextEdit()
+        self.code_snippet_edit.setMinimumHeight(100)
+        self.code_snippet_edit.setPlaceholderText("粘贴关键代码片段到这里...")
+        self.code_snippet_edit.setAccessibleName("代码片段")
+        self.code_snippet_edit.setAccessibleDescription("记录与课程相关的代码片段")
+        note_layout.addWidget(code_label)
+        note_layout.addWidget(self.code_snippet_edit)
+
         row = QHBoxLayout()
+        row.setSpacing(8)
         row.addStretch()
+        self.search_notes_btn = QPushButton("搜索笔记")
+        self.search_notes_btn.setProperty("variant", "secondary")
+        self.search_notes_btn.setToolTip("搜索所有已保存的课程笔记")
+        self.search_notes_btn.setAccessibleName("搜索笔记")
+        row.addWidget(self.search_notes_btn)
         self.save_note_btn = QPushButton("保存笔记")
         self.save_note_btn.setProperty("variant", "secondary")
-        self.save_note_btn.setToolTip("保存当前课程的学习笔记")
+        self.save_note_btn.setToolTip("保存当前课程的学习笔记和代码片段")
         row.addWidget(self.save_note_btn)
-        note_layout.addWidget(note_title)
-        note_layout.addWidget(self.note_hint)
-        note_layout.addWidget(self.note_edit)
         note_layout.addLayout(row)
         layout.addWidget(note_card)
         return panel
@@ -445,12 +496,19 @@ class LearnWidget(QWidget):
         self._current_html = self.markdown(body)
         self.content_browser.setHtml(self._current_html)
         self.note_hint.setText("把关键结论、自己的理解和易错点记在这里，会比重读更有效。")
+        # Load enhanced note (content, tags, code_snippets)
         try:
-            saved = self.db.load_note(lesson.id)
+            note_data = self.db.load_enhanced_note(lesson.id)
+            self.note_edit.setPlainText(note_data.get("content", ""))
+            self.tags_input.setText(note_data.get("tags", ""))
+            self.code_snippet_edit.setPlainText(note_data.get("code_snippets", ""))
         except Exception as exc:
             logger.warning("加载课程笔记失败 [%s]: %s", lesson_id, exc)
-            saved = ""
-        self.note_edit.setPlainText(saved if saved else "")
+            self.note_edit.setPlainText("")
+            self.tags_input.setText("")
+            self.code_snippet_edit.setPlainText("")
+        # Update bookmark state
+        self._update_lesson_bookmark_state()
 
     def _jump_relative(self, step: int) -> None:
         if not self.current_lesson or not self._lesson_id_order:
@@ -468,12 +526,23 @@ class LearnWidget(QWidget):
             return
         self.db.mark_lesson_completed(self.current_lesson.id, self.current_track.id)
         self.note_hint.setText("已标记完成。你可以继续下一课，或者回到模块层换一个方向。")
+        # Check achievements
+        unlocked = self.db.check_completion_achievements()
+        streak_unlocked = self.db.check_streak_achievements()
+        unlocked.extend(streak_unlocked)
+        if unlocked:
+            self._notify_achievements(unlocked)
 
     def _save_note(self) -> None:
         if not self.current_lesson:
             return
-        self.db.save_note(self.current_lesson.id, self.note_edit.toPlainText())
+        content = self.note_edit.toPlainText()
+        tags = self.tags_input.text().strip()
+        code_snippets = self.code_snippet_edit.toPlainText()
+        self.db.save_enhanced_note(self.current_lesson.id, content, tags, code_snippets)
         self.note_hint.setText("笔记已保存。继续用自己的话总结，会记得更牢。")
+        # Check notes achievements
+        self.db.check_notes_achievements()
 
     def _open_reader(self) -> None:
         if not self._current_html:
@@ -486,3 +555,229 @@ class LearnWidget(QWidget):
             self._open_reader()
             return True
         return super().eventFilter(watched, event)
+
+    # ── Bookmark methods ──────────────────────────────────────────────────────
+
+    def _toggle_lesson_bookmark(self) -> None:
+        """Toggle bookmark for the current lesson."""
+        if not self.current_lesson:
+            return
+        lesson = self.current_lesson
+        if self.db.is_bookmarked("lesson", lesson.id):
+            self.db.remove_bookmark("lesson", lesson.id)
+            self.bookmark_btn.setText("收藏课程")
+        else:
+            track_id = self.current_track.id if self.current_track else ""
+            self.db.add_bookmark("lesson", lesson.id, lesson.title, track_id)
+            self.bookmark_btn.setText("已收藏")
+            self.db.check_bookmark_achievement()
+        self.bookmark_btn.style().unpolish(self.bookmark_btn)
+        self.bookmark_btn.style().polish(self.bookmark_btn)
+
+    def _update_lesson_bookmark_state(self) -> None:
+        """Update bookmark button for current lesson."""
+        if not self.current_lesson:
+            return
+        if self.db.is_bookmarked("lesson", self.current_lesson.id):
+            self.bookmark_btn.setText("已收藏")
+        else:
+            self.bookmark_btn.setText("收藏课程")
+
+    # ── Learning path visualization ──────────────────────────────────────────
+
+    def _show_learning_path(self) -> None:
+        """Open learning path visualization dialog."""
+        if not self.current_track:
+            return
+        from PyQt5.QtWidgets import QDialog, QVBoxLayout
+
+        from app.widgets.learning_path import LearningPathWidget
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(f"学习路径 - {self.current_track.title}")
+        dialog.setMinimumSize(800, 600)
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        path_widget = LearningPathWidget(self.content_service, self.db, dialog)
+        path_widget.set_track(self.current_track)
+        path_widget.lesson_selected.connect(lambda lid: (self._open_lesson(lid), dialog.accept()))
+        layout.addWidget(path_widget)
+        dialog.exec_()
+
+    # ── Code Explanation ───────────────────────────────────────────────────────
+
+    def _explain_code(self) -> None:
+        """Open code explanation for the current lesson content."""
+        # Try to extract code from the current lesson content
+        code = self._extract_code_from_content()
+        if not code:
+            # Fall back to the code snippet in the notes
+            code = self.code_snippet_edit.toPlainText().strip()
+        if not code:
+            from PyQt5.QtWidgets import QMessageBox
+            QMessageBox.information(
+                self,
+                "解释代码",
+                "当前课程中未检测到代码块。\n你可以在笔记区的「代码片段」框中粘贴代码，然后再次点击。",
+            )
+            return
+
+        language = self._detect_lesson_language()
+
+        from PyQt5.QtWidgets import QDialog, QVBoxLayout
+
+        from app.widgets.code_analyzer import CodeAnalyzerPanel
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("AI 代码解释")
+        dialog.setMinimumSize(820, 660)
+        dlg_layout = QVBoxLayout(dialog)
+        dlg_layout.setContentsMargins(0, 0, 0, 0)
+
+        panel = CodeAnalyzerPanel(dialog)
+        panel.set_code(code, language)
+        dlg_layout.addWidget(panel)
+
+        # Wire to AI mentor
+        mentor_panel = self._find_mentor_panel()
+        if mentor_panel:
+            panel.analysis_requested.connect(
+                lambda _atype, c, lang: self._dispatch_explanation(mentor_panel, panel, c, lang)
+            )
+        else:
+            panel.set_analysis_error("未找到 AI 助手面板，请确保 AI 助手已打开并配置好 API。")
+
+        dialog.exec_()
+
+    def _extract_code_from_content(self) -> str:
+        """Extract the first code block from the current lesson markdown content."""
+        import re
+
+        if not self.current_lesson:
+            return ""
+        try:
+            body = self.content_service.lesson_markdown(self.current_lesson)
+        except Exception:
+            return ""
+        # Extract fenced code blocks (``` ... ```)
+        code_blocks = re.findall(r"```(?:\w+)?\n(.*?)```", body, re.DOTALL)
+        if code_blocks:
+            # Return the longest code block (likely the main example)
+            return max(code_blocks, key=len).strip()
+        return ""
+
+    def _detect_lesson_language(self) -> str:
+        """Detect the programming language from the current track."""
+        if not self.current_track:
+            return "python"
+        lang_map = {
+            "python": "python",
+            "c": "c",
+            "cplusplus": "cpp",
+            "csharp": "csharp",
+            "database": "sql",
+        }
+        return lang_map.get(self.current_track.id, "python")
+
+    def _find_mentor_panel(self):
+        """Walk up the widget tree to find an AIMentorPanel instance."""
+        from app.ai.chat_handler import AIMentorPanel
+
+        widget = self.parent()
+        while widget:
+            if isinstance(widget, AIMentorPanel):
+                return widget
+            for child in widget.findChildren(AIMentorPanel):
+                return child
+            widget = widget.parent()
+        return None
+
+    def _dispatch_explanation(self, mentor_panel, analyzer_panel, code, language):
+        """Dispatch code explanation via the mentor panel's AI backend."""
+        def _on_result(analysis_type, result):
+            try:
+                mentor_panel.code_analysis_ready.disconnect(_on_result)
+            except (RuntimeError, TypeError):
+                pass
+            if result.get("success"):
+                reply = result.get("reply", "")
+                analyzer_panel.display_explanation(reply)
+                analyzer_panel.set_analysis_complete()
+            else:
+                analyzer_panel.set_analysis_error(result.get("error", "解释失败"))
+
+        mentor_panel.code_analysis_ready.connect(_on_result)
+        mentor_panel.analyze_code_explanation(code, language)
+
+    # ── Notes search ─────────────────────────────────────────────────────────
+
+    def _show_notes_search(self) -> None:
+        """Open a notes search dialog."""
+        from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QVBoxLayout
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("搜索笔记")
+        dialog.setMinimumSize(560, 440)
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(18, 16, 18, 16)
+        layout.setSpacing(12)
+
+        title = QLabel("搜索所有课程笔记")
+        title.setStyleSheet("font-weight: 700; font-size: 20px; color: #0f172a;")
+        layout.addWidget(title)
+
+        search_input = QLineEdit()
+        search_input.setPlaceholderText("输入关键词搜索笔记内容和标签...")
+        search_input.setAccessibleName("搜索笔记关键词")
+        layout.addWidget(search_input)
+
+        result_list = QListWidget()
+        result_list.setStyleSheet("QListWidget { border: 1px solid #e2e8f0; border-radius: 12px; }")
+        layout.addWidget(result_list, 1)
+
+        def do_search():
+            result_list.clear()
+            query = search_input.text().strip()
+            if not query:
+                return
+            results = self.db.search_notes(query)
+            if not results:
+                item = QListWidgetItem("没有找到匹配的笔记。")
+                item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
+                result_list.addItem(item)
+                return
+            for lesson_id, content, tags, updated_at in results:
+                preview = (content or "")[:80].replace("\n", " ")
+                tag_text = f" [标签: {tags}]" if tags else ""
+                item = QListWidgetItem(f"{lesson_id}{tag_text}\n{preview}\n更新: {updated_at}")
+                item.setData(Qt.UserRole, lesson_id)
+                result_list.addItem(item)
+
+        search_input.textChanged.connect(do_search)
+
+        def on_result_clicked(item):
+            lesson_id = item.data(Qt.UserRole)
+            if lesson_id:
+                self._open_lesson(lesson_id)
+                dialog.accept()
+
+        result_list.itemClicked.connect(on_result_clicked)
+        dialog.exec_()
+
+    # ── Achievement notifications ────────────────────────────────────────────
+
+    def _notify_achievements(self, achievement_ids: list) -> None:
+        """Show achievement notification popups."""
+        for aid in achievement_ids:
+            ach_rows = self.db.list_achievements()
+            ach = next((a for a in ach_rows if a["id"] == aid), None)
+            if ach:
+                from app.widgets.achievements import AchievementNotification
+
+                top = self.window()
+                notification = AchievementNotification(ach, top)
+                geo = top.geometry()
+                notification.move(geo.right() - 380, geo.top() + 60)
+                notification.show()
+                notification.closed.connect(notification.deleteLater)

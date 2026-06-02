@@ -394,6 +394,42 @@ class AppDatabase:
                 """
             )
 
+            # ── First-run / Wizard state ─────────────────────────────────────
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS first_run_state (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                )
+                """
+            )
+
+            # ── Analytics tables ───────────────────────────────────────────────
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS analytics_events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    event_type TEXT NOT NULL,
+                    session_id TEXT DEFAULT '',
+                    data TEXT DEFAULT '{}',
+                    created_at TEXT NOT NULL
+                )
+                """
+            )
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS analytics_daily (
+                    date TEXT PRIMARY KEY,
+                    learning_time_sec REAL DEFAULT 0,
+                    lessons_completed INTEGER DEFAULT 0,
+                    exercises_completed INTEGER DEFAULT 0,
+                    exercise_score_sum INTEGER DEFAULT 0,
+                    updated_at TEXT NOT NULL
+                )
+                """
+            )
+
             # ── Performance indexes for new tables ─────────────────────────────
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_bookmarks_type ON bookmarks(item_type)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_bookmarks_item ON bookmarks(item_type, item_id)")
@@ -402,6 +438,9 @@ class AppDatabase:
             )
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_exercise_timers_exercise ON exercise_timers(exercise_id)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_review_schedule_next ON review_schedule(next_review)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_analytics_events_type ON analytics_events(event_type)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_analytics_events_created ON analytics_events(created_at)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_analytics_daily_date ON analytics_daily(date)")
 
             # ── Performance indexes ───────────────────────────────────────────
             cursor.execute(
@@ -1962,3 +2001,42 @@ class AppDatabase:
                 (session_id, session_id, keep_last),
             )
         return delete_count
+
+    # ════════════════════════════════════════════════════════════════════════════
+    # First-run / Wizard state
+    # ════════════════════════════════════════════════════════════════════════════
+
+    def _get_state(self, key: str) -> Optional[str]:
+        """Read a value from first_run_state table."""
+        row = self.fetchone(
+            "SELECT value FROM first_run_state WHERE key = ?",
+            (key,),
+        )
+        return row[0] if row else None
+
+    def _set_state(self, key: str, value: str) -> None:
+        """Write a value to first_run_state table (UPSERT)."""
+        self.execute(
+            """
+            INSERT INTO first_run_state (key, value, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(key) DO UPDATE SET
+                value = excluded.value,
+                updated_at = excluded.updated_at
+            """,
+            (key, value, now_text()),
+        )
+
+    def is_wizard_completed(self) -> bool:
+        """Check whether the welcome wizard has been completed."""
+        return self._get_state("wizard_completed") == "1"
+
+    def mark_wizard_completed(self) -> None:
+        """Mark the welcome wizard as completed."""
+        self._set_state("wizard_completed", "1")
+        logger.info("Welcome wizard marked as completed")
+
+    def reset_wizard_completed(self) -> None:
+        """Reset wizard completion state (for re-run)."""
+        self._set_state("wizard_completed", "0")
+        logger.info("Welcome wizard state reset")

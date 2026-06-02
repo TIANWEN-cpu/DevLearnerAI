@@ -166,8 +166,11 @@ class DashboardWidget(QWidget):
         root.addWidget(self._build_stats_row())
         root.addWidget(self._build_progress_section())
         root.addWidget(self._build_tracks_section())
+        root.addWidget(self._build_achievements_section())
+        root.addWidget(self._build_bookmarks_section())
         root.addWidget(self._build_goal_section())
         root.addWidget(self._build_quick_actions())
+        root.addWidget(self._build_data_actions())
         root.addStretch()
 
     # ── sections ─────────────────────────────────────────────────────────────
@@ -278,32 +281,50 @@ class DashboardWidget(QWidget):
         layout.addWidget(header)
 
         self.track_buttons = []
+        self.track_progress_bars = []
         for track in self.content_service.tracks:
-            btn = QPushButton(f"{track.icon}  {track.title}")
-            btn.setProperty("variant", "secondary")
-            btn.setToolTip(tr("dashboard.track_tooltip", title=track.title))
-            btn.setStyleSheet(
+            track_frame = QFrame()
+            track_frame.setCursor(Qt.PointingHandCursor)
+            track_frame.setStyleSheet(
                 f"""
-                QPushButton {{
-                    text-align: left;
-                    padding: 18px 24px;
-                    font-size: 21px;
-                    min-height: 60px;
-                    border-radius: 14px;
+                QFrame {{
                     background: {BG_CARD_SOFT};
                     border: 1px solid {BORDER};
-                    color: {TEXT_MAIN};
+                    border-radius: 14px;
                 }}
-                QPushButton:hover {{
+                QFrame:hover {{
                     background: {ACCENT_SOFT};
-                    color: {ACCENT};
+                    border: 1px solid rgba(37,99,235,0.25);
                 }}
                 """
             )
-            btn.setCursor(Qt.PointingHandCursor)
-            btn.clicked.connect(lambda checked=False, tid=track.id: self.track_requested.emit(tid))
-            layout.addWidget(btn)
-            self.track_buttons.append(btn)
+            track_layout = QVBoxLayout(track_frame)
+            track_layout.setContentsMargins(22, 16, 22, 16)
+            track_layout.setSpacing(8)
+
+            title_row = QHBoxLayout()
+            btn_label = QLabel(f"{track.icon}  {track.title}")
+            btn_label.setStyleSheet(f"color: {TEXT_MAIN}; font-size: 21px; font-weight: 600;")
+            title_row.addWidget(btn_label)
+            title_row.addStretch()
+
+            track_pct = QLabel("0%")
+            track_pct.setStyleSheet(f"color: {ACCENT}; font-weight: 700; font-size: 20px;")
+            track_pct.setObjectName("track_pct_label")
+            title_row.addWidget(track_pct)
+            track_layout.addLayout(title_row)
+
+            progress_bar = QProgressBar()
+            progress_bar.setFixedHeight(8)
+            progress_bar.setTextVisible(False)
+            progress_bar.setValue(0)
+            progress_bar.setObjectName("track_progress_bar")
+            track_layout.addWidget(progress_bar)
+
+            track_frame.mousePressEvent = lambda ev, tid=track.id: self.track_requested.emit(tid)
+            layout.addWidget(track_frame)
+            self.track_buttons.append(track_frame)
+            self.track_progress_bars.append((track, progress_bar, track_pct))
 
         if not self.content_service.tracks:
             placeholder = QLabel(tr("dashboard.no_tracks"))
@@ -381,6 +402,94 @@ class DashboardWidget(QWidget):
 
         return card
 
+    def _build_achievements_section(self) -> QFrame:
+        card = self._card()
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(28, 24, 28, 24)
+        layout.setSpacing(14)
+
+        header = QHBoxLayout()
+        title = QLabel("最近成就")
+        title.setFont(QFont(FONT, F_TITLE - 16, QFont.Bold))
+        header.addWidget(title)
+        header.addStretch()
+        self.achievement_count = QLabel("")
+        self.achievement_count.setStyleSheet(f"color: {ACCENT}; font-weight: 700; font-size: 20px;")
+        header.addWidget(self.achievement_count)
+        layout.addLayout(header)
+
+        self.achievement_row = QHBoxLayout()
+        self.achievement_row.setSpacing(12)
+        self._achievement_badges = []
+        layout.addLayout(self.achievement_row)
+
+        # View all achievements button
+        view_all_row = QHBoxLayout()
+        view_all_row.addStretch()
+        self.view_achievements_btn = QPushButton("查看全部成就")
+        self.view_achievements_btn.setProperty("variant", "secondary")
+        self.view_achievements_btn.setCursor(Qt.PointingHandCursor)
+        self.view_achievements_btn.setToolTip("打开完整的成就殿堂")
+        self.view_achievements_btn.clicked.connect(self._show_achievements_dialog)
+        view_all_row.addWidget(self.view_achievements_btn)
+        layout.addLayout(view_all_row)
+
+        return card
+
+    def _build_bookmarks_section(self) -> QFrame:
+        card = self._card()
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(28, 24, 28, 24)
+        layout.setSpacing(14)
+
+        header = QHBoxLayout()
+        title = QLabel("最近收藏")
+        title.setFont(QFont(FONT, F_TITLE - 16, QFont.Bold))
+        header.addWidget(title)
+        header.addStretch()
+        self.bookmark_count_label = QLabel("")
+        self.bookmark_count_label.setStyleSheet(f"color: {WARNING}; font-weight: 700; font-size: 20px;")
+        header.addWidget(self.bookmark_count_label)
+        layout.addLayout(header)
+
+        self.bookmark_items_layout = QVBoxLayout()
+        self.bookmark_items_layout.setSpacing(6)
+        layout.addLayout(self.bookmark_items_layout)
+
+        view_all_row = QHBoxLayout()
+        view_all_row.addStretch()
+        self.view_bookmarks_btn = QPushButton("查看全部收藏")
+        self.view_bookmarks_btn.setProperty("variant", "secondary")
+        self.view_bookmarks_btn.setCursor(Qt.PointingHandCursor)
+        self.view_bookmarks_btn.setToolTip("打开收藏管理面板")
+        self.view_bookmarks_btn.clicked.connect(self._show_bookmarks_dialog)
+        view_all_row.addWidget(self.view_bookmarks_btn)
+        layout.addLayout(view_all_row)
+
+        return card
+
+    def _build_data_actions(self) -> QFrame:
+        card = self._card()
+        layout = QHBoxLayout(card)
+        layout.setContentsMargins(28, 20, 28, 20)
+        layout.setSpacing(14)
+
+        export_btn = QPushButton("导出学习数据")
+        export_btn.setCursor(Qt.PointingHandCursor)
+        export_btn.setToolTip("导出进度、笔记、书签和成就数据进行备份")
+        export_btn.clicked.connect(self._open_export_dialog)
+        layout.addWidget(export_btn)
+
+        import_btn = QPushButton("导入学习数据")
+        import_btn.setProperty("variant", "secondary")
+        import_btn.setCursor(Qt.PointingHandCursor)
+        import_btn.setToolTip("从之前的备份文件中恢复学习数据")
+        import_btn.clicked.connect(self._open_import_dialog)
+        layout.addWidget(import_btn)
+
+        layout.addStretch()
+        return card
+
     # ── helpers ──────────────────────────────────────────────────────────────
 
     def _card(self) -> QFrame:
@@ -436,6 +545,52 @@ class DashboardWidget(QWidget):
             tr("dashboard.goal_status", label=label, target=target, completed=completed_today, pct=progress)
         )
 
+    # ── Dialog launchers ─────────────────────────────────────────────────────
+
+    def _show_achievements_dialog(self) -> None:
+        """Open a dialog showing all achievements."""
+        from PyQt5.QtWidgets import QDialog, QVBoxLayout
+
+        from app.widgets.achievements import AchievementsWidget
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("成就殿堂")
+        dialog.setMinimumSize(720, 520)
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(0, 0, 0, 0)
+        widget = AchievementsWidget(self.db, dialog)
+        layout.addWidget(widget)
+        dialog.exec_()
+
+    def _show_bookmarks_dialog(self) -> None:
+        """Open a dialog showing all bookmarks."""
+        from PyQt5.QtWidgets import QDialog, QVBoxLayout
+
+        from app.widgets.bookmarks import BookmarksWidget
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("我的收藏")
+        dialog.setMinimumSize(560, 440)
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(0, 0, 0, 0)
+        widget = BookmarksWidget(self.db, dialog)
+        layout.addWidget(widget)
+        dialog.exec_()
+
+    def _open_export_dialog(self) -> None:
+        """Open the export/import dialog."""
+        from app.widgets.export_import import ExportImportDialog
+
+        dlg = ExportImportDialog(self.db, self)
+        dlg.exec_()
+
+    def _open_import_dialog(self) -> None:
+        """Open the import dialog directly."""
+        from app.widgets.export_import import ExportImportDialog
+
+        dlg = ExportImportDialog(self.db, self)
+        dlg.exec_()
+
     # ── refresh ──────────────────────────────────────────────────────────────
 
     def refresh(self) -> None:
@@ -477,6 +632,19 @@ class DashboardWidget(QWidget):
         pct = int(completed / max(total, 1) * 100)
         self.progress_bar.setValue(pct)
         self.progress_pct.setText(f"{pct}%")
+
+        # Per-track progress bars
+        if hasattr(self, "track_progress_bars"):
+            for track, bar, pct_label in self.track_progress_bars:
+                track_total = len(track.lessons)
+                track_completed = sum(1 for lesson in track.lessons if self.db.lesson_status(lesson.id) == "completed")
+                track_pct = int(track_completed / max(track_total, 1) * 100)
+                bar.setValue(track_pct)
+                pct_label.setText(f"{track_pct}%")
+                bar.setStyleSheet(
+                    f"QProgressBar::chunk {{ background: {SUCCESS if track_pct == 100 else ACCENT}; "
+                    f"border-radius: 4px; }}"
+                )
 
         # Weekly chart - compute activity per day of last 7 days
         from datetime import date, timedelta
@@ -523,3 +691,79 @@ class DashboardWidget(QWidget):
             self.welcome_sub.setText(
                 tr("dashboard.welcome_summary", completed=completed, total=total, avg=avg_score, streak=streak)
             )
+
+        # ── Achievements section ─────────────────────────────────────────────
+        try:
+            achievements = self.db.list_achievements()
+            unlocked_count = sum(1 for a in achievements if a["unlocked"])
+            total_achievements = len(achievements)
+            self.achievement_count.setText(f"{unlocked_count}/{total_achievements}")
+
+            # Clear old badges
+            while self.achievement_row.count():
+                item = self.achievement_row.takeAt(0)
+                w = item.widget()
+                if w:
+                    w.deleteLater()
+            self._achievement_badges = []
+
+            # Show recent unlocked or closest-to-unlock achievements
+            from app.widgets.achievements import AchievementBadge
+
+            # First show unlocked ones (up to 4), then fill with close-to-unlock
+            unlocked_achs = [a for a in achievements if a["unlocked"]][:3]
+            locked_achs = [a for a in achievements if not a["unlocked"]]
+            locked_achs.sort(key=lambda a: a.get("current_value", 0) / max(a.get("threshold", 1), 1), reverse=True)
+            display_achs = unlocked_achs + locked_achs[: max(0, 4 - len(unlocked_achs))]
+            for ach in display_achs[:4]:
+                badge = AchievementBadge(ach)
+                badge.setFixedSize(120, 140)
+                self.achievement_row.addWidget(badge)
+                self._achievement_badges.append(badge)
+            if not display_achs:
+                placeholder = QLabel("还没有成就记录，继续学习吧！")
+                placeholder.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 18px;")
+                self.achievement_row.addWidget(placeholder)
+        except Exception as exc:
+            logger.warning("刷新成就数据失败: %s", exc)
+
+        # ── Bookmarks section ────────────────────────────────────────────────
+        try:
+            bookmarks = self.db.list_bookmarks()
+            bm_count = len(bookmarks)
+            self.bookmark_count_label.setText(f"共 {bm_count} 个收藏")
+
+            # Clear old items
+            while self.bookmark_items_layout.count():
+                item = self.bookmark_items_layout.takeAt(0)
+                w = item.widget()
+                if w:
+                    w.deleteLater()
+
+            # Show up to 5 recent bookmarks
+            for bm in bookmarks[:5]:
+                _id, item_type, item_id, title, track_id, note, created_at = bm
+                type_label = "课程" if item_type == "lesson" else "练习"
+                type_color = ACCENT if item_type == "lesson" else "#8b5cf6"
+                row = QHBoxLayout()
+                row.setSpacing(8)
+                badge = QLabel(type_label)
+                badge.setFixedSize(36, 24)
+                badge.setAlignment(Qt.AlignCenter)
+                badge.setStyleSheet(
+                    f"background: {ACCENT_SOFT if item_type == 'lesson' else '#f3e8ff'}; "
+                    f"color: {type_color}; border-radius: 6px; font-size: 13px; font-weight: 600;"
+                )
+                row.addWidget(badge)
+                title_lbl = QLabel(title)
+                title_lbl.setStyleSheet(f"color: {TEXT_MAIN}; font-size: 17px; font-weight: 600;")
+                row.addWidget(title_lbl, 1)
+                self.bookmark_items_layout.addLayout(row)
+
+            if not bookmarks:
+                placeholder = QLabel("还没有收藏。在学习或练习时点击「收藏」按钮添加。")
+                placeholder.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 18px;")
+                placeholder.setWordWrap(True)
+                self.bookmark_items_layout.addWidget(placeholder)
+        except Exception as exc:
+            logger.warning("刷新收藏数据失败: %s", exc)

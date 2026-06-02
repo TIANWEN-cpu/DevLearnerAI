@@ -101,6 +101,8 @@ TRANSLATIONS: dict[str, str] = {
     "dashboard.streak_unit": "天连续",
     "dashboard.chart_data_label": "数据值: {values}",
     "dashboard.weekday_labels": "一,二,三,四,五,六,日",
+    # ── Welcome Wizard ────────────────────────────────────────────────────
+    "window.wizard_completed": "欢迎向导已完成！开始你的学习之旅吧。",
     # ── Learn Widget ──────────────────────────────────────────────────────
     "learn.title": "学习路径",
     "learn.subtitle": "按主线进入模块，再从模块里递进学习课程。",

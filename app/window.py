@@ -183,6 +183,10 @@ class DevLearnerWindow(QMainWindow):
         # Defer heavy widget initialization after window is visible
         QTimer.singleShot(50, self._deferred_init)
 
+        # First-run experience: show welcome wizard after window is visible
+        self._setup_checklist = None
+        QTimer.singleShot(800, self._check_first_run)
+
     def _ensure_projects(self) -> QWidget:
         """Lazy-init ProjectsWidget on first access."""
         if self._projects_ready:
@@ -239,6 +243,70 @@ class DevLearnerWindow(QMainWindow):
         QTimer.singleShot(150, self._ensure_algo)
         QTimer.singleShot(300, self._ensure_ai_page)
         QTimer.singleShot(500, self._ensure_ai_dock)
+
+    # ── First-run experience ─────────────────────────────────────────────────
+
+    def _check_first_run(self) -> None:
+        """Check if the welcome wizard should be shown and set up the checklist."""
+        from app.widgets.welcome_wizard import is_wizard_completed
+
+        # Always add the setup checklist to the dashboard
+        self._add_setup_checklist()
+
+        if not is_wizard_completed(self.db):
+            QTimer.singleShot(300, self._show_welcome_wizard)
+
+    def _show_welcome_wizard(self) -> None:
+        """Show the welcome wizard dialog."""
+        from app.widgets.welcome_wizard import WelcomeWizard
+
+        wizard = WelcomeWizard(self.db, self.content_service, self)
+        wizard.wizard_completed.connect(self._on_wizard_completed)
+        wizard.track_selected.connect(self._on_wizard_track_selected)
+        wizard.goal_selected.connect(self._on_wizard_goal_selected)
+        wizard.exec_()
+
+    def _on_wizard_completed(self) -> None:
+        """Handle wizard completion."""
+        self.status.showMessage(tr("window.wizard_completed"), 5000)
+        # Refresh the setup checklist
+        if self._setup_checklist:
+            self._setup_checklist.refresh()
+
+    def _on_wizard_track_selected(self, track_id: str) -> None:
+        """Handle track selection from wizard."""
+        self.open_track(track_id)
+
+    def _on_wizard_goal_selected(self, target: int) -> None:
+        """Handle goal selection from wizard."""
+        self.dashboard._set_goal(target, f"{target} 课")
+
+    def _add_setup_checklist(self) -> None:
+        """Add the setup checklist widget to the dashboard."""
+        from app.widgets.setup_checklist import SetupChecklistWidget
+
+        self._setup_checklist = SetupChecklistWidget(self.db, self.dashboard)
+        self._setup_checklist.navigate_page.connect(self._handle_checklist_navigate)
+        self._setup_checklist.open_ai_chat.connect(self.open_ai_workspace)
+
+        # Insert at the top of the dashboard (after welcome, before stats)
+        dashboard_layout = self.dashboard.layout()
+        if dashboard_layout:
+            dashboard_layout.insertWidget(1, self._setup_checklist)
+
+    def _handle_checklist_navigate(self, page_index: int) -> None:
+        """Handle navigation request from the setup checklist."""
+        if page_index == 5:
+            # AI config - open AI workspace
+            self.open_ai_workspace()
+        else:
+            self.switch_page(page_index)
+
+    def start_feature_tour(self) -> None:
+        """Start the feature tour overlay."""
+        from app.widgets.feature_tour import start_feature_tour
+
+        self._feature_tour = start_feature_tour(self)
 
     def _build_shell(self) -> None:
         root = QWidget()

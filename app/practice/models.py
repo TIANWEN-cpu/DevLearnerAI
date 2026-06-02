@@ -34,6 +34,7 @@ class EvaluationResult:
     feedback_lines: list[str]
     stdout: str = ""
     duration_sec: int = 0
+    evaluation_mode: str = "runtime"  # "runtime" or "structural"
 
     @property
     def feedback_text(self) -> str:
