@@ -305,9 +305,13 @@ class ContentService:
             track = self._cache[track_id]
             logger.info(
                 "Track loaded: id=%s modules=%d lessons=%d latency=%.1fms",
-                track_id, len(track.modules), len(track.lessons), elapsed_ms,
+                track_id,
+                len(track.modules),
+                len(track.lessons),
+                elapsed_ms,
             )
             from app.utils.metrics import get_metrics
+
             get_metrics().record_content_load("track", elapsed_ms, cache_hit=False)
         return self._cache[track_id]
 
@@ -371,6 +375,7 @@ class ContentService:
         if cache_key in self._markdown_cache:
             self._markdown_cache.move_to_end(cache_key)
             from app.utils.metrics import get_metrics
+
             get_metrics().record_content_load("markdown", 0.0, cache_hit=True)
             return self._markdown_cache[cache_key]
 
@@ -406,6 +411,7 @@ class ContentService:
         elapsed_ms = (_time.perf_counter() - start) * 1000
         logger.debug("Markdown loaded: path=%s len=%d latency=%.1fms", lesson.path, len(content), elapsed_ms)
         from app.utils.metrics import get_metrics
+
         get_metrics().record_content_load("markdown", elapsed_ms, cache_hit=False)
 
         # Proactive memory pressure response

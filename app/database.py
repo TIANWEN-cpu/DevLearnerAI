@@ -97,6 +97,7 @@ def get_connection(db_path: str) -> "sqlite3.Connection":
             elapsed_ms = (_time.perf_counter() - start) * 1000
             logger.info("Database connection established: path=%s latency=%.1fms", db_path, elapsed_ms)
             from app.utils.metrics import get_metrics
+
             get_metrics().record_db_operation("connect", elapsed_ms)
         return _connection
 
@@ -433,6 +434,7 @@ class AppDatabase:
         elapsed_ms = (_time.perf_counter() - start) * 1000
         logger.info("Database initialization completed in %.1f ms", elapsed_ms)
         from app.utils.metrics import get_metrics
+
         get_metrics().record_db_operation("init_db", elapsed_ms)
 
     def _migrate_legacy_api_key_if_needed(self) -> None:
